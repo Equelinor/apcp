@@ -1,75 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APCP — Axion Project Control Platform</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1B2A3B;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-.logo{font-size:13px;font-weight:900;color:#8B1A1A;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
-h1{font-size:22px;font-weight:800;margin-bottom:6px}
-p{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:32px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:720px;width:100%}
-.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;text-decoration:none;color:#fff;transition:all .15s}
-.card:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);transform:translateY(-2px)}
-.card-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8B1A1A;margin-bottom:6px}
-.card-title{font-size:13px;font-weight:600;margin-bottom:3px}
-.card-sub{font-size:11px;color:rgba(255,255,255,.38)}
-.footer{margin-top:32px;font-size:11px;color:rgba(255,255,255,.2)}
-</style>
-</head>
-<body>
-<div class="logo">Axion Imagineering Construction Co. W.L.L</div>
-<h1>Axion Project Control Platform</h1>
-<p>Phase 1 — Standalone Forms · localStorage · v1.0</p>
-<div class="grid">
-  <a class="card" href="forms/DAR-Daily-Activity-Report.html">
-    <div class="card-tag">DAR</div>
-    <div class="card-title">Daily Activity Report</div>
-    <div class="card-sub">Manpower · Equipment · Activity</div>
-  </a>
-  <a class="card" href="forms/MRF-Material-Request-Form.html">
-    <div class="card-tag">MRF</div>
-    <div class="card-title">Material Request Form</div>
-    <div class="card-sub">Procurement · Approval · Tracking</div>
-  </a>
-  <a class="card" href="forms/IF04-Shop-Drawing-Submittal.html">
-    <div class="card-tag">IF04</div>
-    <div class="card-title">Shop Drawing Submittal</div>
-    <div class="card-sub">Drawing Register · Revisions</div>
-  </a>
-  <a class="card" href="forms/IF05-Material-Approval-Certificate.html">
-    <div class="card-tag">IF05</div>
-    <div class="card-title">Material Approval Certificate</div>
-    <div class="card-sub">MAC · Supplier · Spec</div>
-  </a>
-  <a class="card" href="forms/IF06-Sample-Mockup-Inspection-Request.html">
-    <div class="card-tag">IF06</div>
-    <div class="card-title">Sample/Mockup Inspection</div>
-    <div class="card-sub">Inspection Request · Approval</div>
-  </a>
-  <a class="card" href="forms/IF07-Document-Submittal-Form.html">
-    <div class="card-tag">IF07</div>
-    <div class="card-title">Document Submittal</div>
-    <div class="card-sub">Submittals · Register</div>
-  </a>
-  <a class="card" href="forms/IF08-Request-For-Information.html">
-    <div class="card-tag">IF08</div>
-    <div class="card-title">Request For Information</div>
-    <div class="card-sub">RFI · Discipline · Cost &amp; Time</div>
-  </a>
-  <a class="card" href="forms/IF09-Activity-Inspection-Request.html">
-    <div class="card-tag">IF09</div>
-    <div class="card-title">Activity Inspection Request</div>
-    <div class="card-sub">AIR · Concrete · Location</div>
-  </a>
-  <a class="card" href="forms/IF12-Sub-Contractor-Approval-Form.html">
-    <div class="card-tag">IF12</div>
-    <div class="card-title">Sub-Contractor Approval</div>
-    <div class="card-sub">SC Register · CR · Scope</div>
-  </a>
-</div>
-<div class="footer">APCP v1.0 · Phase 1 Standalone · © 2025 Axion Imagineering</div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APCP — Axion Project Control Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

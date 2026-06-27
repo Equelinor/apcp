@@ -1,42 +1,84 @@
-# Axion Project Control Platform (APCP)
-**Axion Imagineering Construction Co. W.L.L**
+# APCP v3 — Axion Project Control Platform
 
-## Phase 1 — Standalone HTML Forms
+**Axion Imagineering Construction Co. W.L.L**  
+React + Vite + Supabase · Hosted on Netlify
 
-All forms are self-contained HTML files with embedded logos and localStorage persistence.
+---
 
-### Forms
-| File | Description |
-|------|-------------|
-| `DAR-Daily-Activity-Report.html` | Daily manpower, equipment, activity reporting |
-| `MRF-Material-Request-Form.html` | Material request, approval workflow, vendor tracking |
-| `IF04-Shop-Drawing-Submittal.html` | Shop drawing submittal and register |
-| `IF05-Material-Approval-Certificate.html` | MAC — material approval with 10-item details |
-| `IF06-Sample-Mockup-Inspection-Request.html` | Sample/mockup inspection request |
-| `IF07-Document-Submittal-Form.html` | Document submittal and register |
-| `IF08-Request-For-Information.html` | RFI — 2-page, discipline checkboxes, cost/time impact |
-| `IF09-Activity-Inspection-Request.html` | Activity inspection request with concrete fields |
-| `IF12-Sub-Contractor-Approval-Form.html` | Sub-contractor approval and register |
+## Stack
 
-### Tech Stack — Phase 1
-- Pure HTML + CSS + JavaScript
-- localStorage (no backend required)
-- Axion logo embedded as base64
-- PDF export via window.print()
-- Drag & drop consultant/client logo upload per project
+- **Frontend:** React 18 + Vite
+- **Backend:** Supabase (fwfwmdquqewndzlkfjpr · Singapore)
+- **Hosting:** Netlify (axionpcp.netlify.app)
+- **Auth:** Supabase Auth (email + password)
 
-### Tech Stack — Phase 2 (planned)
-- React + Vite
-- Supabase (project: `fwfwmdquqewndzlkfjpr`, Singapore region)
-- Netlify hosting
-- Real authentication + role-based access
+---
 
-### Roles
-Admin · Project Manager · Planning Engineer · Procurement · Site Engineer · Accountant · Viewer
+## Projects
 
-### Projects
-- ANT — Al Noor Tower
-- MRS — Marina Residences
+| Code | Name |
+|------|------|
+| ANT  | Al Noor Tower |
+| MRS  | Marina Residences |
 
-### Document Numbering
-`TYPE-PROJCODE-YEAR-SEQUENCE` e.g. `MRF-ANT-2025-00001`
+---
+
+## Roles
+
+Admin · PM · Planning · Procurement · Site Engineer · Accountant · Viewer
+
+---
+
+## Document Numbering
+
+Format: `TYPE-PROJCODE-YEAR-SEQUENCE`  
+Example: `MRF-ANT-2025-00001`
+
+---
+
+## Deploy Steps
+
+### 1. Supabase Setup
+1. Go to [supabase.com](https://supabase.com) → your project (fwfwmdquqewndzlkfjpr)
+2. SQL Editor → New Query → paste `supabase-schema.sql` → Run
+3. Auth → Users → Add user (email + password) for each team member
+4. After creating first user, run the update query at the bottom of the schema to set them as Admin
+
+### 2. Netlify Setup
+1. Connect repo: Netlify → Add new site → Import from GitHub → Equelinor/apcp
+2. Build command: `npm run build`
+3. Publish directory: `dist`
+4. Environment Variables → Add:
+   - `VITE_SUPABASE_URL` = `https://fwfwmdquqewndzlkfjpr.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY` = (your anon key)
+5. Deploy
+
+### 3. Local Development (optional)
+```bash
+npm install
+npm run dev
+```
+Open http://localhost:5173
+
+---
+
+## Modules — Phase 1
+
+| Module | Status |
+|--------|--------|
+| Dashboard | ✅ |
+| MRF Register | ✅ |
+| Procurement | ✅ |
+| Delivery Tracking | ✅ |
+| Document Control | 🔜 |
+| QA/QC | 🔜 |
+| Site | 🔜 |
+| Management | 🔜 |
+
+---
+
+## Security Notes
+
+- `.env` is in `.gitignore` — never committed
+- Supabase anon key is safe for frontend use (Row Level Security enforced)
+- Set environment variables in Netlify dashboard, never in code

@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Axion Project Control Platform — Material Control v2.0</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --steel:#1B2A3B;--steel-mid:#243547;--steel-lt:#2E4158;
+  --amber:#E8A020;--amber-lt:#F5B942;--amber-pale:#FEF3DC;
+  --surf:#F2F4F7;--card:#FFFFFF;
+  --bdr:#DDE2EA;--bdr-lt:#EEF1F5;
+  --t1:#1B2A3B;--t2:#4A5770;--t3:#8898AA;
+  --ok:#146C43;--ok-bg:#E6F4EE;--ok-bd:#A8D9BC;
+  --err:#B91C1C;--err-bg:#FEE9E9;--err-bd:#F5AAAA;
+  --warn:#92600A;--warn-bg:#FEF3DC;--warn-bd:#EAC46A;
+  --info:#1558A0;--info-bg:#E8F0FB;--info-bd:#9DC0EE;
+  --pur:#5B21B6;--pur-bg:#EDE9FE;
+  --r:6px;--rlg:10px;--rxl:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--surf);color:var(--t1);font-size:14px;display:flex;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.14);border-radius:3px}
+
+/* SIDEBAR */
+#sb{width:224px;min-width:224px;background:var(--steel);display:flex;flex-direction:column;height:100vh;overflow-y:auto;overflow-x:hidden}
+.sb-logo{padding:16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-brand{display:flex;align-items:center;gap:10px}
+.sb-icon{width:36px;height:36px;background:var(--amber);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--steel);flex-shrink:0}
+.sb-name{color:#fff;font-weight:700;font-size:12px;line-height:1.2}
+.sb-sub{color:rgba(255,255,255,.32);font-size:9px;text-transform:uppercase;letter-spacing:.08em}
+.sb-sec{padding:14px 0 4px}
+.sb-lbl{padding:0 16px 5px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.22);font-weight:700}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 16px;color:rgba(255,255,255,.58);cursor:pointer;font-size:12.5px;border-left:3px solid transparent;transition:all .14s;user-select:none}
+.ni:hover{background:rgba(255,255,255,.05);color:#fff}
+.ni.on{background:rgba(232,160,32,.14);color:var(--amber-lt);border-left-color:var(--amber);font-weight:600}
+.ni.locked{opacity:.3;cursor:not-allowed}
+.ni-ico{font-size:15px;width:16px;text-align:center;flex-shrink:0}
+.nb{margin-left:auto;background:var(--err);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center}
+.sb-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.07);padding:12px 16px}
+.u-chip{display:flex;align-items:center;gap:9px;cursor:pointer}
+.u-av{width:30px;height:30px;border-radius:50%;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--steel);flex-shrink:0}
+.u-name{color:#fff;font-size:12px;font-weight:500}
+.u-role{color:rgba(255,255,255,.36);font-size:10px}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:0 22px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.tb-title{font-size:15px;font-weight:700}
+.tb-sub{font-size:11px;color:var(--t3)}
+.tb-right{margin-left:auto;display:flex;gap:6px;align-items:center}
+#content{flex:1;overflow-y:auto;padding:20px 22px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r);font-size:12.5px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .14s;white-space:nowrap;font-family:inherit}
+.b-steel{background:var(--steel);color:#fff;border-color:var(--steel)}.b-steel:hover{background:var(--steel-mid)}
+.b-amber{background:var(--amber);color:var(--steel);border-color:var(--amber);font-weight:700}.b-amber:hover{background:var(--amber-lt)}
+.b-out{background:transparent;color:var(--t2);border-color:var(--bdr)}.b-out:hover{background:var(--surf)}
+.b-ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd);font-weight:600}
+.b-err{background:var(--err-bg);color:var(--err);border:1px solid var(--err-bd);font-weight:600}
+.b-warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-bd);font-weight:600}
+.b-sm{padding:4px 9px;font-size:11.5px}
+.b-xs{padding:2px 7px;font-size:11px}
+.b-ico{padding:5px;width:28px;height:28px;justify-content:center}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--rlg)}
+.c-hdr{padding:13px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px}
+.c-hdr h3{font-size:13.5px;font-weight:600;flex:1}
+.c-body{padding:16px 18px}
+
+/* STAT CARDS */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
+.sc{background:var(--card);border:1px solid var(--bdr);border-radius:var(--rlg);padding:13px 15px;cursor:pointer;position:relative;overflow:hidden;transition:box-shadow .14s}
+.sc:hover{box-shadow:0 2px 10px rgba(0,0,0,.09)}
+.sc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.c-warn::before{background:var(--warn)}.c-err::before{background:var(--err)}
+.c-ok::before{background:var(--ok)}.c-info::before{background:var(--info)}
+.c-amb::before{background:var(--amber)}.c-pur::before{background:var(--pur)}
+.sc-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:4px}
+.sc-val{font-size:26px;font-weight:800;color:var(--t1);line-height:1;margin-bottom:2px}
+.sc-sub{font-size:10px;color:var(--t3)}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{padding:9px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);background:var(--surf);border-bottom:1px solid var(--bdr);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--t1)}
+tbody tr{border-bottom:1px solid var(--bdr-lt)}
+tbody tr:hover{background:#FAFBFC}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:9px 10px;vertical-align:middle}
+.tm{color:var(--t3);font-size:12px}
+.mono{font-family:'SF Mono',Consolas,monospace;font-size:11px;color:var(--info);font-weight:700}
+.r-err{background:#FFF5F5!important}.r-err td:first-child{border-left:3px solid var(--err)}
+.r-warn{background:#FFFBF0!important}.r-warn td:first-child{border-left:3px solid var(--amber)}
+
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.bd-draft{background:#F0F2F5;color:#5A6778}
+.bd-sub{background:var(--info-bg);color:var(--info)}
+.bd-app{background:var(--ok-bg);color:var(--ok)}
+.bd-rej{background:var(--err-bg);color:var(--err)}
+.bd-rev{background:var(--pur-bg);color:var(--pur)}
+.bd-hold{background:var(--warn-bg);color:var(--warn)}
+.bd-crit{background:#FEE9E9;color:#B91C1C}
+.bd-high{background:var(--warn-bg);color:var(--warn)}
+.bd-med{background:var(--info-bg);color:var(--info)}
+.bd-low{background:var(--ok-bg);color:var(--ok)}
+.bd-no{background:#F0F2F5;color:#5A6778}
+.bd-ord{background:var(--info-bg);color:var(--info)}
+.bd-part{background:var(--warn-bg);color:var(--warn)}
+.bd-del{background:var(--ok-bg);color:var(--ok)}
+.bd-insp{background:var(--pur-bg);color:var(--pur)}
+.bd-apu{background:#D1FAE5;color:#065F46}
+.bd-srej{background:var(--err-bg);color:var(--err)}
+.bd-used{background:var(--info-bg);color:var(--info)}
+.bd-ontr{background:var(--ok-bg);color:var(--ok)}
+.bd-risk{background:var(--warn-bg);color:var(--warn)}
+.bd-late{background:var(--err-bg);color:var(--err)}
+.bd-sp{background:#F0F2F5;color:#5A6778}
+.bd-ss{background:var(--info-bg);color:var(--info)}
+.bd-sa{background:var(--ok-bg);color:var(--ok)}
+.bd-sr{background:var(--err-bg);color:var(--err)}
+
+/* FILTER BAR */
+.fb{display:flex;gap:6px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--bdr);flex-wrap:wrap;background:#FAFBFC}
+.fb input,.fb select{padding:5px 8px;border:1px solid var(--bdr);border-radius:var(--r);font-size:12px;background:var(--card);color:var(--t1);outline:none;height:30px;font-family:inherit}
+.fb input:focus,.fb select:focus{border-color:var(--steel)}
+.fb input[type=text]{width:185px}
+.fb select{min-width:125px}
+.fb-right{margin-left:auto;display:flex;gap:5px}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--bdr);padding:0 16px;background:var(--card);overflow-x:auto}
+.tab{padding:10px 13px;font-size:12.5px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all .14s;margin-bottom:-1px}
+.tab:hover{color:var(--t1)}
+.tab.on{color:var(--steel);border-bottom-color:var(--amber);font-weight:700}
+.tc{background:var(--surf);color:var(--t3);font-size:9.5px;padding:1px 5px;border-radius:8px;font-weight:700}
+.tab.on .tc{background:var(--amber-pale);color:var(--warn)}
+
+/* FORMS */
+.fsec{margin-bottom:20px}
+.fst{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--t2);padding-bottom:9px;border-bottom:1px solid var(--bdr);margin-bottom:13px;display:flex;align-items:center;gap:7px}
+.fsn{width:17px;height:17px;background:var(--steel);color:#fff;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.04em}
+.fg label .req{color:var(--err);margin-left:2px}
+.fg input,.fg select,.fg textarea{padding:7px 9px;border:1px solid var(--bdr);border-radius:var(--r);font-size:12.5px;background:var(--card);color:var(--t1);outline:none;transition:border-color .14s;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--steel)}
+.fg textarea{resize:vertical;min-height:62px}
+.cf{background:var(--surf);color:var(--t2);font-size:12px;padding:7px 9px;border-radius:var(--r);border:1px solid var(--bdr);font-style:italic}
+.dw{background:var(--err-bg);border:1px solid var(--err-bd);border-radius:var(--r);padding:8px 11px;font-size:12px;color:var(--err);font-weight:600;display:none;margin-top:5px}
+.dw.show{display:flex;align-items:center;gap:6px}
+.lw{background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:var(--r);padding:7px 11px;font-size:12px;color:var(--warn);font-weight:600;display:none;margin-top:5px}
+.lw.show{display:block}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g1{display:grid;grid-template-columns:1fr;gap:12px}
+
+/* MODAL */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto}
+.mbg.open{display:flex}
+.modal{background:var(--card);border-radius:var(--rxl);width:100%;max-width:940px;margin:auto;box-shadow:0 10px 50px rgba(0,0,0,.22)}
+.mhdr{padding:15px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.mhdr h2{font-size:15px;font-weight:700;flex:1}
+.mbody{padding:20px;max-height:74vh;overflow-y:auto}
+.mftr{padding:13px 20px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:7px}
+
+/* DETAIL PANEL */
+#panel{position:fixed;top:0;right:0;bottom:0;width:650px;background:var(--card);border-left:1px solid var(--bdr);box-shadow:-4px 0 24px rgba(0,0,0,.13);z-index:90;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .23s ease;overflow:hidden}
+#panel.open{transform:translateX(0)}
+.phdr{padding:13px 17px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:9px;flex-shrink:0}
+.pbody{flex:1;overflow-y:auto;padding:17px}
+.pftr{padding:11px 17px;border-top:1px solid var(--bdr);display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+
+/* WORKFLOW BAR */
+.wfbar{display:flex;gap:4px;flex-wrap:wrap;margin:9px 0}
+.wfs{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;border:1.5px solid var(--bdr);color:var(--t3)}
+.wfs.done{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
+.wfs.cur{background:var(--steel);color:#fff;border-color:var(--steel)}
+
+/* INFO GRID */
+.ig{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.ig3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.ii{display:flex;flex-direction:column;gap:2px}
+.il{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);font-weight:700}
+.iv{font-size:12.5px;color:var(--t1);font-weight:500}
+
+/* PROGRESS */
+.pb{height:5px;background:var(--bdr);border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px}
+
+/* ALERTS */
+.al{display:flex;gap:7px;padding:8px 11px;border-radius:var(--r);font-size:12px;margin-bottom:10px;border:1px solid transparent;align-items:flex-start}
+.al-w{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd)}
+.al-e{background:var(--err-bg);color:var(--err);border-color:var(--err-bd)}
+.al-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
+.al-i{background:var(--info-bg);color:var(--info);border-color:var(--info-bd)}
+.sdiv{border:none;border-top:1px solid var(--bdr);margin:13px 0}
+
+/* VENDOR */
+.vpbar{display:flex;align-items:center;gap:6px}
+.vpt{flex:1;height:4px;background:var(--bdr);border-radius:2px;overflow:hidden}
+.vpf{height:100%;border-radius:2px}
+
+/* LOGIN */
+#login{position:fixed;inset:0;background:var(--steel);display:flex;align-items:center;justify-content:center;z-index:200}
+.lbox{background:var(--card);border-radius:16px;padding:34px 38px;width:410px;box-shadow:0 24px 70px rgba(0,0,0,.44)}
+.lic{width:52px;height:52px;background:var(--steel);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:var(--amber);margin-bottom:11px}
+.lbox h1{font-size:18px;font-weight:800;text-align:center}
+.lbox p{font-size:11px;color:var(--t3);text-align:center;margin-top:2px;margin-bottom:22px}
+.lfg{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.lfg label{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.04em}
+.lfg select,.lfg input{width:100%;padding:8px 10px;border:1px solid var(--bdr);border-radius:var(--r);font-size:13px;background:var(--surf);outline:none;font-family:inherit}
+.lhint{text-align:center;font-size:10.5px;color:var(--t3);margin-top:11px}
+
+/* MISC */
+.page{display:none}.page.on{display:block}
+.empty{text-align:center;padding:40px 20px;color:var(--t3)}
+.empty-i{font-size:34px;margin-bottom:9px}
+
+@media print{
+  #login,#sb,.topbar .tb-right,.fb,#panel,.mbg,.no-print{display:none!important}
+  body{overflow:visible}#main{overflow:visible}#content{overflow:visible;padding:0}
+  .page{display:block!important}.page:not(.on){display:none!important}
+  .card{box-shadow:none}
+  [data-int="true"]{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lbox">
+    <div style="text-align:center"><div class="lic">AX</div></div>
+    <h1>Axion Project Control</h1>
+    <p>Material Control Module — v2.0</p>
+    <div class="lfg"><label>Role</label>
+      <select id="l-role">
+        <option value="admin">Admin</option>
+        <option value="pm">Project Manager</option>
+        <option value="planning">Planning Engineer</option>
+        <option value="site">Site Engineer</option>
+        <option value="procurement">Procurement</option>
+        <option value="store">Store / Warehouse</option>
+        <option value="viewer">Viewer (Read-only)</option>
+      </select>
+    </div>
+    <div class="lfg"><label>Username</label><input id="l-user" value="Ahmed Al-Rashid"></div>
+    <div class="lfg"><label>Password</label><input type="password" value="••••••••"></div>
+    <button class="btn b-amber" style="width:100%;justify-content:center;padding:10px;font-size:13.5px;margin-top:4px" onclick="doLogin()">Sign In</button>
+    <p class="lhint">Select any role · Demo data preloaded · Press Esc to close modals</p>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sb">
+  <div class="sb-logo">
+    <div class="sb-brand">
+      <div class="sb-icon">AX</div>
+      <div><div class="sb-name">Axion Control</div><div class="sb-sub">APCP v2.0</div></div>
+    </div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Overview</div>
+    <div class="ni on" onclick="nav('dashboard',this)"><span class="ni-ico">📊</span><span>Executive Dashboard</span></div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Material Control</div>
+    <div class="ni" onclick="nav('register',this)"><span class="ni-ico">📋</span><span>MRF Register</span></div>
+    <div class="ni" onclick="nav('approvals',this)"><span class="ni-ico">✅</span><span>Approvals</span><span class="nb" id="nb-app">0</span></div>
+    <div class="ni" onclick="nav('delay',this)"><span class="ni-ico">⚠️</span><span>Delay Register</span><span class="nb" id="nb-del">0</span></div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Procurement</div>
+    <div class="ni" onclick="nav('procurement',this)"><span class="ni-ico">🛒</span><span>Procurement / PO</span></div>
+    <div class="ni" onclick="nav('vendor',this)"><span class="ni-ico">📈</span><span>Vendor Performance</span></div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Quality & Site</div>
+    <div class="ni" onclick="nav('delivery',this)"><span class="ni-ico">🚛</span><span>Delivery Tracking</span></div>
+    <div class="ni" onclick="nav('inspection',this)"><span class="ni-ico">🔍</span><span>Inspection / MIR</span></div>
+    <div class="ni" onclick="nav('sitestat',this)"><span class="ni-ico">🏗️</span><span>Site Availability</span></div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Coming Soon</div>
+    <div class="ni locked"><span class="ni-ico">📄</span><span>Material Submittals</span></div>
+    <div class="ni locked"><span class="ni-ico">📐</span><span>Drawings Register</span></div>
+    <div class="ni locked"><span class="ni-ico">❓</span><span>RFI Module</span></div>
+    <div class="ni locked"><span class="ni-ico">🚫</span><span>NCR / SOR</span></div>
+    <div class="ni locked"><span class="ni-ico">📅</span><span>Daily Reports</span></div>
+    <div class="ni locked"><span class="ni-ico">💰</span><span>Cost Control</span></div>
+    <div class="ni locked"><span class="ni-ico">⚡</span><span>Progress Tracking</span></div>
+    <div class="ni locked"><span class="ni-ico">🎯</span><span>Risk Register</span></div>
+  </div>
+  <div class="sb-foot">
+    <div class="u-chip" onclick="doLogout()">
+      <div class="u-av" id="u-av">AR</div>
+      <div><div class="u-name" id="u-name">Ahmed Al-Rashid</div><div class="u-role" id="u-role">Admin</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <div><div class="tb-title" id="pg-title">Executive Dashboard</div><div class="tb-sub">Al Noor Tower · Marina Residences · Highway Bridge P2</div></div>
+    <div class="tb-right no-print">
+      <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t3);cursor:pointer">
+        <input type="checkbox" id="chk-int" onchange="toggleInt()"> Internal notes in print
+      </label>
+      <button class="btn b-out b-sm" onclick="doExport()">⬇ Excel</button>
+      <button class="btn b-out b-sm" onclick="window.print()">🖨 Print</button>
+      <button class="btn b-amber" id="btn-new" onclick="openNewMRF()">+ New MRF</button>
+    </div>
+  </div>
+  <div id="content">
+
+    <!-- DASHBOARD -->
+    <div class="page on" id="page-dashboard">
+      <div class="sg" id="d-stats"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:14px">
+        <div class="card"><div class="c-hdr"><span>🔴</span><h3>Delay Risk Register</h3><span class="bdg bd-late" id="d-dlcnt">0</span></div><div id="d-dllist"></div></div>
+        <div class="card"><div class="c-hdr"><span>⚠️</span><h3>Overdue Deliveries</h3><span class="bdg bd-late" id="d-odcnt">0</span></div><div id="d-odlist"></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:13px">
+        <div class="card"><div class="c-hdr"><span>📊</span><h3>Site Status Overview</h3></div><div class="c-body" id="d-sov" style="display:flex;flex-wrap:wrap;gap:16px"></div></div>
+        <div class="card"><div class="c-hdr"><span>🏆</span><h3>Top Suppliers</h3></div><div class="c-body" id="d-sup" style="padding:10px 16px"></div></div>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="page" id="page-register">
+      <div class="card" style="overflow:hidden">
+        <div class="fb">
+          <input type="text" id="f-srch" placeholder="🔍  MRF#, material, activity…" oninput="renderReg()">
+          <select id="f-proj" onchange="renderReg()"><option value="">All Projects</option></select>
+          <select id="f-stat" onchange="renderReg()"><option value="">All Statuses</option><option>Draft</option><option>Submitted</option><option>Approved</option><option>Rejected</option><option>Revised</option><option>On Hold</option></select>
+          <select id="f-pri" onchange="renderReg()"><option value="">All Priorities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+          <select id="f-dly" onchange="renderReg()"><option value="">All Delay Status</option><option>On Track</option><option>At Risk</option><option>Delayed</option><option>Late to Raise</option></select>
+          <div class="fb-right"><button class="btn b-out b-sm" onclick="resetReg()">Reset</button></div>
+        </div>
+        <div class="tabs" id="reg-tabs">
+          <div class="tab on" onclick="tabSt(null,this)">All <span class="tc" id="tc-all">0</span></div>
+          <div class="tab" onclick="tabSt('Draft',this)">Draft <span class="tc" id="tc-dr">0</span></div>
+          <div class="tab" onclick="tabSt('Submitted',this)">Submitted <span class="tc" id="tc-su">0</span></div>
+          <div class="tab" onclick="tabSt('Approved',this)">Approved <span class="tc" id="tc-ap">0</span></div>
+          <div class="tab" onclick="tabSt('Rejected',this)">Rejected <span class="tc" id="tc-re">0</span></div>
+          <div class="tab" onclick="tabSt('On Hold',this)">On Hold <span class="tc" id="tc-ho">0</span></div>
+        </div>
+        <div class="tw"><table>
+          <thead><tr>
+            <th onclick="srt('mrfNumber')">MRF No</th><th onclick="srt('date')">Date</th>
+            <th onclick="srt('project')">Project</th><th>Loc/Zone</th>
+            <th>Material</th><th>Activity ID</th>
+            <th onclick="srt('qty')">Qty</th><th onclick="srt('requiredOnSite')">Need On-Site</th>
+            <th>Lead Time</th><th>Latest Raise</th>
+            <th>Priority</th><th>Approval</th><th>Delay</th><th>Site Status</th>
+            <th class="no-print"></th>
+          </tr></thead>
+          <tbody id="reg-tbody"></tbody>
+        </table></div>
+        <div id="reg-empty" class="empty" style="display:none"><div class="empty-i">📋</div><p>No MRFs match filters</p></div>
+      </div>
+    </div>
+
+    <!-- APPROVALS -->
+    <div class="page" id="page-approvals">
+      <div class="card" style="overflow:hidden">
+        <div class="fb">
+          <select id="ap-proj" onchange="renderApp()"><option value="">All Projects</option></select>
+          <select id="ap-pri" onchange="renderApp()"><option value="">All Priorities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>MRF No</th><th>Date</th><th>Project</th><th>Material</th><th>Activity</th><th>Requested By</th><th>Priority</th><th>Need On-Site</th><th>Delay</th><th class="no-print">Actions</th></tr></thead>
+          <tbody id="app-tbody"></tbody>
+        </table></div>
+        <div id="app-empty" class="empty" style="display:none"><div class="empty-i">✅</div><p>No pending approvals</p></div>
+      </div>
+    </div>
+
+    <!-- DELAY REGISTER -->
+    <div class="page" id="page-delay">
+      <div class="sg" id="dy-stats"></div>
+      <div class="card" style="overflow:hidden">
+        <div class="fb">
+          <select id="dy-proj" onchange="renderDelay()"><option value="">All Projects</option></select>
+          <select id="dy-type" onchange="renderDelay()"><option value="">All Delay Types</option><option>Late to Raise</option><option>At Risk</option><option>Delayed</option></select>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>MRF No</th><th>Material</th><th>Activity ID</th><th>Activity Name</th><th>Planned Start</th><th>Required On-Site</th><th>Lead Time</th><th>Latest Raise Date</th><th>Expected Delivery</th><th>Delay Status</th><th>Action Required</th></tr></thead>
+          <tbody id="dy-tbody"></tbody>
+        </table></div>
+        <div id="dy-empty" class="empty" style="display:none"><div class="empty-i">✅</div><p>No delay risks detected</p></div>
+      </div>
+    </div>
+
+    <!-- PROCUREMENT -->
+    <div class="page" id="page-procurement">
+      <div class="card" style="overflow:hidden">
+        <div class="fb">
+          <input type="text" id="pr-srch" placeholder="🔍  PO#, supplier, MRF#…" oninput="renderProc()">
+          <select id="pr-proj" onchange="renderProc()"><option value="">All Projects</option></select>
+          <select id="pr-sup" onchange="renderProc()"><option value="">All Suppliers</option></select>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>MRF No</th><th>Material</th><th>Submittal</th><th>Supplier</th><th>Quot Ref</th><th>PO Number</th><th>PO Date</th><th>PO Amount (AED)</th><th>Exp Delivery</th><th>Delay</th><th class="no-print">Actions</th></tr></thead>
+          <tbody id="proc-tbody"></tbody>
+        </table></div>
+        <div id="proc-empty" class="empty" style="display:none"><div class="empty-i">🛒</div><p>No procurement records</p></div>
+      </div>
+    </div>
+
+    <!-- VENDOR -->
+    <div class="page" id="page-vendor">
+      <div class="sg" id="vd-stats"></div>
+      <div class="card" style="overflow:hidden">
+        <div class="c-hdr"><span>📊</span><h3>Supplier Performance Dashboard</h3></div>
+        <div class="tw"><table>
+          <thead><tr><th>Supplier</th><th>Total POs</th><th>On-Time</th><th>On-Time %</th><th>Delayed</th><th>Avg Delay Days</th><th>Rejected Batches</th><th>Total PO Value (AED)</th><th>Rating</th></tr></thead>
+          <tbody id="vd-tbody"></tbody>
+        </table></div>
+        <div id="vd-empty" class="empty" style="display:none"><div class="empty-i">📈</div><p>No supplier data yet</p></div>
+      </div>
+    </div>
+
+    <!-- DELIVERY -->
+    <div class="page" id="page-delivery">
+      <div class="card" style="overflow:hidden">
+        <div class="fb">
+          <input type="text" id="dl-srch" placeholder="🔍  DN#, MRF#…" oninput="renderDel()">
+          <select id="dl-proj" onchange="renderDel()"><option value="">All Projects</option></select>
+          <select id="dl-ss" onchange="renderDel()"><option value="">All Site Statuses</option><option>Not Ordered</option><option>Ordered</option><option>Partially Delivered</option><option>Delivered</option><option>Under Inspection</option><option>Approved for Use</option><option>Rejected</option><option>Used at Site</option></select>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>MRF No</th><th>Material</th><th>Ordered Qty</th><th>Delivered Qty</th><th>Balance</th><th>DN Number</th><th>Delivery Date</th><th>Store Received</th><th>Site Received</th><th>Site Status</th><th class="no-print">Actions</th></tr></thead>
+          <tbody id="del-tbody"></tbody>
+        </table></div>
+        <div id="del-empty" class="empty" style="display:none"><div class="empty-i">🚛</div><p>No delivery records</p></div>
+      </div>
+    </div>
+
+    <!-- INSPECTION -->
+    <div class="page" id="page-inspection">
+      <div class="card" style="overflow:hidden">
+        <div class="fb">
+          <input type="text" id="ir-srch" placeholder="🔍  MIR#, MRF#…" oninput="renderInsp()">
+          <select id="ir-proj" onchange="renderInsp()"><option value="">All Projects</option></select>
+          <select id="ir-res" onchange="renderInsp()"><option value="">All Results</option><option>Pending</option><option>Submitted to Consultant</option><option>Approved</option><option>Rejected</option></select>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>MRF No</th><th>Material</th><th>MIR Number</th><th>Store Received</th><th>MIR Raised</th><th>Submitted to Consultant</th><th>Approved Date</th><th>Resubmissions</th><th>Result</th><th>Remarks</th><th class="no-print">Actions</th></tr></thead>
+          <tbody id="insp-tbody"></tbody>
+        </table></div>
+        <div id="insp-empty" class="empty" style="display:none"><div class="empty-i">🔍</div><p>No inspection records</p></div>
+      </div>
+    </div>
+
+    <!-- SITE STAT -->
+    <div class="page" id="page-sitestat">
+      <div class="sg" id="ss-stats"></div>
+      <div class="card" style="overflow:hidden">
+        <div class="fb">
+          <select id="ss-proj" onchange="renderSS()"><option value="">All Projects</option></select>
+          <select id="ss-st" onchange="renderSS()"><option value="">All Statuses</option><option>Not Ordered</option><option>Ordered</option><option>Partially Delivered</option><option>Delivered</option><option>Under Inspection</option><option>Approved for Use</option><option>Rejected</option><option>Used at Site</option></select>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>MRF No</th><th>Material</th><th>Project/Zone</th><th>Activity ID</th><th>Planned Start</th><th>Required On-Site</th><th>Priority</th><th>PO</th><th>MIR</th><th>Site Status</th><th>Days Remaining</th></tr></thead>
+          <tbody id="ss-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- DETAIL PANEL -->
+<div id="panel">
+  <div class="phdr">
+    <button class="btn b-out b-xs b-ico no-print" onclick="closePanel()">✕</button>
+    <div style="flex:1"><div style="font-size:14px;font-weight:700" id="pn-num">—</div><div style="font-size:11px;color:var(--t3)" id="pn-mat">—</div></div>
+    <div style="display:flex;gap:5px" id="pn-acts"></div>
+  </div>
+  <div class="pbody" id="pn-body"></div>
+</div>
+
+<!-- MRF MODAL -->
+<div class="mbg" id="m-mrf">
+  <div class="modal">
+    <div class="mhdr">
+      <div style="width:36px;height:36px;background:var(--steel);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--amber);font-weight:800;font-size:12px;flex-shrink:0">MRF</div>
+      <h2 id="mrf-title">New Material Request Form</h2>
+      <button class="btn b-out b-xs b-ico" onclick="closeMRF()">✕</button>
+    </div>
+    <div class="mbody" id="mrf-body"></div>
+    <div class="mftr">
+      <button class="btn b-out" onclick="closeMRF()">Cancel</button>
+      <button class="btn b-steel" onclick="saveMRF('Draft')">Save Draft</button>
+      <button class="btn b-amber" onclick="saveMRF('Submitted')">Submit for Approval</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROC MODAL -->
+<div class="mbg" id="m-proc">
+  <div class="modal" style="max-width:680px">
+    <div class="mhdr"><h2>Procurement Details</h2><button class="btn b-out b-xs b-ico" onclick="closeM('m-proc')">✕</button></div>
+    <div class="mbody" id="proc-body"></div>
+    <div class="mftr"><button class="btn b-out" onclick="closeM('m-proc')">Cancel</button><button class="btn b-amber" onclick="saveProc()">Save</button></div>
+  </div>
+</div>
+
+<!-- DEL MODAL -->
+<div class="mbg" id="m-del">
+  <div class="modal" style="max-width:620px">
+    <div class="mhdr"><h2>Update Delivery</h2><button class="btn b-out b-xs b-ico" onclick="closeM('m-del')">✕</button></div>
+    <div class="mbody" id="del-body"></div>
+    <div class="mftr"><button class="btn b-out" onclick="closeM('m-del')">Cancel</button><button class="btn b-amber" onclick="saveDel()">Save</button></div>
+  </div>
+</div>
+
+<!-- INSP MODAL -->
+<div class="mbg" id="m-insp">
+  <div class="modal" style="max-width:600px">
+    <div class="mhdr"><h2>Inspection / MIR Record</h2><button class="btn b-out b-xs b-ico" onclick="closeM('m-insp')">✕</button></div>
+    <div class="mbody" id="insp-body"></div>
+    <div class="mftr"><button class="btn b-out" onclick="closeM('m-insp')">Cancel</button><button class="btn b-amber" onclick="saveInsp()">Save MIR</button></div>
+  </div>
+</div>
+<script>
+// ═══════════════════════════════════
+// CONFIG & CONSTANTS
+// ═══════════════════════════════════
+const ROLES={
+  admin:{label:'Admin',approve:true,procure:true,receive:true,inspect:true,del:true},
+  pm:{label:'Project Manager',approve:true,procure:false,receive:false,inspect:true,del:false},
+  planning:{label:'Planning Engineer',approve:false,procure:false,receive:false,inspect:false,del:false},
+  site:{label:'Site Engineer',approve:false,procure:false,receive:true,inspect:false,del:false},
+  procurement:{label:'Procurement',approve:false,procure:true,receive:false,inspect:false,del:false},
+  store:{label:'Store / Warehouse',approve:false,procure:false,receive:true,inspect:false,del:false},
+  viewer:{label:'Viewer',approve:false,procure:false,receive:false,inspect:false,del:false}
+};
+const PROJS=['Al Noor Tower','Marina Residences','Highway Bridge P2','Commercial Hub West'];
+const LOCS=['Block A','Block B','Tower C','Tower D','Pier 4','Pier 5','West Wing'];
+const ZONES=['Basement','Ground Floor','Level 1','Level 2','Level 3','Level 4','Level 5','Rooftop','Deck Level'];
+const UNITS=['CUM','MT','NOS','SQM','LM','BAG','KG','TON','SET','EA','LT'];
+const PRIS=['Critical','High','Medium','Low'];
+const SITE_ST=['Not Ordered','Ordered','Partially Delivered','Delivered','Under Inspection','Approved for Use','Rejected','Used at Site'];
+const SUB_ST=['Pending','Submitted','Approved','Rejected'];
+
+let CU=null,CR=null;
+let tabStat=null,sortF='date',sortAsc=false;
+let editId=null,procId=null,delId=null,inspId=null;
+let seq=9;
+
+// ═══════════════════════════════════
+// SEED DATA
+// ═══════════════════════════════════
+let DB=[
+  {id:1,mrfNumber:'MRF-2024-001',date:'2024-01-15',project:'Al Noor Tower',location:'Block A',zone:'Basement',
+   requestedBy:'Ahmed Al-Rashid',materialDesc:'Ready Mix Concrete M40 — Foundations',qty:500,unit:'CUM',
+   requiredOnSite:'2024-01-22',requiredDate:'2024-01-25',priority:'Critical',relatedActivity:'Foundation Pouring',
+   remarks:'Urgent — piling complete. 3rd party test required.',internalNotes:'Coordinated with QC team on 14-Jan',
+   matSpec:'M40 Ready Mix Concrete',brand:'Gulf Concrete Co.',grade:'M40',codeRef:'BS EN 206',
+   sampleRef:'SMPL-2024-001',submRef:'MS-2024-001',submStatus:'Approved',consultApprovalDate:'2024-01-10',
+   ifcDrawing:'IFC-STR-001',shopDrawing:'SD-STR-001',drawingRev:'Rev 03',
+   wbsCode:'1.1.2',activityId:'A1010',activityName:'Basement Foundation Pour',programmeRef:'P6-1010',
+   plannedStart:'2024-01-20',plannedFinish:'2024-01-28',leadTimeDays:7,latestRaiseDate:'2024-01-15',
+   approvalStatus:'Approved',approvalRemarks:'',approvalDate:'2024-01-16',approvalBy:'Omar Shaikh',
+   supplier:'Gulf Concrete Co.',quotationRef:'QT-2024-0045',poNumber:'PO-2024-0012',
+   poDate:'2024-01-17',poAmount:125000,expectedDelivery:'2024-01-22',
+   deliveredQty:500,dnNumber:'DN-045',deliveryDate:'2024-01-22',storeReceived:true,storeReceivedDate:'2024-01-22',siteReceived:true,
+   mirNumber:'MIR-2024-001',mirRaisedDate:'2024-01-22',mirSubmittedDate:'2024-01-23',mirApprovedDate:'2024-01-24',mirRejectedDate:null,mirResubCount:0,mirResult:'Approved',mirRemarks:'',siteReleaseDate:'2024-01-24',
+   siteStatus:'Approved for Use',createdAt:'2024-01-15'},
+  {id:2,mrfNumber:'MRF-2024-002',date:'2024-01-18',project:'Al Noor Tower',location:'Block B',zone:'Ground Floor',
+   requestedBy:'Sara Qureshi',materialDesc:'TMT Rebar 16mm Grade 60',qty:45,unit:'MT',
+   requiredOnSite:'2024-01-28',requiredDate:'2024-01-30',priority:'High',relatedActivity:'Column Reinforcement GF',
+   remarks:'Confirm mill certificates before delivery.',internalNotes:'Engineer queried lead time on Jan 17',
+   matSpec:'High Yield Deformed Bar',brand:'Emirates Steel',grade:'Grade 60',codeRef:'ASTM A615',
+   sampleRef:'SMPL-2024-002',submRef:'MS-2024-002',submStatus:'Approved',consultApprovalDate:'2024-01-12',
+   ifcDrawing:'IFC-STR-010',shopDrawing:'SD-STR-010',drawingRev:'Rev 02',
+   wbsCode:'1.2.1',activityId:'A1210',activityName:'GF Column Reinforcement',programmeRef:'P6-1210',
+   plannedStart:'2024-01-28',plannedFinish:'2024-02-05',leadTimeDays:10,latestRaiseDate:'2024-01-18',
+   approvalStatus:'Approved',approvalRemarks:'',approvalDate:'2024-01-19',approvalBy:'Omar Shaikh',
+   supplier:'Emirates Steel',quotationRef:'QT-2024-0052',poNumber:'PO-2024-0018',
+   poDate:'2024-01-20',poAmount:92000,expectedDelivery:'2024-01-28',
+   deliveredQty:30,dnNumber:'DN-062',deliveryDate:'2024-01-28',storeReceived:true,storeReceivedDate:'2024-01-28',siteReceived:false,
+   mirNumber:'MIR-2024-002',mirRaisedDate:'2024-01-29',mirSubmittedDate:'2024-01-30',mirApprovedDate:'2024-01-31',mirRejectedDate:null,mirResubCount:0,mirResult:'Approved',mirRemarks:'',siteReleaseDate:'2024-01-31',
+   siteStatus:'Partially Delivered',createdAt:'2024-01-18'},
+  {id:3,mrfNumber:'MRF-2024-003',date:'2024-01-20',project:'Marina Residences',location:'Tower C',zone:'Level 3',
+   requestedBy:'Khalid Mansoor',materialDesc:'SBS Waterproofing Membrane Type A',qty:200,unit:'SQM',
+   requiredOnSite:'2024-02-05',requiredDate:'2024-02-05',priority:'High',relatedActivity:'Basement Waterproofing L3',
+   remarks:'Check batch numbers against approved submittal.',internalNotes:'3 suppliers shortlisted by procurement',
+   matSpec:'SBS Modified Bitumen Membrane 4mm',brand:'Sika / Approved Equal',grade:'Type A',codeRef:'ASTM D6163',
+   sampleRef:'SMPL-2024-003',submRef:'MS-2024-003',submStatus:'Approved',consultApprovalDate:'2024-01-14',
+   ifcDrawing:'IFC-A-205',shopDrawing:'SD-WP-001',drawingRev:'Rev 01',
+   wbsCode:'2.1.3',activityId:'A2030',activityName:'Waterproofing Tower C L3',programmeRef:'P6-2030',
+   plannedStart:'2024-02-03',plannedFinish:'2024-02-12',leadTimeDays:15,latestRaiseDate:'2024-01-21',
+   approvalStatus:'Submitted',approvalRemarks:'',approvalDate:null,approvalBy:null,
+   supplier:null,quotationRef:null,poNumber:null,poDate:null,poAmount:null,expectedDelivery:null,
+   deliveredQty:0,dnNumber:null,deliveryDate:null,storeReceived:false,storeReceivedDate:null,siteReceived:false,
+   mirNumber:null,mirRaisedDate:null,mirSubmittedDate:null,mirApprovedDate:null,mirRejectedDate:null,mirResubCount:0,mirResult:null,mirRemarks:null,siteReleaseDate:null,
+   siteStatus:'Not Ordered',createdAt:'2024-01-20'},
+  {id:4,mrfNumber:'MRF-2024-004',date:'2024-01-22',project:'Al Noor Tower',location:'Block A',zone:'Level 1',
+   requestedBy:'Ahmed Al-Rashid',materialDesc:'Hollow Block 200mm CMU Load Bearing',qty:12000,unit:'NOS',
+   requiredOnSite:'2024-02-08',requiredDate:'2024-02-10',priority:'Medium',relatedActivity:'Block Work Level 1',
+   remarks:'Match approved sample from factory visit.',internalNotes:'Director flagged delivery access issue on Level 1',
+   matSpec:'CMU 200x200x400mm Load Bearing',brand:'Arabian Block Factory',grade:'Grade A',codeRef:'BS EN 771-3',
+   sampleRef:'SMPL-2024-004',submRef:'MS-2024-004',submStatus:'Approved',consultApprovalDate:'2024-01-18',
+   ifcDrawing:'IFC-A-110',shopDrawing:'SD-A-110',drawingRev:'Rev 02',
+   wbsCode:'1.3.1',activityId:'A2210',activityName:'GF Blockwork Level 1',programmeRef:'P6-2210',
+   plannedStart:'2024-02-08',plannedFinish:'2024-02-22',leadTimeDays:14,latestRaiseDate:'2024-01-25',
+   approvalStatus:'Approved',approvalRemarks:'',approvalDate:'2024-01-23',approvalBy:'Omar Shaikh',
+   supplier:'Arabian Block Factory',quotationRef:'QT-2024-0058',poNumber:'PO-2024-0024',
+   poDate:'2024-01-24',poAmount:36000,expectedDelivery:'2024-02-07',
+   deliveredQty:0,dnNumber:null,deliveryDate:null,storeReceived:false,storeReceivedDate:null,siteReceived:false,
+   mirNumber:null,mirRaisedDate:null,mirSubmittedDate:null,mirApprovedDate:null,mirRejectedDate:null,mirResubCount:0,mirResult:null,mirRemarks:null,siteReleaseDate:null,
+   siteStatus:'Ordered',createdAt:'2024-01-22'},
+  {id:5,mrfNumber:'MRF-2024-005',date:'2024-01-24',project:'Marina Residences',location:'Tower D',zone:'Rooftop',
+   requestedBy:'Fatima Hussain',materialDesc:'Aluminum Window Frames 1.2x1.5m Anodized',qty:48,unit:'NOS',
+   requiredOnSite:'2024-01-28',requiredDate:'2024-01-28',priority:'Critical',relatedActivity:'Window Installation Rooftop',
+   remarks:'Client inspection Feb 2 — must be complete before.',internalNotes:'Linked to handover milestone — escalate',
+   matSpec:'6063-T5 Anodized Aluminum Frame',brand:'Alupco',grade:'6063-T5',codeRef:'ASTM B221',
+   sampleRef:'SMPL-2024-005',submRef:'MS-2024-005',submStatus:'Submitted',consultApprovalDate:null,
+   ifcDrawing:'IFC-A-305',shopDrawing:'SD-A-305',drawingRev:'Rev 01',
+   wbsCode:'2.4.1',activityId:'A3410',activityName:'Window Installation TD Roof',programmeRef:'P6-3410',
+   plannedStart:'2024-01-28',plannedFinish:'2024-02-04',leadTimeDays:30,latestRaiseDate:'2023-12-29',
+   approvalStatus:'Submitted',approvalRemarks:'',approvalDate:null,approvalBy:null,
+   supplier:null,quotationRef:null,poNumber:null,poDate:null,poAmount:null,expectedDelivery:null,
+   deliveredQty:0,dnNumber:null,deliveryDate:null,storeReceived:false,storeReceivedDate:null,siteReceived:false,
+   mirNumber:null,mirRaisedDate:null,mirSubmittedDate:null,mirApprovedDate:null,mirRejectedDate:null,mirResubCount:0,mirResult:null,mirRemarks:null,siteReleaseDate:null,
+   siteStatus:'Not Ordered',createdAt:'2024-01-24'},
+  {id:6,mrfNumber:'MRF-2024-006',date:'2024-01-10',project:'Al Noor Tower',location:'Block A',zone:'Level 2',
+   requestedBy:'Ahmed Al-Rashid',materialDesc:'OPC 53 Grade Cement 50kg Bags',qty:300,unit:'BAG',
+   requiredOnSite:'2024-01-14',requiredDate:'2024-01-16',priority:'High',relatedActivity:'Plastering Work L2',
+   remarks:'Bags must be sealed — no moisture exposure.',internalNotes:'Previous batch failed QC — escalated to PM',
+   matSpec:'Ordinary Portland Cement 53 Grade',brand:'Lafarge Holcim UAE',grade:'53 Grade',codeRef:'BS EN 197-1',
+   sampleRef:'SMPL-2024-006',submRef:'MS-2024-006',submStatus:'Approved',consultApprovalDate:'2024-01-04',
+   ifcDrawing:'IFC-A-120',shopDrawing:'',drawingRev:'Rev 01',
+   wbsCode:'1.3.2',activityId:'A2310',activityName:'Plastering Level 2 Block A',programmeRef:'P6-2310',
+   plannedStart:'2024-01-16',plannedFinish:'2024-01-25',leadTimeDays:3,latestRaiseDate:'2024-01-11',
+   approvalStatus:'Approved',approvalRemarks:'',approvalDate:'2024-01-11',approvalBy:'Omar Shaikh',
+   supplier:'Lafarge Holcim UAE',quotationRef:'QT-2024-0031',poNumber:'PO-2024-0008',
+   poDate:'2024-01-12',poAmount:9000,expectedDelivery:'2024-01-15',
+   deliveredQty:300,dnNumber:'DN-038',deliveryDate:'2024-01-14',storeReceived:true,storeReceivedDate:'2024-01-14',siteReceived:true,
+   mirNumber:'MIR-2024-003',mirRaisedDate:'2024-01-14',mirSubmittedDate:'2024-01-15',mirApprovedDate:null,mirRejectedDate:'2024-01-16',mirResubCount:1,mirResult:'Rejected',mirRemarks:'Cement bags found damp — batch rejected by QC',siteReleaseDate:null,
+   siteStatus:'Rejected',createdAt:'2024-01-10'},
+  {id:7,mrfNumber:'MRF-2024-007',date:'2024-01-26',project:'Highway Bridge P2',location:'Pier 4',zone:'Deck Level',
+   requestedBy:'Rania Badawi',materialDesc:'Epoxy Coated Rebar 20mm ASTM A775',qty:80,unit:'MT',
+   requiredOnSite:'2024-02-10',requiredDate:'2024-02-15',priority:'High',relatedActivity:'Bridge Deck Slab Pour',
+   remarks:'Must be ASTM A775 compliant. QC to verify coating integrity.',internalNotes:'Long lead — supplier confirmed 20-day lead time',
+   matSpec:'Epoxy Coated High Yield Rebar 20mm',brand:'BRC / Emirates Steel',grade:'Grade 60 Epoxy',codeRef:'ASTM A775',
+   sampleRef:'SMPL-2024-007',submRef:'MS-2024-007',submStatus:'Approved',consultApprovalDate:'2024-01-20',
+   ifcDrawing:'IFC-STR-BR-04',shopDrawing:'SD-STR-BR-04',drawingRev:'Rev 02',
+   wbsCode:'3.2.1',activityId:'A3020',activityName:'Bridge Deck Slab Reinforcement',programmeRef:'P6-3020',
+   plannedStart:'2024-02-12',plannedFinish:'2024-02-20',leadTimeDays:20,latestRaiseDate:'2024-01-21',
+   approvalStatus:'Draft',approvalRemarks:'',approvalDate:null,approvalBy:null,
+   supplier:null,quotationRef:null,poNumber:null,poDate:null,poAmount:null,expectedDelivery:null,
+   deliveredQty:0,dnNumber:null,deliveryDate:null,storeReceived:false,storeReceivedDate:null,siteReceived:false,
+   mirNumber:null,mirRaisedDate:null,mirSubmittedDate:null,mirApprovedDate:null,mirRejectedDate:null,mirResubCount:0,mirResult:null,mirRemarks:null,siteReleaseDate:null,
+   siteStatus:'Not Ordered',createdAt:'2024-01-26'},
+  {id:8,mrfNumber:'MRF-2024-008',date:'2024-01-27',project:'Marina Residences',location:'Tower C',zone:'Level 5',
+   requestedBy:'Khalid Mansoor',materialDesc:'Ceramic Floor Tiles 60x60 Beige Matt Grade AA',qty:450,unit:'SQM',
+   requiredOnSite:'2024-02-28',requiredDate:'2024-03-01',priority:'Low',relatedActivity:'Finishing Works Level 5',
+   remarks:'Match approved sample MS-2024-008. No substitution.',internalNotes:'Interior design team to confirm colour before PO is raised',
+   matSpec:'Glazed Ceramic Floor Tile 60x60mm',brand:'RAK Ceramics',grade:'Grade AA',codeRef:'ISO 13006',
+   sampleRef:'SMPL-2024-008',submRef:'MS-2024-008',submStatus:'Pending',consultApprovalDate:null,
+   ifcDrawing:'IFC-A-510',shopDrawing:'',drawingRev:'Rev 01',
+   wbsCode:'2.5.3',activityId:'A5030',activityName:'Floor Tiling TC Level 5',programmeRef:'P6-5030',
+   plannedStart:'2024-02-28',plannedFinish:'2024-03-10',leadTimeDays:30,latestRaiseDate:'2024-01-29',
+   approvalStatus:'On Hold',approvalRemarks:'Awaiting interior design colour confirmation',approvalDate:null,approvalBy:null,
+   supplier:null,quotationRef:null,poNumber:null,poDate:null,poAmount:null,expectedDelivery:null,
+   deliveredQty:0,dnNumber:null,deliveryDate:null,storeReceived:false,storeReceivedDate:null,siteReceived:false,
+   mirNumber:null,mirRaisedDate:null,mirSubmittedDate:null,mirApprovedDate:null,mirRejectedDate:null,mirResubCount:0,mirResult:null,mirRemarks:null,siteReleaseDate:null,
+   siteStatus:'Not Ordered',createdAt:'2024-01-27'}
+];
+
+// ═══════════════════════════════════
+// AUTH
+// ═══════════════════════════════════
+function doLogin(){
+  CR=document.getElementById('l-role').value;
+  CU=document.getElementById('l-user').value||'User';
+  document.getElementById('login').style.display='none';
+  const ini=CU.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('u-av').textContent=ini;
+  document.getElementById('u-name').textContent=CU;
+  document.getElementById('u-role').textContent=ROLES[CR].label;
+  fillProjSelects();
+  renderDash();
+  updateBadges();
+}
+function doLogout(){if(confirm('Sign out?'))document.getElementById('login').style.display='flex';}
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+function nav(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('page-'+id).classList.add('on');
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  if(el&&!el.classList.contains('locked'))el.classList.add('on');
+  const T={dashboard:'Executive Dashboard',register:'MRF Register',approvals:'Approval Queue',
+    delay:'Delay Risk Register',procurement:'Procurement & PO',vendor:'Vendor Performance',
+    delivery:'Delivery Tracking',inspection:'Inspection / MIR',sitestat:'Site Availability'};
+  document.getElementById('pg-title').textContent=T[id]||id;
+  tabStat=null;
+  ({dashboard:renderDash,register:renderReg,approvals:renderApp,delay:renderDelay,
+    procurement:renderProc,vendor:renderVend,delivery:renderDel,inspection:renderInsp,sitestat:renderSS}[id]||function(){})();
+}
+
+function fillProjSelects(){
+  ['f-proj','ap-proj','pr-proj','dl-proj','dy-proj','ir-proj','ss-proj'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML='<option value="">All Projects</option>';
+    PROJS.forEach(p=>el.innerHTML+=`<option>${p}</option>`);
+  });
+}
+
+// ═══════════════════════════════════
+// DELAY ENGINE
+// ═══════════════════════════════════
+function dlyStatus(m){
+  const now=new Date();now.setHours(0,0,0,0);
+  if(['Approved for Use','Used at Site'].includes(m.siteStatus))return'On Track';
+  if(m.siteStatus==='Rejected')return'Delayed';
+  const lrd=m.latestRaiseDate?new Date(m.latestRaiseDate):null;
+  const ed=m.expectedDelivery?new Date(m.expectedDelivery):null;
+  const ros=m.requiredOnSite?new Date(m.requiredOnSite):null;
+  if(lrd&&now>lrd&&m.approvalStatus==='Draft')return'Late to Raise';
+  if(ed&&ros&&ed>ros)return'Delayed';
+  if(ros&&!ed&&lrd&&now>lrd)return'At Risk';
+  if(ros){const d=Math.ceil((ros-now)/86400000);if(d<=5&&!m.poNumber)return'At Risk';}
+  return'On Track';
+}
+function calcLRD(ros,lt){
+  if(!ros||!lt)return null;
+  const d=new Date(ros);d.setDate(d.getDate()-parseInt(lt));
+  return d.toISOString().slice(0,10);
+}
+
+// ═══════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════
+function renderDash(){
+  const now=new Date();now.setHours(0,0,0,0);
+  const tot=DB.length;
+  const pend=DB.filter(m=>m.approvalStatus==='Submitted').length;
+  const dly=DB.filter(m=>dlyStatus(m)!=='On Track');
+  const lr=DB.filter(m=>dlyStatus(m)==='Late to Raise').length;
+  const od=DB.filter(m=>m.expectedDelivery&&new Date(m.expectedDelivery)<now&&m.deliveredQty<m.qty&&!['Approved for Use','Used at Site','Rejected'].includes(m.siteStatus));
+  const pnd=DB.filter(m=>m.poNumber&&m.deliveredQty<m.qty&&m.siteStatus!=='Rejected').length;
+  const dni=DB.filter(m=>m.deliveredQty>0&&!m.mirNumber).length;
+  const rej=DB.filter(m=>m.mirResult==='Rejected'||m.siteStatus==='Rejected').length;
+  const crit=DB.filter(m=>m.priority==='Critical'&&!['Approved for Use','Used at Site'].includes(m.siteStatus)).length;
+
+  document.getElementById('d-stats').innerHTML=[
+    {l:'Total MRFs',v:tot,s:'All records',c:''},
+    {l:'Pending Approval',v:pend,s:'Awaiting action',c:'c-warn'},
+    {l:'Delay Risk Items',v:dly.length,s:'At risk or delayed',c:'c-err'},
+    {l:'Late to Raise MRF',v:lr,s:'Past latest raise date',c:'c-err'},
+    {l:'PO Issued / Not Delivered',v:pnd,s:'In transit',c:'c-info'},
+    {l:'Delivered / Not Inspected',v:dni,s:'Awaiting MIR',c:'c-amb'},
+    {l:'Rejected Materials',v:rej,s:'Failed inspection',c:'c-err'},
+    {l:'Critical Pending',v:crit,s:'Expedite immediately',c:'c-pur'}
+  ].map(s=>`<div class="sc ${s.c}" onclick="nav('register',null)">
+    <div class="sc-lbl">${s.l}</div><div class="sc-val">${s.v}</div><div class="sc-sub">${s.s}</div>
+  </div>`).join('');
+
+  document.getElementById('d-dlcnt').textContent=dly.length;
+  const dlEl=document.getElementById('d-dllist');
+  if(!dly.length){dlEl.innerHTML='<div class="empty" style="padding:20px"><div class="empty-i">✅</div><p>No delay risks</p></div>';}
+  else dlEl.innerHTML=`<table style="width:100%"><thead><tr><th>MRF No</th><th>Material</th><th>Activity</th><th>Need On-Site</th><th>Status</th></tr></thead><tbody>
+    ${dly.slice(0,6).map(m=>`<tr><td class="mono" onclick="openPanel(${m.id})" style="cursor:pointer">${m.mrfNumber}</td>
+      <td style="font-size:11.5px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.materialDesc}</td>
+      <td class="tm">${m.activityId||'—'}</td><td class="tm">${m.requiredOnSite||'—'}</td>
+      <td>${dlyBadge(dlyStatus(m))}</td></tr>`).join('')}
+  </tbody></table>`;
+
+  document.getElementById('d-odcnt').textContent=od.length;
+  const odEl=document.getElementById('d-odlist');
+  if(!od.length){odEl.innerHTML='<div class="empty" style="padding:20px"><div class="empty-i">🎉</div><p>No overdue deliveries</p></div>';}
+  else odEl.innerHTML=`<table style="width:100%"><thead><tr><th>MRF No</th><th>Material</th><th>Expected</th><th>Days Late</th></tr></thead><tbody>
+    ${od.slice(0,6).map(m=>{const d=Math.ceil((now-new Date(m.expectedDelivery))/86400000);
+      return`<tr class="r-err"><td class="mono" onclick="openPanel(${m.id})" style="cursor:pointer">${m.mrfNumber}</td>
+        <td style="font-size:11.5px">${m.materialDesc.slice(0,28)}…</td>
+        <td class="tm">${m.expectedDelivery}</td><td><span class="bdg bd-late">+${d}d</span></td></tr>`;
+    }).join('')}
+  </tbody></table>`;
+
+  const cts={};SITE_ST.forEach(s=>cts[s]=0);DB.forEach(m=>{if(cts[m.siteStatus]!==undefined)cts[m.siteStatus]++;});
+  document.getElementById('d-sov').innerHTML=Object.entries(cts).map(([s,c])=>`
+    <div style="min-width:95px">
+      <div style="font-size:10px;color:var(--t3);margin-bottom:2px">${s}</div>
+      <div style="font-size:22px;font-weight:800;margin-bottom:2px">${c}</div>
+      <div class="pb" style="width:75px"><div class="pf" style="width:${tot?Math.round(c/tot*100):0}%;background:var(--amber)"></div></div>
+    </div>`).join('');
+
+  const vd=buildVendData();
+  document.getElementById('d-sup').innerHTML=vd.slice(0,5).map(v=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">
+      <div style="font-size:12px;font-weight:600;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.name}</div>
+      <div class="vpt"><div class="vpf" style="width:${v.pct}%;background:${v.pct>=80?'var(--ok)':v.pct>=60?'var(--amber)':'var(--err)'}"></div></div>
+      <div style="font-size:11px;font-weight:700;min-width:30px;color:${v.pct>=80?'var(--ok)':v.pct>=60?'var(--warn)':'var(--err)'}">${v.pct}%</div>
+    </div>`).join('')||'<p style="font-size:12px;color:var(--t3)">No supplier data yet</p>';
+}
+
+function updateBadges(){
+  document.getElementById('nb-app').textContent=DB.filter(m=>m.approvalStatus==='Submitted').length;
+  document.getElementById('nb-del').textContent=DB.filter(m=>dlyStatus(m)!=='On Track').length;
+}
+
+// ═══════════════════════════════════
+// MRF REGISTER
+// ═══════════════════════════════════
+function getRegData(){
+  const srch=(document.getElementById('f-srch')?.value||'').toLowerCase();
+  const proj=document.getElementById('f-proj')?.value||'';
+  const stat=document.getElementById('f-stat')?.value||'';
+  const pri=document.getElementById('f-pri')?.value||'';
+  const dly=document.getElementById('f-dly')?.value||'';
+  return DB.filter(m=>{
+    if(tabStat&&m.approvalStatus!==tabStat)return false;
+    if(srch&&![m.mrfNumber,m.materialDesc,m.project,m.activityId,m.activityName].some(v=>(v||'').toLowerCase().includes(srch)))return false;
+    if(proj&&m.project!==proj)return false;
+    if(stat&&m.approvalStatus!==stat)return false;
+    if(pri&&m.priority!==pri)return false;
+    if(dly&&dlyStatus(m)!==dly)return false;
+    return true;
+  }).sort((a,b)=>{
+    let va=a[sortF]||'',vb=b[sortF]||'';
+    if(sortF==='qty'){va=+va;vb=+vb;}
+    return sortAsc?(va>vb?1:-1):(va<vb?1:-1);
+  });
+}
+
+function renderReg(){
+  const data=getRegData();
+  document.getElementById('tc-all').textContent=DB.length;
+  document.getElementById('tc-dr').textContent=DB.filter(m=>m.approvalStatus==='Draft').length;
+  document.getElementById('tc-su').textContent=DB.filter(m=>m.approvalStatus==='Submitted').length;
+  document.getElementById('tc-ap').textContent=DB.filter(m=>m.approvalStatus==='Approved').length;
+  document.getElementById('tc-re').textContent=DB.filter(m=>m.approvalStatus==='Rejected').length;
+  document.getElementById('tc-ho').textContent=DB.filter(m=>m.approvalStatus==='On Hold').length;
+  const tb=document.getElementById('reg-tbody');
+  const em=document.getElementById('reg-empty');
+  if(!data.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  const now=new Date();now.setHours(0,0,0,0);
+  tb.innerHTML=data.map(m=>{
+    const ds=dlyStatus(m);
+    const isOD=m.expectedDelivery&&new Date(m.expectedDelivery)<now&&m.deliveredQty<m.qty&&!['Approved for Use','Used at Site','Rejected'].includes(m.siteStatus);
+    const rc=isOD||ds==='Delayed'||ds==='Late to Raise'?'r-err':ds==='At Risk'?'r-warn':'';
+    const lrd=m.latestRaiseDate||calcLRD(m.requiredOnSite,m.leadTimeDays)||'—';
+    const lrdRed=lrd!=='—'&&new Date(lrd)<now;
+    return`<tr class="${rc}">
+      <td><span class="mono" style="cursor:pointer" onclick="openPanel(${m.id})">${m.mrfNumber}</span></td>
+      <td class="tm">${m.date}</td>
+      <td style="font-size:12px">${m.project}</td>
+      <td class="tm" style="font-size:11px">${m.location}/${m.zone}</td>
+      <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${m.materialDesc}">${m.materialDesc}</td>
+      <td><span class="mono" style="font-size:10.5px">${m.activityId||'—'}</span></td>
+      <td>${m.qty} ${m.unit}</td>
+      <td class="tm">${m.requiredOnSite||'—'}</td>
+      <td class="tm">${m.leadTimeDays?m.leadTimeDays+'d':'—'}</td>
+      <td><span style="${lrdRed?'color:var(--err);font-weight:700':''}">${lrd}</span></td>
+      <td>${prioBadge(m.priority)}</td>
+      <td>${appBadge(m.approvalStatus)}</td>
+      <td>${dlyBadge(ds)}</td>
+      <td>${siteBadge(m.siteStatus)}</td>
+      <td class="no-print"><div style="display:flex;gap:3px">
+        <button class="btn b-out b-xs" onclick="openPanel(${m.id})">👁</button>
+        ${canEdit()?`<button class="btn b-out b-xs" onclick="openEditMRF(${m.id})">✏</button>`:''}
+        ${ROLES[CR].del?`<button class="btn b-xs b-err" onclick="delMRF(${m.id})">🗑</button>`:''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function canEdit(){return['admin','planning','pm','site'].includes(CR);}
+function srt(f){if(sortF===f)sortAsc=!sortAsc;else{sortF=f;sortAsc=true;}renderReg();}
+function tabSt(s,el){tabStat=s;document.querySelectorAll('#reg-tabs .tab').forEach(t=>t.classList.remove('on'));if(el)el.classList.add('on');renderReg();}
+function resetReg(){['f-srch','f-proj','f-stat','f-pri','f-dly'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});tabStat=null;document.querySelectorAll('#reg-tabs .tab').forEach((t,i)=>t.classList.toggle('on',i===0));renderReg();}
+
+// ═══════════════════════════════════
+// APPROVALS
+// ═══════════════════════════════════
+function renderApp(){
+  const proj=document.getElementById('ap-proj')?.value||'';
+  const pri=document.getElementById('ap-pri')?.value||'';
+  const data=DB.filter(m=>m.approvalStatus==='Submitted'&&(!proj||m.project===proj)&&(!pri||m.priority===pri));
+  const tb=document.getElementById('app-tbody');
+  const em=document.getElementById('app-empty');
+  if(!data.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=data.map(m=>`<tr>
+    <td><span class="mono" style="cursor:pointer" onclick="openPanel(${m.id})">${m.mrfNumber}</span></td>
+    <td class="tm">${m.date}</td><td style="font-size:12px">${m.project}</td>
+    <td style="max-width:160px;font-size:12px">${m.materialDesc.slice(0,42)}…</td>
+    <td><span class="mono" style="font-size:10.5px">${m.activityId||'—'}</span> <span class="tm">${m.activityName||''}</span></td>
+    <td class="tm">${m.requestedBy}</td>
+    <td>${prioBadge(m.priority)}</td>
+    <td class="tm">${m.requiredOnSite||'—'}</td>
+    <td>${dlyBadge(dlyStatus(m))}</td>
+    <td class="no-print"><div style="display:flex;gap:4px">
+      ${ROLES[CR].approve?`
+        <button class="btn b-ok b-xs" onclick="doApprove(${m.id})">✓ Approve</button>
+        <button class="btn b-err b-xs" onclick="doReject(${m.id})">✗ Reject</button>
+        <button class="btn b-warn b-xs" onclick="doHold(${m.id})">⏸ Hold</button>
+      `:'<span class="tm">Read-only</span>'}
+    </div></td>
+  </tr>`).join('');
+}
+function doApprove(id){const m=DB.find(x=>x.id===id);m.approvalStatus='Approved';m.approvalDate=today();m.approvalBy=CU;renderApp();updateBadges();toast('MRF Approved ✓','ok');}
+function doReject(id){const r=prompt('Rejection reason:');if(r===null)return;const m=DB.find(x=>x.id===id);m.approvalStatus='Rejected';m.approvalRemarks=r;m.approvalDate=today();m.approvalBy=CU;renderApp();updateBadges();toast('MRF Rejected','err');}
+function doHold(id){const r=prompt('Hold reason:');if(r===null)return;const m=DB.find(x=>x.id===id);m.approvalStatus='On Hold';m.approvalRemarks=r;renderApp();updateBadges();toast('MRF On Hold','warn');}
+
+// ═══════════════════════════════════
+// DELAY REGISTER
+// ═══════════════════════════════════
+function renderDelay(){
+  const proj=document.getElementById('dy-proj')?.value||'';
+  const type=document.getElementById('dy-type')?.value||'';
+  const now=new Date();now.setHours(0,0,0,0);
+  const data=DB.filter(m=>{const ds=dlyStatus(m);return ds!=='On Track'&&(!proj||m.project===proj)&&(!type||ds===type);});
+  const lr=DB.filter(m=>dlyStatus(m)==='Late to Raise').length;
+  const ar=DB.filter(m=>dlyStatus(m)==='At Risk').length;
+  const dl=DB.filter(m=>dlyStatus(m)==='Delayed').length;
+  document.getElementById('dy-stats').innerHTML=[
+    {l:'Late to Raise',v:lr,c:'c-err',s:'MRF not raised in time'},
+    {l:'At Risk',v:ar,c:'c-warn',s:'Delivery may miss need date'},
+    {l:'Delivery Delayed',v:dl,c:'c-err',s:'Past expected delivery'},
+    {l:'Total Risk Items',v:data.length,c:'c-amb',s:'Requiring action now'}
+  ].map(s=>`<div class="sc ${s.c}"><div class="sc-lbl">${s.l}</div><div class="sc-val">${s.v}</div><div class="sc-sub">${s.s}</div></div>`).join('');
+  const tb=document.getElementById('dy-tbody');const em=document.getElementById('dy-empty');
+  if(!data.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=data.map(m=>{
+    const ds=dlyStatus(m);
+    const lrd=m.latestRaiseDate||calcLRD(m.requiredOnSite,m.leadTimeDays)||'—';
+    const lrdRed=lrd!=='—'&&new Date(lrd)<now;
+    const act=ds==='Delayed'?'Activity may be impacted — expedite':ds==='Late to Raise'?'Raise MRF immediately':'Monitor & expedite PO';
+    return`<tr class="${ds==='Delayed'||ds==='Late to Raise'?'r-err':'r-warn'}">
+      <td><span class="mono" style="cursor:pointer" onclick="openPanel(${m.id})">${m.mrfNumber}</span></td>
+      <td style="font-size:12px;max-width:140px">${m.materialDesc.slice(0,35)}…</td>
+      <td><span class="mono" style="font-size:10.5px">${m.activityId||'—'}</span></td>
+      <td style="font-size:11.5px">${m.activityName||'—'}</td>
+      <td class="tm">${m.plannedStart||'—'}</td><td class="tm">${m.requiredOnSite||'—'}</td>
+      <td>${m.leadTimeDays?m.leadTimeDays+'d':'—'}</td>
+      <td><span style="${lrdRed?'color:var(--err);font-weight:700':''}">${lrd}</span></td>
+      <td class="tm">${m.expectedDelivery||'—'}</td>
+      <td>${dlyBadge(ds)}</td>
+      <td style="font-size:11px;color:var(--err);font-weight:600">${act}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════
+// PROCUREMENT
+// ═══════════════════════════════════
+function renderProc(){
+  const srch=(document.getElementById('pr-srch')?.value||'').toLowerCase();
+  const proj=document.getElementById('pr-proj')?.value||'';
+  const sup=document.getElementById('pr-sup')?.value||'';
+  const sups=[...new Set(DB.map(m=>m.supplier).filter(Boolean))];
+  const sel=document.getElementById('pr-sup');
+  if(sel){const c=sel.value;sel.innerHTML='<option value="">All Suppliers</option>';sups.forEach(s=>sel.innerHTML+=`<option>${s}</option>`);sel.value=c;}
+  const data=DB.filter(m=>(!proj||m.project===proj)&&(!sup||m.supplier===sup)&&(!srch||[m.mrfNumber,m.poNumber,m.supplier].some(v=>(v||'').toLowerCase().includes(srch))));
+  const tb=document.getElementById('proc-tbody');const em=document.getElementById('proc-empty');
+  if(!data.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=data.map(m=>`<tr>
+    <td><span class="mono" style="cursor:pointer" onclick="openPanel(${m.id})">${m.mrfNumber}</span></td>
+    <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.materialDesc}</td>
+    <td>${subBadge(m.submStatus||'Pending')}</td>
+    <td style="font-size:12px">${m.supplier||'<span class="tm">—</span>'}</td>
+    <td class="tm">${m.quotationRef||'—'}</td>
+    <td><span class="mono">${m.poNumber||'<span class="tm">—</span>'}</span></td>
+    <td class="tm">${m.poDate||'—'}</td>
+    <td style="font-weight:600">${m.poAmount?'AED '+Number(m.poAmount).toLocaleString():'—'}</td>
+    <td class="tm">${m.expectedDelivery||'—'}</td>
+    <td>${dlyBadge(dlyStatus(m))}</td>
+    <td class="no-print">${ROLES[CR].procure?`<button class="btn b-out b-xs" onclick="openProcM(${m.id})">✏ PO</button>`:''}</td>
+  </tr>`).join('');
+}
+function openProcM(id){
+  procId=id;const m=DB.find(x=>x.id===id);
+  document.getElementById('proc-body').innerHTML=`
+    <div style="padding:9px;background:var(--surf);border-radius:var(--r);margin-bottom:13px;font-size:12px">
+      <strong>${m.mrfNumber}</strong> — ${m.materialDesc}<br>
+      <span class="tm">Drawing: ${m.ifcDrawing||'—'} ${m.drawingRev||''} &nbsp;|&nbsp; Submittal: ${subBadge(m.submStatus||'Pending')}</span>
+    </div>
+    <div class="g2" style="gap:12px">
+      <div class="fg"><label>Supplier</label><input id="pm-sup" value="${m.supplier||''}"></div>
+      <div class="fg"><label>Quotation Ref</label><input id="pm-qr" value="${m.quotationRef||''}"></div>
+      <div class="fg"><label>PO Number</label><input id="pm-po" value="${m.poNumber||''}"></div>
+      <div class="fg"><label>PO Date</label><input type="date" id="pm-pd" value="${m.poDate||''}"></div>
+      <div class="fg"><label>PO Amount (AED)</label><input type="number" id="pm-amt" value="${m.poAmount||''}"></div>
+      <div class="fg"><label>Expected Delivery</label><input type="date" id="pm-ed" value="${m.expectedDelivery||''}" onchange="chkProcDly()"></div>
+      <div class="fg"><label>Submittal Status</label><select id="pm-ss">${SUB_ST.map(s=>`<option ${m.submStatus===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="fg"><label>Consultant Approval Date</label><input type="date" id="pm-cad" value="${m.consultApprovalDate||''}"></div>
+    </div>
+    <div id="proc-dw" class="dw ${m.expectedDelivery&&m.requiredOnSite&&new Date(m.expectedDelivery)>new Date(m.requiredOnSite)?'show':''}">⚠️ Expected delivery is later than required on-site date — material delay may impact planned activity.</div>`;
+  openM('m-proc');
+}
+function chkProcDly(){
+  const m=DB.find(x=>x.id===procId);
+  const ed=document.getElementById('pm-ed').value;
+  const dw=document.getElementById('proc-dw');
+  if(dw)dw.classList.toggle('show',!!(ed&&m.requiredOnSite&&new Date(ed)>new Date(m.requiredOnSite)));
+}
+function saveProc(){
+  const m=DB.find(x=>x.id===procId);
+  m.supplier=document.getElementById('pm-sup').value;
+  m.quotationRef=document.getElementById('pm-qr').value;
+  m.poNumber=document.getElementById('pm-po').value;
+  m.poDate=document.getElementById('pm-pd').value;
+  m.poAmount=+document.getElementById('pm-amt').value||null;
+  m.expectedDelivery=document.getElementById('pm-ed').value;
+  m.submStatus=document.getElementById('pm-ss').value;
+  m.consultApprovalDate=document.getElementById('pm-cad').value;
+  if(m.poNumber&&m.siteStatus==='Not Ordered')m.siteStatus='Ordered';
+  closeM('m-proc');renderProc();toast('Procurement saved','ok');
+}
+
+// ═══════════════════════════════════
+// VENDOR PERFORMANCE
+// ═══════════════════════════════════
+function buildVendData(){
+  const map={};
+  DB.filter(m=>m.supplier).forEach(m=>{
+    if(!map[m.supplier])map[m.supplier]={name:m.supplier,pos:0,onTime:0,late:0,totDelay:0,rej:0,totVal:0};
+    const v=map[m.supplier];
+    if(m.poNumber){v.pos++;v.totVal+=m.poAmount||0;}
+    if(m.deliveryDate&&m.expectedDelivery){
+      const d=Math.ceil((new Date(m.deliveryDate)-new Date(m.expectedDelivery))/86400000);
+      if(d<=0)v.onTime++;else{v.late++;v.totDelay+=d;}
+    }
+    if(m.mirResult==='Rejected')v.rej++;
+  });
+  return Object.values(map).map(v=>{
+    const tot=v.onTime+v.late;
+    v.pct=tot?Math.round(v.onTime/tot*100):100;
+    v.avgDly=v.late?Math.round(v.totDelay/v.late):0;
+    v.rating=v.pct>=90?'⭐⭐⭐':v.pct>=70?'⭐⭐':'⭐';
+    return v;
+  }).sort((a,b)=>b.pct-a.pct);
+}
+function renderVend(){
+  const data=buildVendData();
+  const totVal=data.reduce((s,v)=>s+v.totVal,0);
+  document.getElementById('vd-stats').innerHTML=[
+    {l:'Suppliers Tracked',v:data.length,c:'',s:'Active'},
+    {l:'Avg On-Time %',v:(data.length?Math.round(data.reduce((s,v)=>s+v.pct,0)/data.length):0)+'%',c:'c-ok',s:'Delivery performance'},
+    {l:'Rejected Batches',v:data.reduce((s,v)=>s+v.rej,0),c:'c-err',s:'Failed QC'},
+    {l:'Total PO Value',v:'AED '+Math.round(totVal/1000)+'K',c:'c-info',s:'Committed spend'}
+  ].map(s=>`<div class="sc ${s.c}"><div class="sc-lbl">${s.l}</div><div class="sc-val">${s.v}</div><div class="sc-sub">${s.s}</div></div>`).join('');
+  const tb=document.getElementById('vd-tbody');const em=document.getElementById('vd-empty');
+  if(!data.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=data.map(v=>`<tr>
+    <td style="font-weight:600">${v.name}</td><td>${v.pos}</td><td>${v.onTime}</td>
+    <td><div class="vpbar"><div class="vpt"><div class="vpf" style="width:${v.pct}%;background:${v.pct>=80?'var(--ok)':v.pct>=60?'var(--amber)':'var(--err)'}"></div></div>
+      <span style="font-size:11px;font-weight:700;min-width:28px;color:${v.pct>=80?'var(--ok)':v.pct>=60?'var(--warn)':'var(--err)'}">${v.pct}%</span></div></td>
+    <td>${v.late}</td><td>${v.avgDly?v.avgDly+'d':'—'}</td>
+    <td>${v.rej?`<span class="bdg bd-late">${v.rej}</span>`:'0'}</td>
+    <td>AED ${v.totVal.toLocaleString()}</td><td>${v.rating}</td>
+  </tr>`).join('');
+}
+
+// ═══════════════════════════════════
+// DELIVERY
+// ═══════════════════════════════════
+function renderDel(){
+  const srch=(document.getElementById('dl-srch')?.value||'').toLowerCase();
+  const proj=document.getElementById('dl-proj')?.value||'';
+  const ss=document.getElementById('dl-ss')?.value||'';
+  const now=new Date();now.setHours(0,0,0,0);
+  const data=DB.filter(m=>(!proj||m.project===proj)&&(!ss||m.siteStatus===ss)&&(!srch||[m.mrfNumber,m.dnNumber].some(v=>(v||'').toLowerCase().includes(srch))));
+  const tb=document.getElementById('del-tbody');const em=document.getElementById('del-empty');
+  if(!data.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=data.map(m=>{
+    const bal=(m.qty||0)-(m.deliveredQty||0);
+    const od=m.expectedDelivery&&new Date(m.expectedDelivery)<now&&bal>0&&!['Approved for Use','Used at Site','Rejected'].includes(m.siteStatus);
+    return`<tr class="${od?'r-err':''}">
+      <td><span class="mono" style="cursor:pointer" onclick="openPanel(${m.id})">${m.mrfNumber}</span></td>
+      <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.materialDesc}</td>
+      <td>${m.qty} ${m.unit}</td><td>${m.deliveredQty||0} ${m.unit}</td>
+      <td style="${bal>0?'color:var(--warn);font-weight:600':'color:var(--ok);font-weight:600'}">${bal} ${m.unit}</td>
+      <td class="tm">${m.dnNumber||'—'}</td><td class="tm">${m.deliveryDate||'—'}</td>
+      <td>${m.storeReceived?'<span class="bdg bd-app">✓ Yes</span>':'<span class="bdg bd-draft">Pending</span>'}</td>
+      <td>${m.siteReceived?'<span class="bdg bd-app">✓ Yes</span>':'<span class="bdg bd-draft">Pending</span>'}</td>
+      <td>${siteBadge(m.siteStatus)}</td>
+      <td class="no-print">${ROLES[CR].receive?`<button class="btn b-out b-xs" onclick="openDelM(${m.id})">✏ Update</button>`:''}</td>
+    </tr>`;
+  }).join('');
+}
+function openDelM(id){
+  delId=id;const m=DB.find(x=>x.id===id);
+  document.getElementById('del-body').innerHTML=`
+    <div style="padding:9px;background:var(--surf);border-radius:var(--r);margin-bottom:12px;font-size:12px">
+      <strong>${m.mrfNumber}</strong> — ${m.materialDesc} &nbsp;|&nbsp; Ordered: ${m.qty} ${m.unit}
+    </div>
+    <div class="g2" style="gap:11px">
+      <div class="fg"><label>Delivered Quantity</label><input type="number" id="dm-qty" value="${m.deliveredQty||0}"></div>
+      <div class="fg"><label>Delivery Note No.</label><input id="dm-dn" value="${m.dnNumber||''}"></div>
+      <div class="fg"><label>Delivery Date</label><input type="date" id="dm-dd" value="${m.deliveryDate||''}"></div>
+      <div class="fg"><label>Store Received Date</label><input type="date" id="dm-srd" value="${m.storeReceivedDate||''}"></div>
+      <div class="fg"><label>Site Status</label><select id="dm-ss">${SITE_ST.map(s=>`<option ${m.siteStatus===s?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div style="display:flex;gap:20px;margin-top:11px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="dm-sr" ${m.storeReceived?'checked':''}> Store Received</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="dm-si" ${m.siteReceived?'checked':''}> Site Received</label>
+    </div>`;
+  openM('m-del');
+}
+function saveDel(){
+  const m=DB.find(x=>x.id===delId);
+  m.deliveredQty=+document.getElementById('dm-qty').value||0;
+  m.dnNumber=document.getElementById('dm-dn').value;
+  m.deliveryDate=document.getElementById('dm-dd').value;
+  m.storeReceivedDate=document.getElementById('dm-srd').value;
+  m.siteStatus=document.getElementById('dm-ss').value;
+  m.storeReceived=document.getElementById('dm-sr').checked;
+  m.siteReceived=document.getElementById('dm-si').checked;
+  if(m.storeReceived&&!m.storeReceivedDate)m.storeReceivedDate=today();
+  if(m.deliveredQty>0&&m.deliveredQty<m.qty&&m.siteStatus==='Ordered')m.siteStatus='Partially Delivered';
+  if(m.deliveredQty>=m.qty&&m.siteStatus==='Ordered')m.siteStatus='Delivered';
+  closeM('m-del');renderDel();toast('Delivery updated','ok');
+}
+
+// ═══════════════════════════════════
+// INSPECTION / MIR
+// ═══════════════════════════════════
+function renderInsp(){
+  const srch=(document.getElementById('ir-srch')?.value||'').toLowerCase();
+  const proj=document.getElementById('ir-proj')?.value||'';
+  const res=document.getElementById('ir-res')?.value||'';
+  const data=DB.filter(m=>{
+    if(proj&&m.project!==proj)return false;
+    if(res==='Pending'&&m.mirNumber)return false;
+    if(res==='Submitted to Consultant'&&m.mirResult!==null)return false;
+    if(res==='Approved'&&m.mirResult!=='Approved')return false;
+    if(res==='Rejected'&&m.mirResult!=='Rejected')return false;
+    if(srch&&![m.mrfNumber,m.mirNumber].some(v=>(v||'').toLowerCase().includes(srch)))return false;
+    return true;
+  });
+  const tb=document.getElementById('insp-tbody');const em=document.getElementById('insp-empty');
+  if(!data.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=data.map(m=>`<tr>
+    <td><span class="mono" style="cursor:pointer" onclick="openPanel(${m.id})">${m.mrfNumber}</span></td>
+    <td style="font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.materialDesc}</td>
+    <td><span class="mono" style="font-size:10.5px">${m.mirNumber||'—'}</span></td>
+    <td class="tm">${m.storeReceivedDate||'—'}</td>
+    <td class="tm">${m.mirRaisedDate||'—'}</td>
+    <td class="tm">${m.mirSubmittedDate||'—'}</td>
+    <td class="tm">${m.mirApprovedDate||'—'}</td>
+    <td>${m.mirResubCount>0?`<span class="bdg bd-late">${m.mirResubCount}x</span>`:'0'}</td>
+    <td>${m.mirResult?mirBadge(m.mirResult):'<span class="bdg bd-draft">Pending</span>'}</td>
+    <td class="tm" style="font-size:11px;max-width:160px">${m.mirRemarks||'—'}</td>
+    <td class="no-print">${ROLES[CR].inspect?`<button class="btn b-out b-xs" onclick="openInspM(${m.id})">✏ MIR</button>`:''}</td>
+  </tr>`).join('');
+}
+function openInspM(id){
+  inspId=id;const m=DB.find(x=>x.id===id);
+  const mn=m.mirNumber||autoMIR();
+  document.getElementById('insp-body').innerHTML=`
+    <div style="padding:9px;background:var(--surf);border-radius:var(--r);margin-bottom:12px;font-size:12px">
+      <strong>${m.mrfNumber}</strong> — ${m.materialDesc}<br>
+      <span class="tm">Store Received: ${m.storeReceivedDate||'Not yet recorded'}</span>
+    </div>
+    <div class="g2" style="gap:11px">
+      <div class="fg"><label>MIR Number</label><input id="im-mn" value="${mn}"></div>
+      <div class="fg"><label>MIR Raised Date</label><input type="date" id="im-rd" value="${m.mirRaisedDate||today()}"></div>
+      <div class="fg"><label>Submitted to Consultant</label><input type="date" id="im-sd" value="${m.mirSubmittedDate||''}"></div>
+      <div class="fg"><label>Result</label><select id="im-res"><option value="" ${!m.mirResult?'selected':''}>— Pending —</option><option ${m.mirResult==='Approved'?'selected':''}>Approved</option><option ${m.mirResult==='Rejected'?'selected':''}>Rejected</option></select></div>
+      <div class="fg"><label>Approved Date</label><input type="date" id="im-ad" value="${m.mirApprovedDate||''}"></div>
+      <div class="fg"><label>Rejected Date</label><input type="date" id="im-rejd" value="${m.mirRejectedDate||''}"></div>
+      <div class="fg"><label>Resubmission Count</label><input type="number" id="im-rsc" value="${m.mirResubCount||0}" min="0"></div>
+      <div class="fg"><label>Site Release Date</label><input type="date" id="im-rls" value="${m.siteReleaseDate||''}"></div>
+    </div>
+    <div class="fg" style="margin-top:11px"><label>Inspection / Rejection Remarks</label><textarea id="im-rem">${m.mirRemarks||''}</textarea></div>`;
+  openM('m-insp');
+}
+function saveInsp(){
+  const m=DB.find(x=>x.id===inspId);
+  m.mirNumber=document.getElementById('im-mn').value;
+  m.mirRaisedDate=document.getElementById('im-rd').value;
+  m.mirSubmittedDate=document.getElementById('im-sd').value;
+  m.mirResult=document.getElementById('im-res').value||null;
+  m.mirApprovedDate=document.getElementById('im-ad').value;
+  m.mirRejectedDate=document.getElementById('im-rejd').value;
+  m.mirResubCount=+document.getElementById('im-rsc').value||0;
+  m.siteReleaseDate=document.getElementById('im-rls').value;
+  m.mirRemarks=document.getElementById('im-rem').value;
+  if(m.mirResult==='Approved')m.siteStatus='Approved for Use';
+  else if(m.mirResult==='Rejected')m.siteStatus='Rejected';
+  else if(m.mirSubmittedDate)m.siteStatus='Under Inspection';
+  closeM('m-insp');renderInsp();toast('MIR saved','ok');
+}
+
+// ═══════════════════════════════════
+// SITE STATUS
+// ═══════════════════════════════════
+function renderSS(){
+  const proj=document.getElementById('ss-proj')?.value||'';
+  const st=document.getElementById('ss-st')?.value||'';
+  const data=DB.filter(m=>(!proj||m.project===proj)&&(!st||m.siteStatus===st));
+  const cts={};SITE_ST.forEach(s=>cts[s]=0);DB.forEach(m=>{if(cts[m.siteStatus]!==undefined)cts[m.siteStatus]++;});
+  document.getElementById('ss-stats').innerHTML=[
+    {l:'Not Ordered',k:'Not Ordered',c:''},
+    {l:'Ordered / Transit',k:'Ordered',c:'c-info'},
+    {l:'Partially Delivered',k:'Partially Delivered',c:'c-warn'},
+    {l:'Approved for Use',k:'Approved for Use',c:'c-ok'}
+  ].map(s=>`<div class="sc ${s.c}"><div class="sc-lbl">${s.l}</div><div class="sc-val">${cts[s.k]||0}</div></div>`).join('');
+  const now=new Date();now.setHours(0,0,0,0);
+  document.getElementById('ss-tbody').innerHTML=data.map(m=>{
+    const diff=m.requiredOnSite?Math.ceil((new Date(m.requiredOnSite)-now)/86400000):null;
+    const ds=diff!==null&&diff<0?'color:var(--err);font-weight:700':diff!==null&&diff<=5?'color:var(--warn);font-weight:700':'';
+    return`<tr>
+      <td><span class="mono" style="cursor:pointer" onclick="openPanel(${m.id})">${m.mrfNumber}</span></td>
+      <td style="font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.materialDesc}</td>
+      <td class="tm" style="font-size:11px">${m.project}/${m.zone}</td>
+      <td><span class="mono" style="font-size:10.5px">${m.activityId||'—'}</span></td>
+      <td class="tm">${m.plannedStart||'—'}</td><td class="tm">${m.requiredOnSite||'—'}</td>
+      <td>${prioBadge(m.priority)}</td>
+      <td>${m.poNumber?`<span class="bdg bd-sub" style="font-size:9.5px">${m.poNumber}</span>`:'<span class="bdg bd-draft">No PO</span>'}</td>
+      <td>${m.mirNumber?mirBadge(m.mirResult||'Pending'):'<span class="bdg bd-draft">No MIR</span>'}</td>
+      <td>${siteBadge(m.siteStatus)}</td>
+      <td style="${ds}">${diff!==null?(diff<0?Math.abs(diff)+'d overdue':diff+'d left'):'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════
+// MRF FORM
+// ═══════════════════════════════════
+function openNewMRF(){editId=null;document.getElementById('mrf-title').textContent='New Material Request Form';buildMRFForm(null);openM('m-mrf');}
+function openEditMRF(id){editId=id;const m=DB.find(x=>x.id===id);document.getElementById('mrf-title').textContent='Edit — '+m.mrfNumber;buildMRFForm(m);openM('m-mrf');}
+function closeMRF(){closeM('m-mrf');}
+
+function buildMRFForm(m){
+  const v=(k,d='')=>m?(m[k]??d):d;
+  const so=(arr,k)=>arr.map(a=>`<option ${v(k)===a?'selected':''}>${a}</option>`).join('');
+  document.getElementById('mrf-body').innerHTML=`
+  <div class="fsec">
+    <div class="fst"><span class="fsn">1</span>MRF Details</div>
+    <div class="g3" style="margin-bottom:11px">
+      <div class="fg"><label>Project <span class="req">*</span></label><select id="mf-proj">${so(PROJS,'project')}</select></div>
+      <div class="fg"><label>Location <span class="req">*</span></label><select id="mf-loc">${so(LOCS,'location')}</select></div>
+      <div class="fg"><label>Zone</label><select id="mf-zone">${so(ZONES,'zone')}</select></div>
+      <div class="fg"><label>Requested By <span class="req">*</span></label><input id="mf-by" value="${v('requestedBy',CU)}"></div>
+      <div class="fg"><label>Date <span class="req">*</span></label><input type="date" id="mf-date" value="${v('date',today())}"></div>
+      <div class="fg"><label>Priority</label><select id="mf-pri">${so(PRIS,'priority')}</select></div>
+    </div>
+    <div class="g1" style="margin-bottom:11px">
+      <div class="fg"><label>Material Description <span class="req">*</span></label><input id="mf-desc" value="${v('materialDesc')}" placeholder="Material name, type, grade, application…"></div>
+    </div>
+    <div class="g4" style="margin-bottom:11px">
+      <div class="fg"><label>Quantity <span class="req">*</span></label><input type="number" id="mf-qty" value="${v('qty')}"></div>
+      <div class="fg"><label>Unit</label><select id="mf-unit">${so(UNITS,'unit')}</select></div>
+      <div class="fg"><label>Required On-Site Date <span class="req">*</span></label><input type="date" id="mf-ros" value="${v('requiredOnSite',v('requiredDate'))}" oninput="calcLT()"></div>
+      <div class="fg"><label>Lead Time (days)</label><input type="number" id="mf-lt" value="${v('leadTimeDays')}" placeholder="e.g. 14" oninput="calcLT()"></div>
+    </div>
+    <div class="g2" style="margin-bottom:6px">
+      <div class="fg"><label>Latest MRF Raise Date (auto-calculated)</label><div class="cf" id="mf-lrd">${v('latestRaiseDate')||'— Enter on-site date and lead time'}</div></div>
+      <div class="fg"><label>Related Activity</label><input id="mf-act" value="${v('relatedActivity')}"></div>
+    </div>
+    <div id="mf-lw" class="lw ${v('latestRaiseDate')&&new Date(v('latestRaiseDate'))<new Date()?'show':''}">⏰ Latest raise date has already passed — this MRF is late to raise. Escalate immediately.</div>
+  </div>
+  <div class="fsec">
+    <div class="fst"><span class="fsn">2</span>Material Specification</div>
+    <div class="g3">
+      <div class="fg"><label>Material Specification</label><input id="mf-spec" value="${v('matSpec')}" placeholder="e.g. M40 Ready Mix Concrete"></div>
+      <div class="fg"><label>Brand / Manufacturer</label><input id="mf-brand" value="${v('brand')}" placeholder="e.g. Lafarge Holcim"></div>
+      <div class="fg"><label>Grade / Type / Model</label><input id="mf-grade" value="${v('grade')}" placeholder="e.g. Grade 60, Type A"></div>
+      <div class="fg"><label>Standard / Code Reference</label><input id="mf-code" value="${v('codeRef')}" placeholder="e.g. ASTM A615, BS EN 197-1"></div>
+      <div class="fg"><label>Approved Sample Ref</label><input id="mf-smpl" value="${v('sampleRef')}" placeholder="e.g. SMPL-2024-001"></div>
+      <div class="fg"><label>Material Submittal Ref</label><input id="mf-subm" value="${v('submRef')}" placeholder="e.g. MS-2024-001"></div>
+    </div>
+  </div>
+  <div class="fsec">
+    <div class="fst"><span class="fsn">3</span>Drawing References</div>
+    <div class="g3">
+      <div class="fg"><label>IFC Drawing No.</label><input id="mf-ifc" value="${v('ifcDrawing')}" placeholder="e.g. IFC-STR-001"></div>
+      <div class="fg"><label>Shop Drawing No.</label><input id="mf-shp" value="${v('shopDrawing')}" placeholder="e.g. SD-STR-001"></div>
+      <div class="fg"><label>Drawing Revision</label><input id="mf-rev" value="${v('drawingRev')}" placeholder="e.g. Rev 03"></div>
+    </div>
+  </div>
+  <div class="fsec">
+    <div class="fst"><span class="fsn">4</span>Planning Integration</div>
+    <div class="g3">
+      <div class="fg"><label>WBS Code</label><input id="mf-wbs" value="${v('wbsCode')}" placeholder="e.g. 1.3.2.1"></div>
+      <div class="fg"><label>Activity ID</label><input id="mf-aid" value="${v('activityId')}" placeholder="e.g. A2210"></div>
+      <div class="fg"><label>Activity Name</label><input id="mf-aname" value="${v('activityName')}" placeholder="e.g. GF Blockwork"></div>
+      <div class="fg"><label>Primavera / MS Project Ref</label><input id="mf-p6" value="${v('programmeRef')}" placeholder="e.g. P6-2210"></div>
+      <div class="fg"><label>Planned Start</label><input type="date" id="mf-ps" value="${v('plannedStart')}"></div>
+      <div class="fg"><label>Planned Finish</label><input type="date" id="mf-pf" value="${v('plannedFinish')}"></div>
+    </div>
+  </div>
+  <div class="fsec">
+    <div class="fst"><span class="fsn">5</span>Remarks & Notes</div>
+    <div class="g2">
+      <div class="fg"><label>Remarks <span style="font-size:9px;color:var(--t3);font-weight:400;text-transform:none">(visible in reports & exports)</span></label><textarea id="mf-rem">${v('remarks')}</textarea></div>
+      <div class="fg" data-int="true"><label>Internal Notes <span style="font-size:9px;color:var(--warn);font-weight:400;text-transform:none">(team only — hidden in client print)</span></label><textarea id="mf-int">${v('internalNotes')}</textarea></div>
+    </div>
+  </div>`;
+  calcLT();
+}
+
+function calcLT(){
+  const ros=document.getElementById('mf-ros')?.value;
+  const lt=document.getElementById('mf-lt')?.value;
+  const lrdEl=document.getElementById('mf-lrd');
+  const lw=document.getElementById('mf-lw');
+  if(!ros||!lt){if(lrdEl)lrdEl.textContent='— Enter on-site date and lead time';return;}
+  const lrd=calcLRD(ros,lt);
+  if(lrdEl)lrdEl.textContent=lrd||'—';
+  if(lw)lw.classList.toggle('show',!!(lrd&&new Date(lrd)<new Date()));
+}
+
+function saveMRF(status){
+  const proj=document.getElementById('mf-proj')?.value;
+  const desc=(document.getElementById('mf-desc')?.value||'').trim();
+  const qty=+document.getElementById('mf-qty')?.value;
+  const ros=document.getElementById('mf-ros')?.value;
+  if(!proj||!desc||!qty||!ros){alert('Required: Project, Material Description, Quantity, Required On-Site Date');return;}
+  const lt=+document.getElementById('mf-lt')?.value||null;
+  const lrd=lt&&ros?calcLRD(ros,lt):null;
+  const vals={
+    project:proj,location:document.getElementById('mf-loc').value,zone:document.getElementById('mf-zone').value,
+    requestedBy:document.getElementById('mf-by').value,date:document.getElementById('mf-date').value,
+    priority:document.getElementById('mf-pri').value,materialDesc:desc,qty,unit:document.getElementById('mf-unit').value,
+    requiredOnSite:ros,requiredDate:ros,leadTimeDays:lt,latestRaiseDate:lrd,relatedActivity:document.getElementById('mf-act').value,
+    matSpec:document.getElementById('mf-spec').value,brand:document.getElementById('mf-brand').value,
+    grade:document.getElementById('mf-grade').value,codeRef:document.getElementById('mf-code').value,
+    sampleRef:document.getElementById('mf-smpl').value,submRef:document.getElementById('mf-subm').value,
+    ifcDrawing:document.getElementById('mf-ifc').value,shopDrawing:document.getElementById('mf-shp').value,drawingRev:document.getElementById('mf-rev').value,
+    wbsCode:document.getElementById('mf-wbs').value,activityId:document.getElementById('mf-aid').value,
+    activityName:document.getElementById('mf-aname').value,programmeRef:document.getElementById('mf-p6').value,
+    plannedStart:document.getElementById('mf-ps').value,plannedFinish:document.getElementById('mf-pf').value,
+    remarks:document.getElementById('mf-rem').value,internalNotes:document.getElementById('mf-int').value,
+    approvalStatus:status
+  };
+  if(editId){Object.assign(DB.find(x=>x.id===editId),vals);toast('MRF updated','ok');}
+  else{
+    seq++;
+    DB.push({id:seq,mrfNumber:'MRF-2024-'+String(seq).padStart(3,'0'),...vals,
+      approvalRemarks:'',approvalDate:null,approvalBy:null,
+      supplier:null,quotationRef:null,poNumber:null,poDate:null,poAmount:null,expectedDelivery:null,
+      submStatus:'Pending',consultApprovalDate:null,
+      deliveredQty:0,dnNumber:null,deliveryDate:null,storeReceived:false,storeReceivedDate:null,siteReceived:false,
+      mirNumber:null,mirRaisedDate:null,mirSubmittedDate:null,mirApprovedDate:null,mirRejectedDate:null,mirResubCount:0,mirResult:null,mirRemarks:null,siteReleaseDate:null,
+      siteStatus:'Not Ordered',createdAt:today()});
+    toast('MRF created — '+status,'ok');
+  }
+  closeMRF();renderReg();updateBadges();
+}
+function delMRF(id){if(!confirm('Delete this MRF permanently?'))return;DB=DB.filter(x=>x.id!==id);renderReg();updateBadges();toast('MRF deleted','err');}
+
+// ═══════════════════════════════════
+// DETAIL PANEL
+// ═══════════════════════════════════
+function openPanel(id){
+  const m=DB.find(x=>x.id===id);
+  document.getElementById('pn-num').textContent=m.mrfNumber;
+  document.getElementById('pn-mat').textContent=m.materialDesc;
+  const ds=dlyStatus(m);
+  const acts=[];
+  if(canEdit())acts.push(`<button class="btn b-out b-sm" onclick="openEditMRF(${id})">✏ Edit</button>`);
+  if(ROLES[CR].approve&&m.approvalStatus==='Submitted'){
+    acts.push(`<button class="btn b-ok b-sm" onclick="doApprove(${id});openPanel(${id})">✓ Approve</button>`);
+    acts.push(`<button class="btn b-err b-sm" onclick="doReject(${id});openPanel(${id})">✗ Reject</button>`);
+  }
+  document.getElementById('pn-acts').innerHTML=acts.join('');
+  const now=new Date();now.setHours(0,0,0,0);
+  const bal=(m.qty||0)-(m.deliveredQty||0);
+  const pct=m.qty?Math.min(100,Math.round((m.deliveredQty||0)/m.qty*100)):0;
+  const lrd=m.latestRaiseDate||calcLRD(m.requiredOnSite,m.leadTimeDays);
+  const lrdRed=lrd&&new Date(lrd)<now;
+  const delWarn=m.expectedDelivery&&m.requiredOnSite&&new Date(m.expectedDelivery)>new Date(m.requiredOnSite);
+
+  document.getElementById('pn-body').innerHTML=`
+    <div style="margin-bottom:14px">
+      <div class="il" style="margin-bottom:6px">Approval Workflow</div>
+      <div class="wfbar">${['Draft','Submitted','Approved','Rejected','Revised','On Hold'].map(s=>{
+        let c='';
+        if(m.approvalStatus===s)c='cur';
+        else if(s==='Draft'||(s==='Submitted'&&['Approved','Rejected'].includes(m.approvalStatus)))c='done';
+        return`<div class="wfs ${c}">${s}</div>`;
+      }).join('')}</div>
+      ${m.approvalRemarks?`<div class="al al-w">💬 ${m.approvalRemarks}</div>`:''}
+      ${ds!=='On Track'?`<div class="al al-e">🚨 Delay: <strong>${ds}</strong> — ${ds==='Late to Raise'?'Should have been raised by '+lrd:ds==='Delayed'?'Expected delivery '+m.expectedDelivery+' past required '+m.requiredOnSite:'Delivery risk — expedite PO'}</div>`:''}
+    </div>
+    <hr class="sdiv">
+    <div class="il" style="margin-bottom:7px">MRF Details</div>
+    <div class="ig" style="margin-bottom:11px">
+      <div class="ii"><div class="il">Project</div><div class="iv">${m.project}</div></div>
+      <div class="ii"><div class="il">Location / Zone</div><div class="iv">${m.location} / ${m.zone}</div></div>
+      <div class="ii"><div class="il">Requested By</div><div class="iv">${m.requestedBy}</div></div>
+      <div class="ii"><div class="il">Date</div><div class="iv">${m.date}</div></div>
+      <div class="ii"><div class="il">Quantity</div><div class="iv" style="font-weight:700;font-size:15px">${m.qty} ${m.unit}</div></div>
+      <div class="ii"><div class="il">Priority</div><div class="iv">${prioBadge(m.priority)}</div></div>
+    </div>
+    ${m.remarks?`<div style="background:var(--surf);padding:7px 10px;border-radius:var(--r);font-size:12px;color:var(--t2);margin-bottom:7px">📝 ${m.remarks}</div>`:''}
+    ${m.internalNotes?`<div data-int="true" style="background:#FFFBF0;border:1px solid var(--warn-bd);padding:7px 10px;border-radius:var(--r);font-size:12px;color:var(--warn);margin-bottom:7px">🔒 Internal: ${m.internalNotes}</div>`:''}
+    <hr class="sdiv">
+    <div class="il" style="margin-bottom:7px">Material Specification</div>
+    <div class="ig3" style="margin-bottom:11px">
+      <div class="ii"><div class="il">Specification</div><div class="iv">${m.matSpec||'—'}</div></div>
+      <div class="ii"><div class="il">Brand</div><div class="iv">${m.brand||'—'}</div></div>
+      <div class="ii"><div class="il">Grade / Type</div><div class="iv">${m.grade||'—'}</div></div>
+      <div class="ii"><div class="il">Code Reference</div><div class="iv">${m.codeRef||'—'}</div></div>
+      <div class="ii"><div class="il">Sample Ref</div><div class="iv">${m.sampleRef||'—'}</div></div>
+      <div class="ii"><div class="il">Submittal</div><div class="iv">${m.submRef||'—'} ${subBadge(m.submStatus||'Pending')}</div></div>
+    </div>
+    <div class="il" style="margin-bottom:7px">Drawing References</div>
+    <div class="ig3" style="margin-bottom:11px">
+      <div class="ii"><div class="il">IFC Drawing</div><div class="iv">${m.ifcDrawing||'—'}</div></div>
+      <div class="ii"><div class="il">Shop Drawing</div><div class="iv">${m.shopDrawing||'—'}</div></div>
+      <div class="ii"><div class="il">Revision</div><div class="iv">${m.drawingRev||'—'}</div></div>
+    </div>
+    <hr class="sdiv">
+    <div class="il" style="margin-bottom:7px">📅 Planning Integration</div>
+    <div class="ig3" style="margin-bottom:10px">
+      <div class="ii"><div class="il">WBS Code</div><div class="iv">${m.wbsCode||'—'}</div></div>
+      <div class="ii"><div class="il">Activity ID</div><div class="iv mono" style="font-size:13px">${m.activityId||'—'}</div></div>
+      <div class="ii"><div class="il">Activity Name</div><div class="iv">${m.activityName||'—'}</div></div>
+      <div class="ii"><div class="il">Programme Ref</div><div class="iv">${m.programmeRef||'—'}</div></div>
+      <div class="ii"><div class="il">Planned Start</div><div class="iv">${m.plannedStart||'—'}</div></div>
+      <div class="ii"><div class="il">Planned Finish</div><div class="iv">${m.plannedFinish||'—'}</div></div>
+      <div class="ii"><div class="il">Required On-Site</div><div class="iv" style="font-weight:700">${m.requiredOnSite||'—'}</div></div>
+      <div class="ii"><div class="il">Lead Time</div><div class="iv">${m.leadTimeDays?m.leadTimeDays+' days':'—'}</div></div>
+      <div class="ii"><div class="il">Latest Raise Date</div><div class="iv" style="${lrdRed?'color:var(--err);font-weight:700':''}">${lrd||'—'}</div></div>
+    </div>
+    <div style="margin-bottom:12px">${dlyBadge(ds)}</div>
+    <hr class="sdiv">
+    <div class="il" style="margin-bottom:7px">🛒 Procurement</div>
+    <div class="ig3" style="margin-bottom:10px">
+      <div class="ii"><div class="il">Supplier</div><div class="iv">${m.supplier||'—'}</div></div>
+      <div class="ii"><div class="il">Quotation Ref</div><div class="iv">${m.quotationRef||'—'}</div></div>
+      <div class="ii"><div class="il">PO Number</div><div class="iv mono" style="font-size:12px;color:var(--info)">${m.poNumber||'—'}</div></div>
+      <div class="ii"><div class="il">PO Date</div><div class="iv">${m.poDate||'—'}</div></div>
+      <div class="ii"><div class="il">PO Amount</div><div class="iv" style="font-weight:700">${m.poAmount?'AED '+Number(m.poAmount).toLocaleString():'—'}</div></div>
+      <div class="ii"><div class="il">Expected Delivery</div><div class="iv" style="${delWarn?'color:var(--err);font-weight:700':''}">${m.expectedDelivery||'—'}</div></div>
+    </div>
+    ${delWarn?`<div class="al al-e">⚠️ Expected delivery is later than required on-site date — activity <strong>${m.activityId||''}</strong> may be impacted.</div>`:''}
+    <hr class="sdiv">
+    <div class="il" style="margin-bottom:7px">🚛 Delivery</div>
+    <div style="margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:2px">
+        <span class="tm">Delivered: ${m.deliveredQty||0} / ${m.qty} ${m.unit}</span>
+        <span style="font-weight:700">${pct}%</span>
+      </div>
+      <div class="pb"><div class="pf" style="width:${pct}%;background:${pct===100?'var(--ok)':pct>0?'var(--amber)':'var(--bdr)'}"></div></div>
+    </div>
+    <div class="ig" style="margin-bottom:11px">
+      <div class="ii"><div class="il">Balance Qty</div><div class="iv" style="${bal>0?'color:var(--warn);font-weight:700':''}">${bal} ${m.unit}</div></div>
+      <div class="ii"><div class="il">DN Number</div><div class="iv">${m.dnNumber||'—'}</div></div>
+      <div class="ii"><div class="il">Delivery Date</div><div class="iv">${m.deliveryDate||'—'}</div></div>
+      <div class="ii"><div class="il">Store Received</div><div class="iv">${m.storeReceived?`<span class="bdg bd-app">✓ ${m.storeReceivedDate}</span>`:'<span class="bdg bd-draft">Pending</span>'}</div></div>
+    </div>
+    <hr class="sdiv">
+    <div class="il" style="margin-bottom:7px">🔍 Inspection / MIR Workflow</div>
+    <div class="ig3" style="margin-bottom:8px">
+      <div class="ii"><div class="il">MIR Number</div><div class="iv mono" style="font-size:11.5px">${m.mirNumber||'—'}</div></div>
+      <div class="ii"><div class="il">MIR Raised</div><div class="iv">${m.mirRaisedDate||'—'}</div></div>
+      <div class="ii"><div class="il">Submitted to Consultant</div><div class="iv">${m.mirSubmittedDate||'—'}</div></div>
+      <div class="ii"><div class="il">Approved Date</div><div class="iv">${m.mirApprovedDate||'—'}</div></div>
+      <div class="ii"><div class="il">Rejected Date</div><div class="iv">${m.mirRejectedDate||'—'}</div></div>
+      <div class="ii"><div class="il">Resubmissions</div><div class="iv">${m.mirResubCount||0}</div></div>
+      <div class="ii"><div class="il">Site Release Date</div><div class="iv">${m.siteReleaseDate||'—'}</div></div>
+      <div class="ii"><div class="il">Result</div><div class="iv">${m.mirResult?mirBadge(m.mirResult):'<span class="bdg bd-draft">Pending</span>'}</div></div>
+    </div>
+    ${m.mirRemarks?`<div class="al al-e">⚠️ ${m.mirRemarks}</div>`:''}
+    <hr class="sdiv">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="il">🏗 Site Availability Status</div>${siteBadge(m.siteStatus)}
+    </div>
+    ${m.approvalDate?`<div style="font-size:11px;color:var(--t3);margin-top:7px">Approved by ${m.approvalBy} on ${m.approvalDate}</div>`:''}
+  `;
+  document.getElementById('panel').classList.add('open');
+}
+function closePanel(){document.getElementById('panel').classList.remove('open');}
+
+// ═══════════════════════════════════
+// EXCEL EXPORT
+// ═══════════════════════════════════
+function doExport(){
+  const showInt=document.getElementById('chk-int')?.checked;
+  const H=['MRF No','Date','Project','Location','Zone','Requested By','Priority',
+    'Material Description','Qty','Unit','Required On-Site','Lead Time(d)','Latest Raise Date','Related Activity',
+    'Material Spec','Brand','Grade','Code Ref','Sample Ref','Submittal Ref','Submittal Status','Consultant Approval',
+    'IFC Drawing','Shop Drawing','Drawing Rev',
+    'WBS Code','Activity ID','Activity Name','Programme Ref','Planned Start','Planned Finish',
+    'Approval Status','Approved By','Approval Date','Approval Remarks',
+    'Supplier','Quotation Ref','PO Number','PO Date','PO Amount(AED)','Expected Delivery','Delay Status',
+    'Delivered Qty','Balance Qty','DN Number','Delivery Date','Store Received','Store Received Date','Site Received',
+    'MIR Number','MIR Raised','MIR Submitted','MIR Approved','MIR Rejected','Resubmit Count','MIR Result','MIR Remarks','Site Release Date',
+    'Site Status','Remarks'];
+  if(showInt)H.push('Internal Notes');
+  const rows=[H];
+  DB.forEach(m=>{
+    const bal=(m.qty||0)-(m.deliveredQty||0);
+    const r=[m.mrfNumber,m.date,m.project,m.location,m.zone,m.requestedBy,m.priority,
+      m.materialDesc,m.qty,m.unit,m.requiredOnSite,m.leadTimeDays,m.latestRaiseDate,m.relatedActivity,
+      m.matSpec,m.brand,m.grade,m.codeRef,m.sampleRef,m.submRef,m.submStatus,m.consultApprovalDate,
+      m.ifcDrawing,m.shopDrawing,m.drawingRev,
+      m.wbsCode,m.activityId,m.activityName,m.programmeRef,m.plannedStart,m.plannedFinish,
+      m.approvalStatus,m.approvalBy,m.approvalDate,m.approvalRemarks,
+      m.supplier,m.quotationRef,m.poNumber,m.poDate,m.poAmount,m.expectedDelivery,dlyStatus(m),
+      m.deliveredQty,bal,m.dnNumber,m.deliveryDate,m.storeReceived?'Yes':'No',m.storeReceivedDate,m.siteReceived?'Yes':'No',
+      m.mirNumber,m.mirRaisedDate,m.mirSubmittedDate,m.mirApprovedDate,m.mirRejectedDate,m.mirResubCount,m.mirResult,m.mirRemarks,m.siteReleaseDate,
+      m.siteStatus,m.remarks];
+    if(showInt)r.push(m.internalNotes);
+    rows.push(r);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=H.map(()=>({wch:18}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'MRF Register');
+  XLSX.writeFile(wb,'APCP_MRF_'+today()+'.xlsx');
+  toast('Exported — '+DB.length+' records','ok');
+}
+
+// ═══════════════════════════════════
+// BADGES & HELPERS
+// ═══════════════════════════════════
+function prioBadge(p){return`<span class="bdg ${{Critical:'bd-crit',High:'bd-high',Medium:'bd-med',Low:'bd-low'}[p]||'bd-draft'}">${p}</span>`;}
+function appBadge(s){const ic={Draft:'📝',Submitted:'📤',Approved:'✅',Rejected:'❌',Revised:'🔄','On Hold':'⏸'};return`<span class="bdg ${{Draft:'bd-draft',Submitted:'bd-sub',Approved:'bd-app',Rejected:'bd-rej',Revised:'bd-rev','On Hold':'bd-hold'}[s]||'bd-draft'}">${ic[s]||''} ${s}</span>`;}
+function siteBadge(s){return`<span class="bdg ${{
+  'Not Ordered':'bd-no','Ordered':'bd-ord','Partially Delivered':'bd-part','Delivered':'bd-del',
+  'Under Inspection':'bd-insp','Approved for Use':'bd-apu','Rejected':'bd-srej','Used at Site':'bd-used'
+}[s]||'bd-draft'}">${s||'—'}</span>`;}
+function mirBadge(r){return r==='Approved'?'<span class="bdg bd-app">✅ Approved</span>':r==='Rejected'?'<span class="bdg bd-rej">❌ Rejected</span>':'<span class="bdg bd-draft">Pending</span>';}
+function dlyBadge(d){return`<span class="bdg ${{
+  'On Track':'bd-ontr','At Risk':'bd-risk','Delayed':'bd-late','Late to Raise':'bd-late'
+}[d]||'bd-draft'}">${{'On Track':'✅','At Risk':'⚠️','Delayed':'🔴','Late to Raise':'🚨'}[d]||''} ${d}</span>`;}
+function subBadge(s){return`<span class="bdg ${{Pending:'bd-sp',Submitted:'bd-ss',Approved:'bd-sa',Rejected:'bd-sr'}[s]||'bd-sp'}">${s}</span>`;}
+function today(){return new Date().toISOString().slice(0,10);}
+function autoMIR(){return'MIR-2024-'+String(100+Math.floor(Math.random()*900)).padStart(3,'0');}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+function toggleInt(){const s=document.getElementById('chk-int').checked;document.querySelectorAll('[data-int="true"]').forEach(el=>el.style.display=s?'':'none');}
+
+function toast(msg,type='ok'){
+  const c={ok:'var(--ok)',err:'var(--err)',warn:'var(--warn)',info:'var(--info)'};
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:20px;right:20px;z-index:9999;padding:10px 15px;background:${c[type]||c.ok};color:#fff;border-radius:8px;font-size:12.5px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:opacity .3s;max-width:280px`;
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2600);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closePanel();
+    ['m-mrf','m-proc','m-del','m-insp'].forEach(closeM);
+  }
+});
+</script>
+</body>
+</html>

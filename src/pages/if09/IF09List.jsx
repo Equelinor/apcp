@@ -6,8 +6,9 @@ import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil , Printer} from 'lucide-react'
 import { today } from '../../utils/delay'
+import { buildIF09, printForm } from '../../utils/printEngine'
 
 const IR_STATUSES = ['Draft', 'Submitted', 'Inspection Scheduled', 'Passed', 'Failed', 'Conditional Pass', 'Cancelled']
 const INSPECTION_TYPES = ['Pre-pour', 'In-process', 'Post-pour', 'Rebar Inspection', 'Formwork Check', 'Backfill', 'Waterproofing', 'Structural', 'Finishing', 'MEP Rough-in', 'Commissioning', 'Final Inspection', 'Other']
@@ -91,6 +92,10 @@ export default function IF09List() {
     return true
   })
 
+  const handlePrint = (d) => {
+    printForm(buildIF09(d), 'IF09 — Activity Inspection Request')
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -134,7 +139,8 @@ export default function IF09List() {
                   <td style={{ fontSize: 12 }}>{d.inspector || '—'}</td>
                   <td>{d.result ? <Badge status={d.result === 'Passed' ? 'Approved' : d.result === 'Failed' ? 'Rejected' : 'Submitted'} label={d.result} /> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>Pending</span>}</td>
                   <td><Badge status={d.status} /></td>
-                  <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button></td>
+                  <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button>
+                    <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Print PDF" onClick={() => handlePrint(d)}><Printer size={12} /></button></td>
                 </tr>
               ))}
             </tbody>

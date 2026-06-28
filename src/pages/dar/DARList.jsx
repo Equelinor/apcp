@@ -91,7 +91,7 @@ export default function DARList() {
       .select('*')
       .eq('project_code', activeProject.code)
       .order('date', { ascending: false })
-    if (error || !data?.length) setDars(SEED.filter(d => d.project_code === activeProject.code))
+    if (error) setDars(SEED.filter(d => d.project_code === activeProject.code))
     else setDars(data.map(d => ({ ...d, activities: d.activities || [], labour: d.labour || [], equipment: d.equipment || [], visitors: d.visitors || [], issues: d.issues || [] })))
     setLoading(false)
   }
@@ -165,7 +165,7 @@ export default function DARList() {
           <div className="page-title">Daily Activity Report</div>
           <div className="page-subtitle">{activeProject.project_name || activeProject.name} · {dars.length} reports</div>
         </div>
-        {canCreate && <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New DAR</button>}
+        <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New DAR</button>
       </div>
 
       <div className="filter-bar" style={{ marginBottom: 12 }}>

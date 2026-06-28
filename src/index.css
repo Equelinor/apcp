@@ -569,7 +569,7 @@ tr:hover td { background: rgba(244, 246, 249, 0.6); }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 22, 40, 0.55);
+  background: rgba(27, 42, 59, 0.60);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -721,3 +721,5 @@ tr:hover td { background: rgba(244, 246, 249, 0.6); }
     page-break-after: always;
   }
 }
+
+/* v3.1 — steel navy + deep red rebrand */

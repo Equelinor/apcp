@@ -5,7 +5,8 @@ import {
   FolderOpen, FileSearch, MessageSquare, BookOpen,
   ClipboardCheck, Layers, Flag, AlertTriangle,
   HardHat, Activity, Image, Settings, Users,
-  LogOut, ChevronDown, ChevronRight, Library, HardHat as HC, ClipboardList
+  LogOut, ChevronDown, ChevronRight, Library,
+  ClipboardList, Building2
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -22,9 +23,9 @@ const NAV = [
   {
     group: 'Document Control',
     items: [
-      { to: '/shop-drawings', label: 'Shop Drawings (IF04)', icon: FolderOpen },
-      { to: '/submittals', label: 'Doc Submittals (IF07)', icon: FileSearch },
-      { to: '/rfi', label: 'RFI (IF08)', icon: MessageSquare },
+      { to: '/shop-drawings', label: 'Shop Drawings', icon: FolderOpen },
+      { to: '/submittals', label: 'Doc Submittals', icon: FileSearch },
+      { to: '/rfi', label: 'RFI', icon: MessageSquare },
       { to: '/drawing-register', label: 'Drawing Register', icon: BookOpen },
       { to: '/document-register', label: 'Doc Register', icon: Library },
     ]
@@ -32,10 +33,10 @@ const NAV = [
   {
     group: 'QA / QC',
     items: [
-      { to: '/mac', label: 'Material Approval (IF05)', icon: ClipboardCheck },
-      { to: '/mockup', label: 'Mock-up Inspection (IF06)', icon: Layers },
-      { to: '/ir', label: 'Activity Inspection (IF09)', icon: Flag },
-      { to: '/subcontractor', label: 'Sub-contractor (IF12)', icon: ClipboardList },
+      { to: '/mac', label: 'Material Approval', icon: ClipboardCheck },
+      { to: '/mockup', label: 'Mock-up Inspection', icon: Layers },
+      { to: '/ir', label: 'Activity Inspection', icon: Flag },
+      { to: '/subcontractor', label: 'Sub-contractor', icon: ClipboardList },
       { to: '/ncr', label: 'NCR', icon: AlertTriangle, soon: true },
     ]
   },
@@ -45,6 +46,12 @@ const NAV = [
       { to: '/dar', label: 'Daily Activity Report', icon: HardHat, soon: true },
       { to: '/progress', label: 'Daily Progress', icon: Activity, soon: true },
       { to: '/photos', label: 'Site Photos', icon: Image, soon: true },
+    ]
+  },
+  {
+    group: 'Commercial',
+    items: [
+      { to: '/suppliers', label: 'Supplier Register', icon: Building2 },
     ]
   },
 ]

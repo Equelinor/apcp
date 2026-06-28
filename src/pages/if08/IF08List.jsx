@@ -7,8 +7,9 @@ import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
-import { Plus, ExternalLink, Pencil } from 'lucide-react'
+import { Plus, ExternalLink, Pencil , Printer} from 'lucide-react'
 import { today } from '../../utils/delay'
+import { buildIF08, printForm } from '../../utils/printEngine'
 
 const RFI_STATUSES = ['Draft', 'Submitted', 'Under Review', 'Answered', 'Closed', 'Cancelled']
 const RFI_PRIORITIES = ['Critical', 'High', 'Medium', 'Low']
@@ -108,6 +109,10 @@ export default function IF08List() {
 
   const openRFIs = items.filter(d => ['Submitted', 'Under Review'].includes(d.status)).length
 
+  const handlePrint = (d) => {
+    printForm(buildIF08(d), 'IF08 — Request For Information')
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -171,7 +176,8 @@ export default function IF08List() {
                     <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
                     <td style={{ fontSize: 11 }}>{d.impact || '—'}</td>
                     <td><Badge status={d.status} /></td>
-                    <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button></td>
+                    <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button>
+                    <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Print PDF" onClick={() => handlePrint(d)}><Printer size={12} /></button></td>
                   </tr>
                 )
               })}

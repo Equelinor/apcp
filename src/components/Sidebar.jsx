@@ -5,7 +5,7 @@ import {
   FolderOpen, FileSearch, MessageSquare, BookOpen,
   ClipboardCheck, Layers, Flag, AlertTriangle,
   HardHat, Activity, Image, Settings, Users,
-  LogOut, ChevronDown, ChevronRight, Library
+  LogOut, ChevronDown, ChevronRight, Library, HardHat as HC, ClipboardList
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -22,9 +22,9 @@ const NAV = [
   {
     group: 'Document Control',
     items: [
-      { to: '/shop-drawings', label: 'Shop Drawings', icon: FolderOpen },
-      { to: '/submittals', label: 'Doc Submittals', icon: FileSearch, soon: true },
-      { to: '/rfi', label: 'RFI', icon: MessageSquare },
+      { to: '/shop-drawings', label: 'Shop Drawings (IF04)', icon: FolderOpen },
+      { to: '/submittals', label: 'Doc Submittals (IF07)', icon: FileSearch },
+      { to: '/rfi', label: 'RFI (IF08)', icon: MessageSquare },
       { to: '/drawing-register', label: 'Drawing Register', icon: BookOpen },
       { to: '/document-register', label: 'Doc Register', icon: Library },
     ]
@@ -32,9 +32,10 @@ const NAV = [
   {
     group: 'QA / QC',
     items: [
-      { to: '/mac', label: 'Material Approval', icon: ClipboardCheck, soon: true },
-      { to: '/mockup', label: 'Mock-up Inspection', icon: Layers, soon: true },
-      { to: '/mir', label: 'MIR / IR', icon: Flag, soon: true },
+      { to: '/mac', label: 'Material Approval (IF05)', icon: ClipboardCheck },
+      { to: '/mockup', label: 'Mock-up Inspection (IF06)', icon: Layers },
+      { to: '/ir', label: 'Activity Inspection (IF09)', icon: Flag },
+      { to: '/subcontractor', label: 'Sub-contractor (IF12)', icon: ClipboardList },
       { to: '/ncr', label: 'NCR', icon: AlertTriangle, soon: true },
     ]
   },
@@ -79,7 +80,6 @@ export default function Sidebar() {
                 <span className="sidebar-section-label" style={{ flex: 1, padding: 0 }}>{group}</span>
                 {isCollapsed ? <ChevronRight size={10} color="var(--text-muted)" /> : <ChevronDown size={10} color="var(--text-muted)" />}
               </button>
-
               {!isCollapsed && items.map(({ to, label, icon: Icon, soon, exact }) => (
                 soon ? (
                   <div key={to} className="sidebar-link" style={{ opacity: 0.35, cursor: 'not-allowed' }}>

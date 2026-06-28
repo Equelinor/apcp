@@ -10,7 +10,12 @@ import DeliveryList from './pages/delivery/DeliveryList'
 import DrawingRegister from './pages/drawings/DrawingRegister'
 import DocumentRegister from './pages/documents/DocumentRegister'
 import IF04List from './pages/if04/IF04List'
+import IF05List from './pages/if05/IF05List'
+import IF06List from './pages/if06/IF06List'
+import IF07List from './pages/if07/IF07List'
 import IF08List from './pages/if08/IF08List'
+import IF09List from './pages/if09/IF09List'
+import IF12List from './pages/if12/IF12List'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -32,7 +37,12 @@ export default function App() {
         <Route path="drawing-register" element={<DrawingRegister />} />
         <Route path="document-register" element={<DocumentRegister />} />
         <Route path="shop-drawings" element={<IF04List />} />
+        <Route path="mac" element={<IF05List />} />
+        <Route path="mockup" element={<IF06List />} />
+        <Route path="submittals" element={<IF07List />} />
         <Route path="rfi" element={<IF08List />} />
+        <Route path="ir" element={<IF09List />} />
+        <Route path="subcontractor" element={<IF12List />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

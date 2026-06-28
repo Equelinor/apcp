@@ -31,7 +31,7 @@ export default function Login() {
 
       {/* ── Background — construction site photo via Unsplash ── */}
       <img
-        src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80&auto=format&fit=crop"
+        src="/login-bg.png"
         alt=""
         style={{
           position: 'absolute', inset: 0,

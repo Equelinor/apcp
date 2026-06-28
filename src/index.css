@@ -5,28 +5,28 @@
 
 :root {
   /* Brand */
-  --brand-primary: #0A1628;      /* Deep navy — authority */
-  --brand-accent: #E8A020;       /* Amber — construction, energy */
-  --brand-accent-hover: #C88010;
+  --brand-primary: #1B2A3B;      /* Steel navy — matches standalone forms */
+  --brand-accent: #8B1A1A;       /* Deep red — Axion brand */
+  --brand-accent-hover: #A52020;
 
   /* Surface */
   --bg-base: #F4F6F9;
   --bg-surface: #FFFFFF;
-  --bg-sidebar: #0A1628;
-  --bg-sidebar-hover: #162340;
-  --bg-sidebar-active: #1E3054;
+  --bg-sidebar: #1B2A3B;
+  --bg-sidebar-hover: #243547;
+  --bg-sidebar-active: #2E4460;
 
   /* Text */
-  --text-primary: #0A1628;
-  --text-secondary: #5A6478;
-  --text-muted: #9AA3B2;
+  --text-primary: #1B2A3B;
+  --text-secondary: #4A5770;
+  --text-muted: #8898AA;
   --text-inverse: #FFFFFF;
   --text-sidebar: #A8B5C8;
   --text-sidebar-active: #FFFFFF;
 
   /* Border */
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --border: #DDE2EA;
+  --border-strong: #C4CEDC;
 
   /* Status */
   --status-draft-bg: #F1F5F9;
@@ -228,7 +228,7 @@ input, select, textarea {
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: var(--brand-primary);
+  color: #FFFFFF;
   flex-shrink: 0;
 }
 
@@ -278,7 +278,7 @@ input, select, textarea {
   font-size: 11px;
   font-weight: 600;
   color: var(--brand-accent);
-  background: rgba(232, 160, 32, 0.12);
+  background: rgba(139, 26, 26, 0.10);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -348,7 +348,7 @@ input, select, textarea {
 
 .btn-primary {
   background: var(--brand-accent);
-  color: var(--brand-primary);
+  color: #FFFFFF;
   font-weight: 600;
 }
 

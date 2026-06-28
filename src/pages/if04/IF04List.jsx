@@ -9,7 +9,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, ExternalLink, Pencil, Printer } from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildIF04, printForm } from '../../utils/printEngine'
+import { buildIF04, printForm, mergeProjectLogos } from '../../utils/printEngine'
 
 const BLANK = {
   date: today(), activity_id: '', activity_name: '', wbs_code: '',
@@ -109,7 +109,7 @@ export default function IF04List() {
   })
 
   const handlePrint = (d) => {
-    printForm(buildIF04(d), 'IF04 — Shop Drawing Submittal')
+    printForm(buildIF04(mergeProjectLogos(d, activeProject)), 'IF04 — Shop Drawing Submittal')
   }
 
   return (

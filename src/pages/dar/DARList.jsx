@@ -10,6 +10,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil, Printer, ChevronDown, ChevronUp } from 'lucide-react'
 import { today } from '../../utils/delay'
+import { buildDAR, printForm } from '../../utils/printEngine'
 
 const WEATHER = ['Clear', 'Partly Cloudy', 'Cloudy', 'Light Rain', 'Heavy Rain', 'Sandstorm', 'Humid', 'Extreme Heat']
 const SHIFT = ['Day Shift', 'Night Shift', 'Double Shift']
@@ -158,6 +159,10 @@ export default function DARList() {
     )
   }
 
+  const handlePrint = (d) => {
+    printForm(buildDAR(d), `DAR_${d.filename || 'DAR'}`)
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -202,7 +207,7 @@ export default function DARList() {
                   <td>
                     <div style={{ display: 'flex', gap: 4 }}>
                       <button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button>
-                      <button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => { openEdit(d); setTimeout(() => window.print(), 300) }}><Printer size={12} /></button>
+                      <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Print DAR" onClick={() => handlePrint(d)}><Printer size={12} /></button>
                     </div>
                   </td>
                 </tr>

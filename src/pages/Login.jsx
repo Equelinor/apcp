@@ -1,16 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { Eye, EyeOff, Lock, Mail, HardHat } from 'lucide-react'
-
-const LIFECYCLE = [
-  { icon: '📋', label: 'DOCUMENTS', sub: 'Document Control' },
-  { icon: '🛒', label: 'PROCUREMENT', sub: 'Materials & Supply' },
-  { icon: '🏗️', label: 'SITE', sub: 'Daily Execution' },
-  { icon: '✅', label: 'QUALITY', sub: 'QA / QC' },
-  { icon: '📊', label: 'MONITOR', sub: 'Progress Tracking' },
-  { icon: '💰', label: 'COMMERCIAL', sub: 'Valuations & VO' },
-  { icon: '🔑', label: 'HANDOVER', sub: 'Closeout & DLP' },
-]
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
+import { AXION_BRAND_LOGO } from '../utils/axionBrandLogo'
 
 export default function Login() {
   const { signIn } = useAuth()
@@ -31,239 +22,203 @@ export default function Login() {
     <div style={{
       minHeight: '100vh',
       display: 'flex',
-      background: '#1B2A3B',
+      alignItems: 'center',
+      justifyContent: 'center',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      position: 'relative',
+      overflow: 'hidden',
     }}>
 
-      {/* ── Left panel — lifecycle strip ── */}
+      {/* ── Background — construction site photo via Unsplash ── */}
+      <img
+        src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80&auto=format&fit=crop"
+        alt=""
+        style={{
+          position: 'absolute', inset: 0,
+          width: '100%', height: '100%',
+          objectFit: 'cover', objectPosition: 'center',
+          zIndex: 0,
+        }}
+      />
+
+      {/* ── Dark overlay ── */}
       <div style={{
-        width: 220,
-        background: 'rgba(0,0,0,0.25)',
-        borderRight: '1px solid rgba(255,255,255,0.07)',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '40px 0',
-        flexShrink: 0,
-      }}>
-        {/* Brand mark */}
-        <div style={{ padding: '0 24px 32px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36,
-              background: '#8B1A1A',
-              borderRadius: 8,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <HardHat size={18} color="#fff" />
-            </div>
-            <div>
-              <div style={{ color: '#fff', fontWeight: 800, fontSize: 13, letterSpacing: '0.06em' }}>APCP</div>
-              <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Axion Imagineering</div>
-            </div>
-          </div>
-        </div>
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(135deg, rgba(27,42,59,0.92) 0%, rgba(27,42,59,0.78) 50%, rgba(0,0,0,0.85) 100%)',
+        zIndex: 1,
+      }} />
 
-        {/* Lifecycle items */}
-        <div style={{ flex: 1, padding: '24px 0' }}>
-          {LIFECYCLE.map((item, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '10px 24px',
-              opacity: 0.45,
-            }}>
-              <div style={{ width: 28, textAlign: 'center', fontSize: 15 }}>{item.icon}</div>
-              <div>
-                <div style={{ color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em' }}>{item.label}</div>
-                <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 9, marginTop: 1 }}>{item.sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ padding: '0 24px', fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.04em' }}>
-          © 2025 APCP · Axion Imagineering<br />Construction Co. W.L.L
-        </div>
-      </div>
-
-      {/* ── Right panel — login form ── */}
+      {/* ── Login card ── */}
       <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 32,
-        background: 'linear-gradient(135deg, #1B2A3B 0%, #243547 60%, #1B2A3B 100%)',
-        position: 'relative',
-        overflow: 'hidden',
+        position: 'relative', zIndex: 2,
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.12)',
+        borderRadius: 18,
+        padding: '44px 48px',
+        width: '100%',
+        maxWidth: 420,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
+        margin: 24,
       }}>
 
-        {/* Subtle background grid */}
-        <div style={{
-          position: 'absolute', inset: 0, opacity: 0.04,
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Card */}
-        <div style={{
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.10)',
-          borderRadius: 16,
-          padding: '44px 48px',
-          width: '100%',
-          maxWidth: 420,
-          backdropFilter: 'blur(12px)',
-          position: 'relative',
-          zIndex: 1,
-        }}>
-
-          {/* Logo area */}
-          <div style={{ textAlign: 'center', marginBottom: 36 }}>
-            {/* Axion logo placeholder — will show actual logo once uploaded to project */}
-            <div style={{
-              width: 64, height: 64,
-              background: '#8B1A1A',
-              borderRadius: 16,
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 18,
-              boxShadow: '0 8px 24px rgba(139,26,26,0.4)',
-            }}>
-              <HardHat size={30} color="#fff" />
-            </div>
-            <div style={{ color: '#fff', fontSize: 22, fontWeight: 800, letterSpacing: '0.04em', marginBottom: 4 }}>
-              APCP
-            </div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              Construction Project Control Platform
-            </div>
-            <div style={{ width: 40, height: 2, background: '#8B1A1A', margin: '16px auto 0', borderRadius: 2 }} />
+        {/* ── Axion "AI" mark — left portion of logo only ── */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{
+            width: 72, height: 72,
+            borderRadius: 16,
+            overflow: 'hidden',
+            display: 'inline-block',
+            boxShadow: '0 8px 28px rgba(139,26,26,0.45)',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            {/* Show only the left ~27% of the logo (the red AI mark square) */}
+            <img
+              src={AXION_BRAND_LOGO}
+              alt="Axion Imagineering"
+              style={{
+                width: '370%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'left center',
+                display: 'block',
+                marginLeft: 0,
+              }}
+            />
           </div>
 
-          <div style={{ color: '#fff', fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Welcome back</div>
-          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginBottom: 28 }}>Sign in to continue to your workspace</div>
-
-          {/* Email */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 7, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              Email Address
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={14} color="rgba(255,255,255,0.3)" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                type="email"
-                placeholder="you@axion.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                autoFocus
-                style={{
-                  width: '100%',
-                  padding: '11px 14px 11px 38px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: 8,
-                  color: '#fff',
-                  fontSize: 13,
-                  outline: 'none',
-                  transition: 'border-color 0.15s',
-                }}
-                onFocus={e => e.target.style.borderColor = 'rgba(139,26,26,0.8)'}
-                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
-              />
-            </div>
+          <div style={{ color: '#fff', fontSize: 22, fontWeight: 800, letterSpacing: '0.05em', marginTop: 16, marginBottom: 4 }}>
+            APCP
           </div>
-
-          {/* Password */}
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 7, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              Password
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={14} color="rgba(255,255,255,0.3)" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                type={showPw ? 'text' : 'password'}
-                placeholder="••••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                style={{
-                  width: '100%',
-                  padding: '11px 40px 11px 38px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: 8,
-                  color: '#fff',
-                  fontSize: 13,
-                  outline: 'none',
-                  transition: 'border-color 0.15s',
-                }}
-                onFocus={e => e.target.style.borderColor = 'rgba(139,26,26,0.8)'}
-                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
-              />
-              <button
-                onClick={() => setShowPw(p => !p)}
-                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'rgba(255,255,255,0.35)' }}
-              >
-                {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
-            </div>
+          <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase' }}>
+            Construction Project Control Platform
           </div>
+          <div style={{ width: 36, height: 2, background: '#8B1A1A', margin: '14px auto 0', borderRadius: 2 }} />
+        </div>
 
-          {/* Error */}
-          {error && (
-            <div style={{
-              background: 'rgba(185,28,28,0.15)',
-              border: '1px solid rgba(185,28,28,0.4)',
-              borderRadius: 8,
-              padding: '9px 12px',
-              fontSize: 12,
-              color: '#FCA5A5',
-              marginBottom: 16,
-            }}>
-              {error}
-            </div>
-          )}
+        <div style={{ color: '#fff', fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Welcome back</div>
+        <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: 12, marginBottom: 26 }}>Sign in to continue to your workspace</div>
 
-          {/* Sign in button */}
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: loading ? 'rgba(139,26,26,0.5)' : '#8B1A1A',
-              border: 'none',
-              borderRadius: 8,
-              color: '#fff',
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.15s',
-              letterSpacing: '0.03em',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              boxShadow: loading ? 'none' : '0 4px 16px rgba(139,26,26,0.35)',
-            }}
-            onMouseEnter={e => { if (!loading) e.target.style.background = '#A52020' }}
-            onMouseLeave={e => { if (!loading) e.target.style.background = '#8B1A1A' }}
-          >
-            <Lock size={14} />
-            {loading ? 'Signing in…' : 'Sign In'}
-          </button>
-
-          {/* Footer note */}
-          <div style={{ textAlign: 'center', marginTop: 24, fontSize: 11, color: 'rgba(255,255,255,0.25)', lineHeight: 1.5 }}>
-            Access is managed by your administrator<br />
-            Axion Imagineering Construction Co. W.L.L
+        {/* Email */}
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: 7, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            Email Address
+          </label>
+          <div style={{ position: 'relative' }}>
+            <Mail size={13} color="rgba(255,255,255,0.3)" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            <input
+              type="email"
+              placeholder="you@axion.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '11px 14px 11px 38px',
+                background: 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.13)',
+                borderRadius: 9,
+                color: '#fff',
+                fontSize: 13,
+                outline: 'none',
+                transition: 'border-color 0.15s',
+              }}
+              onFocus={e => e.target.style.borderColor = 'rgba(139,26,26,0.9)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.13)'}
+            />
           </div>
+        </div>
+
+        {/* Password */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: 7, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            Password
+          </label>
+          <div style={{ position: 'relative' }}>
+            <Lock size={13} color="rgba(255,255,255,0.3)" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            <input
+              type={showPw ? 'text' : 'password'}
+              placeholder="••••••••••"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              style={{
+                width: '100%',
+                padding: '11px 40px 11px 38px',
+                background: 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.13)',
+                borderRadius: 9,
+                color: '#fff',
+                fontSize: 13,
+                outline: 'none',
+                transition: 'border-color 0.15s',
+              }}
+              onFocus={e => e.target.style.borderColor = 'rgba(139,26,26,0.9)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.13)'}
+            />
+            <button
+              onClick={() => setShowPw(p => !p)}
+              style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'rgba(255,255,255,0.35)' }}
+            >
+              {showPw ? <EyeOff size={13} /> : <Eye size={13} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div style={{
+            background: 'rgba(185,28,28,0.18)',
+            border: '1px solid rgba(185,28,28,0.45)',
+            borderRadius: 8,
+            padding: '9px 12px',
+            fontSize: 12,
+            color: '#FCA5A5',
+            marginBottom: 16,
+          }}>
+            {error}
+          </div>
+        )}
+
+        {/* Sign in button */}
+        <button
+          onClick={handleLogin}
+          disabled={loading}
+          onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#A52020' }}
+          onMouseLeave={e => { if (!loading) e.currentTarget.style.background = '#8B1A1A' }}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: loading ? 'rgba(139,26,26,0.5)' : '#8B1A1A',
+            border: 'none',
+            borderRadius: 9,
+            color: '#fff',
+            fontSize: 14,
+            fontWeight: 700,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            transition: 'background 0.15s',
+            letterSpacing: '0.03em',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            boxShadow: loading ? 'none' : '0 4px 18px rgba(139,26,26,0.40)',
+          }}
+        >
+          <Lock size={13} />
+          {loading ? 'Signing in…' : 'Sign In'}
+        </button>
+
+        {/* Footer */}
+        <div style={{ textAlign: 'center', marginTop: 22, fontSize: 11, color: 'rgba(255,255,255,0.22)', lineHeight: 1.6 }}>
+          Access is managed by your administrator<br />
+          Axion Imagineering Construction Co. W.L.L
         </div>
       </div>
     </div>
   )
 }
 
-// v3.1
+// v3.2

@@ -8,7 +8,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil, ExternalLink , Printer} from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildIF12, printForm } from '../../utils/printEngine'
+import { buildIF12, printForm, mergeProjectLogos } from '../../utils/printEngine'
 
 const SC_STATUSES = ['Draft', 'Submitted', 'Under Review', 'Approved', 'Conditionally Approved', 'Rejected', 'Resubmitted']
 const WORK_SCOPES = ['Concrete Works', 'Steel / Rebar', 'Formwork', 'Waterproofing', 'MEP', 'Electrical', 'Plumbing', 'HVAC', 'Façade / Curtain Wall', 'Fit-out / Finishing', 'Landscaping', 'Civil Works', 'Piling', 'Specialist Works', 'Other']
@@ -87,7 +87,7 @@ export default function IF12List() {
   })
 
   const handlePrint = (d) => {
-    printForm(buildIF12(d), 'IF12 — Sub-Contractor Approval')
+    printForm(buildIF12(mergeProjectLogos(d, activeProject)), 'IF12 — Sub-Contractor Approval')
   }
 
   return (

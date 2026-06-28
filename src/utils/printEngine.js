@@ -17,6 +17,21 @@ const now = () => {
   return d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
 }
 
+
+// Merge project-level logos into form data (project record is source of truth)
+// Call this in each buildIF* before rendering
+export const mergeProjectLogos = (f, project) => {
+  if (!project) return f
+  return {
+    ...f,
+    clientLogo: f.clientLogo || project.client_logo || '',
+    consultantLogo: f.consultantLogo || project.consultant_logo || '',
+    client: f.client || project.client || '',
+    consultant: f.consultant || project.consultant || '',
+    projName: f.projName || project.project_name || '',
+  }
+}
+
 // Three-logo header (shared across all forms)
 const buildHeader = (f, docNo, title, splitTitle = false) => {
   const consultantLogo = f.consultantLogo

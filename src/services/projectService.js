@@ -2,7 +2,6 @@ import { supabase } from '../supabaseClient'
 
 const TABLE = 'projects'
 
-// Seed — used until real projects are created in Supabase
 export const PROJECT_SEED = [
   {
     id: 'ant',
@@ -14,6 +13,10 @@ export const PROJECT_SEED = [
     contractor: 'Axion Imagineering Construction Co. W.L.L',
     location: 'Abu Dhabi, UAE',
     status: 'Active Project',
+    contract_type: 'Lump Sum',
+    currency: 'AED',
+    subcontractors: [],
+    third_parties: [],
   },
   {
     id: 'mrs',
@@ -25,28 +28,54 @@ export const PROJECT_SEED = [
     contractor: 'Axion Imagineering Construction Co. W.L.L',
     location: 'Dubai, UAE',
     status: 'Active Project',
+    contract_type: 'Lump Sum',
+    currency: 'AED',
+    subcontractors: [],
+    third_parties: [],
   },
 ]
 
 export const PROJECT_STATUSES = ['Active Project', 'On Hold', 'Completed', 'Cancelled']
+export const CONTRACT_TYPES = ['Lump Sum', 'Remeasurable', 'Cost Plus', 'Design & Build', 'Management Contract', 'Framework']
+export const CURRENCIES = ['AED', 'USD', 'GBP', 'EUR', 'SAR', 'QAR', 'KWD', 'BHD', 'OMR']
+export const THIRD_PARTY_ROLES = ['Authority', 'Utility Provider', 'Nominated Supplier', 'Nominated Subcontractor', 'Third Party Inspector', 'Other']
 
 export const BLANK_PROJECT = {
   project_code: '',
   project_name: '',
   project_number: '',
+  contract_number: '',
+  contract_type: 'Lump Sum',
+  contract_value: '',
+  currency: 'AED',
   client: '',
   consultant: '',
   contractor: 'Axion Imagineering Construction Co. W.L.L',
   location: '',
+  start_date: '',
+  end_date: '',
+  original_duration: '',
+  project_manager: '',
+  site_engineer: '',
+  qaqc_engineer: '',
+  planning_engineer: '',
+  client_contact_name: '',
+  client_contact_email: '',
+  client_contact_phone: '',
+  consultant_contact_name: '',
+  consultant_contact_email: '',
+  consultant_contact_phone: '',
+  client_logo: '',
+  consultant_logo: '',
+  subcontractors: [],
+  third_parties: [],
+  notes: '',
   status: 'Active Project',
 }
 
 export const projectService = {
   async list() {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select('*')
-      .order('project_code')
+    const { data, error } = await supabase.from(TABLE).select('*').order('project_code')
     if (error || !data?.length) return PROJECT_SEED
     return data
   },
@@ -70,7 +99,12 @@ export const projectService = {
   },
 
   async update(id, updates) {
-    const { data, error } = await supabase.from(TABLE).update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id).select().single()
+    const { data, error } = await supabase
+      .from(TABLE)
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single()
     if (error) throw error
     return data
   },

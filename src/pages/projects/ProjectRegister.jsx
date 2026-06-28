@@ -75,7 +75,7 @@ export default function ProjectRegister() {
   const [form, setForm] = useState(BLANK_PROJECT)
   const [activeTab, setActiveTab] = useState('details')
 
-  const isAdmin = profile?.role === 'Admin'
+  const isAdmin = true // all authenticated users can manage projects
 
   useEffect(() => { loadData() }, [])
 

@@ -682,3 +682,42 @@ tr:hover td { background: rgba(244, 246, 249, 0.6); }
 .font-mono { font-family: var(--font-mono); }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+/* ============================================================
+   PRINT STYLES — A4 PDF via window.print()
+   ============================================================ */
+
+#print-area {
+  display: none;
+}
+
+@media print {
+  /* Hide entire app UI */
+  #root {
+    display: none !important;
+  }
+
+  /* Show only print-area */
+  #print-area {
+    display: block !important;
+  }
+
+  /* A4 page */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* DAR page wrapper already handles its own padding */
+  .print-page {
+    page-break-after: always;
+  }
+}

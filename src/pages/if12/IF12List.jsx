@@ -6,8 +6,9 @@ import { useActivityFill } from '../../hooks/useActivityFill'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
-import { Plus, Pencil, ExternalLink } from 'lucide-react'
+import { Plus, Pencil, ExternalLink , Printer} from 'lucide-react'
 import { today } from '../../utils/delay'
+import { buildIF12, printForm } from '../../utils/printEngine'
 
 const SC_STATUSES = ['Draft', 'Submitted', 'Under Review', 'Approved', 'Conditionally Approved', 'Rejected', 'Resubmitted']
 const WORK_SCOPES = ['Concrete Works', 'Steel / Rebar', 'Formwork', 'Waterproofing', 'MEP', 'Electrical', 'Plumbing', 'HVAC', 'Façade / Curtain Wall', 'Fit-out / Finishing', 'Landscaping', 'Civil Works', 'Piling', 'Specialist Works', 'Other']
@@ -85,6 +86,10 @@ export default function IF12List() {
     return true
   })
 
+  const handlePrint = (d) => {
+    printForm(buildIF12(d), 'IF12 — Sub-Contractor Approval')
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -128,7 +133,8 @@ export default function IF12List() {
                   <td style={{ fontSize: 11 }}>{d.response_code ? d.response_code.split(' — ')[0] : '—'}</td>
                   <td><Badge status={d.status} /></td>
                   <td>{d.drive_link ? <a href={d.drive_link} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ fontSize: 11, padding: '3px 8px' }}><ExternalLink size={11} /></a> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
-                  <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button></td>
+                  <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button>
+                    <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Print PDF" onClick={() => handlePrint(d)}><Printer size={12} /></button></td>
                 </tr>
               ))}
             </tbody>

@@ -9,7 +9,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil, ExternalLink , Printer} from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildIF07, printForm } from '../../utils/printEngine'
+import { buildIF07, printForm, mergeProjectLogos } from '../../utils/printEngine'
 
 const DOC_TYPES = ['Method Statement', 'ITP', 'Risk Assessment', 'Material Submittal', 'Technical Submittal', 'Certificate', 'Report', 'Letter', 'Drawing', 'Other']
 
@@ -92,7 +92,7 @@ export default function IF07List() {
   })
 
   const handlePrint = (d) => {
-    printForm(buildIF07(d), 'IF07 — Document Submittal')
+    printForm(buildIF07(mergeProjectLogos(d, activeProject)), 'IF07 — Document Submittal')
   }
 
   return (

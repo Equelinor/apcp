@@ -10,7 +10,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil, Printer, ChevronDown, ChevronUp } from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildDAR, printForm } from '../../utils/printEngine'
+import { buildDAR, printForm, mergeProjectLogos } from '../../utils/printEngine'
 
 const WEATHER = ['Clear', 'Partly Cloudy', 'Cloudy', 'Light Rain', 'Heavy Rain', 'Sandstorm', 'Humid', 'Extreme Heat']
 const SHIFT = ['Day Shift', 'Night Shift', 'Double Shift']
@@ -160,7 +160,8 @@ export default function DARList() {
   }
 
   const handlePrint = (d) => {
-    printForm(buildDAR(d), `DAR_${d.filename || 'DAR'}`)
+    const merged = { ...d, companyLogo: d.companyLogo || activeProject?.client_logo || '' }
+    printForm(buildDAR(merged), `DAR_${d.filename || 'DAR'}`)
   }
 
   return (

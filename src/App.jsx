@@ -17,6 +17,8 @@ import IF08List from './pages/if08/IF08List'
 import IF09List from './pages/if09/IF09List'
 import IF12List from './pages/if12/IF12List'
 import SupplierRegister from './pages/suppliers/SupplierRegister'
+import ProjectRegister from './pages/projects/ProjectRegister'
+import DARList from './pages/dar/DARList'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -45,6 +47,8 @@ export default function App() {
         <Route path="ir" element={<IF09List />} />
         <Route path="subcontractor" element={<IF12List />} />
         <Route path="suppliers" element={<SupplierRegister />} />
+        <Route path="projects" element={<ProjectRegister />} />
+        <Route path="dar" element={<DARList />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

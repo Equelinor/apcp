@@ -4,9 +4,9 @@ import {
   LayoutDashboard, FileText, ShoppingCart, Truck,
   FolderOpen, FileSearch, MessageSquare, BookOpen,
   ClipboardCheck, Layers, Flag, AlertTriangle,
-  HardHat, Activity, Image, Settings, Users,
-  LogOut, ChevronDown, ChevronRight, Library,
-  ClipboardList, Building2
+  HardHat, Settings, Users, LogOut,
+  ChevronDown, ChevronRight, Library,
+  ClipboardList, Building2, FolderKanban
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -43,9 +43,7 @@ const NAV = [
   {
     group: 'Site',
     items: [
-      { to: '/dar', label: 'Daily Activity Report', icon: HardHat, soon: true },
-      { to: '/progress', label: 'Daily Progress', icon: Activity, soon: true },
-      { to: '/photos', label: 'Site Photos', icon: Image, soon: true },
+      { to: '/dar', label: 'Daily Activity Report', icon: HardHat },
     ]
   },
   {
@@ -106,6 +104,9 @@ export default function Sidebar() {
         <div className="sidebar-divider" />
         <div className="sidebar-section">
           <div className="sidebar-section-label">Admin</div>
+          <NavLink to="/projects" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <FolderKanban size={15} /><span>Projects</span>
+          </NavLink>
           <div className="sidebar-link" style={{ opacity: 0.35, cursor: 'not-allowed' }}>
             <Users size={15} /><span>Users</span>
             <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, background: 'rgba(255,255,255,0.1)', color: 'var(--text-muted)', padding: '1px 5px', borderRadius: 4 }}>SOON</span>

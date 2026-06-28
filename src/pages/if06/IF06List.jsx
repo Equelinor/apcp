@@ -6,8 +6,9 @@ import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil , Printer} from 'lucide-react'
 import { today } from '../../utils/delay'
+import { buildIF06, printForm } from '../../utils/printEngine'
 
 const MOCKUP_STATUSES = ['Draft', 'Submitted', 'Inspection Scheduled', 'Inspected', 'Approved', 'Rejected', 'Resubmitted']
 
@@ -89,6 +90,10 @@ export default function IF06List() {
     return true
   })
 
+  const handlePrint = (d) => {
+    printForm(buildIF06(d), 'IF06 — Sample Mockup Inspection')
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -131,7 +136,8 @@ export default function IF06List() {
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.inspection_date || '—'}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
                   <td><Badge status={d.status} /></td>
-                  <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button></td>
+                  <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button>
+                    <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Print PDF" onClick={() => handlePrint(d)}><Printer size={12} /></button></td>
                 </tr>
               ))}
             </tbody>

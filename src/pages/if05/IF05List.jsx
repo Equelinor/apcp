@@ -9,7 +9,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil, ExternalLink , Printer} from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildIF05, printForm } from '../../utils/printEngine'
+import { buildIF05, printForm, mergeProjectLogos } from '../../utils/printEngine'
 
 const MAC_STATUSES = ['Draft', 'Submitted', 'Under Review', 'Approved', 'Approved with Comments', 'Rejected', 'Resubmitted']
 
@@ -105,7 +105,7 @@ export default function IF05List() {
   })
 
   const handlePrint = (d) => {
-    printForm(buildIF05(d), 'IF05 — Material Approval Certificate')
+    printForm(buildIF05(mergeProjectLogos(d, activeProject)), 'IF05 — Material Approval Certificate')
   }
 
   return (

@@ -6,7 +6,7 @@ import {
   ClipboardCheck, Layers, Flag, AlertTriangle,
   HardHat, Settings, Users, LogOut,
   ChevronDown, ChevronRight, Library,
-  ClipboardList, Building2, FolderKanban
+  ClipboardList, Building2, FolderKanban, BarChart2
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -49,6 +49,7 @@ const NAV = [
   {
     group: 'Commercial',
     items: [
+      { to: '/boq', label: 'BOQ / Progress', icon: BarChart2 },
       { to: '/suppliers', label: 'Supplier Register', icon: Building2 },
     ]
   },

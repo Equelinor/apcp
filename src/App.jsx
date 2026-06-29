@@ -19,6 +19,7 @@ import IF12List from './pages/if12/IF12List'
 import SupplierRegister from './pages/suppliers/SupplierRegister'
 import ProjectRegister from './pages/projects/ProjectRegister'
 import DARList from './pages/dar/DARList'
+import BOQRegister from './pages/boq/BOQRegister'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="suppliers" element={<SupplierRegister />} />
         <Route path="projects" element={<ProjectRegister />} />
         <Route path="dar" element={<DARList />} />
+        <Route path="boq" element={<BOQRegister />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

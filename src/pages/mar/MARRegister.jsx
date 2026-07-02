@@ -45,6 +45,7 @@ const BLANK = {
   mar_ref_no: '', mar_subject: '', manufacturer_product: '',
   supplier_name: '', submitted_date: '', responded_date: '',
   current_status: 'Pending', revision_no: 'R0',
+  mac_ref_no: '',
   remarks: '', comments: '', submission_history: [],
 }
 
@@ -63,13 +64,16 @@ function exportPDF(items, project) {
     pending:  items.filter(i => i.current_status === 'Pending').length,
   }
 
-  const consultantLogo = project?.consultant_logo
-    ? `<img src="${project.consultant_logo}" style="max-height:38pt;max-width:110pt;object-fit:contain;display:block;margin:auto">`
-    : `<div style="font-size:7.5pt;font-weight:700;text-align:center">${project?.consultant || ''}</div>`
-
-  const clientLogo = project?.client_logo
-    ? `<img src="${project.client_logo}" style="max-height:38pt;max-width:110pt;object-fit:contain;display:block;margin:auto">`
-    : `<div style="font-size:7.5pt;font-weight:700;text-align:center">${project?.client || ''}</div>`
+  // ── Company logo/name cells ──────────────────────────────
+  const logoCell = (logoSrc, name, role) => {
+    const img = logoSrc
+      ? `<img src="${logoSrc}" style="max-height:36pt;max-width:120pt;object-fit:contain;display:block;margin:0 auto 4pt">`
+      : ''
+    return `
+      <div style="font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:4pt">${role}</div>
+      ${img}
+      <div style="font-size:7.5pt;font-weight:700;text-align:center;color:#111">${name || ''}</div>`
+  }
 
   const tableRows = items.map((m, i) => {
     const hist = Array.isArray(m.submission_history) ? m.submission_history : []
@@ -83,9 +87,9 @@ function exportPDF(items, project) {
       ) : null
       const rStyle = rs
         ? `background:${rs[1].bg};color:${rs[1].text};font-weight:700`
-        : 'color:#999'
+        : 'color:#bbb'
       return `
-        <td style="border:0.4pt solid #ccc;padding:2pt 3pt;font-size:6pt;text-align:center">${r.submitted_date ? fmtDate(r.submitted_date) : ''}</td>
+        <td style="border:0.4pt solid #ccc;padding:2pt 3pt;font-size:6pt;text-align:center;border-left:1.5pt solid #bbb">${r.submitted_date ? fmtDate(r.submitted_date) : ''}</td>
         <td style="border:0.4pt solid #ccc;padding:2pt 3pt;font-size:6pt;text-align:center">${r.return_date ? fmtDate(r.return_date) : ''}</td>
         <td style="border:0.4pt solid #ccc;padding:2pt 3pt;font-size:6pt;text-align:center;${rStyle}">${r.status || ''}</td>`
     }).join('')
@@ -100,6 +104,7 @@ function exportPDF(items, project) {
       <td style="border:0.4pt solid #ccc;padding:2pt 3pt;font-size:6pt;text-align:center">${m.responded_date ? fmtDate(m.responded_date) : ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2pt 3pt;font-size:6.5pt;font-weight:700;text-align:center">${m.revision_no || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2pt 3pt;font-size:7pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
+      <td style="border:0.4pt solid #ccc;padding:2pt 4pt;font-size:6pt;font-family:monospace;font-weight:700;color:#1E40AF">${m.mac_ref_no || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2pt 4pt;font-size:6pt;color:#555">${m.remarks || ''}</td>
       ${revCells}
     </tr>`
@@ -110,7 +115,7 @@ function exportPDF(items, project) {
   ).join('')
 
   const revSubCols = [1,2,3,4,5].map(() =>
-    `<th style="border:0.4pt solid #ccc;padding:2pt;font-size:5.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Sub.</th>
+    `<th style="border:0.4pt solid #ccc;padding:2pt;font-size:5.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;border-left:1.5pt solid #888">Sub.</th>
      <th style="border:0.4pt solid #ccc;padding:2pt;font-size:5.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Ret.</th>
      <th style="border:0.4pt solid #ccc;padding:2pt;font-size:5.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Sta.</th>`
   ).join('')
@@ -144,26 +149,13 @@ function exportPDF(items, project) {
     </tr>`
   ).join('')
 
-  const infoRows = [
-    ['Client / Employer', project?.client || '—'],
-    ['Consultant', project?.consultant || '—'],
-    ['Contractor', project?.contractor || 'Axion Imagineering Construction Co. W.L.L.'],
-    ['Contract No.', project?.contract_number || '—'],
-    ['Location', project?.location || '—'],
-  ].map(([l,v]) =>
-    `<tr>
-      <td style="font-size:6.5pt;font-weight:700;color:#555;padding:1.5pt 0;width:36%">${l}</td>
-      <td style="font-size:6.5pt;padding:1.5pt 0">${v}</td>
-    </tr>`
-  ).join('')
-
   const html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <title>MAR Register — ${project?.project_name || ''}</title>
 <style>
-  @page { size: A4 landscape; margin: 8mm 10mm; }
+  @page { size: A3 landscape; margin: 8mm 10mm; }
   * { box-sizing: border-box; }
   body { font-family: Arial, Helvetica, sans-serif; font-size: 7pt; margin: 0; color: #000; }
   table { border-collapse: collapse; width: 100%; }
@@ -172,60 +164,81 @@ function exportPDF(items, project) {
 </head>
 <body>
 
-<!-- TOP HEADER -->
-<table style="margin-bottom:5pt;border:1pt solid #333">
+<!-- ═══ THREE-COMPANY HEADER ═══ -->
+<table style="margin-bottom:0;border:1pt solid #1a1a2e">
   <tr>
-    <td style="width:26%;border-right:1pt solid #ccc;padding:5pt 8pt;vertical-align:middle">
-      <img src="${AXION_LOGO}" style="max-height:38pt;max-width:110pt;object-fit:contain;display:block">
+    <!-- Client / Employer -->
+    <td style="width:33.3%;border-right:1pt solid #ccc;padding:8pt 12pt;vertical-align:middle;text-align:center">
+      ${logoCell(project?.client_logo, project?.client, 'Client / Employer')}
     </td>
-    <td style="width:48%;border-right:1pt solid #ccc;padding:5pt 10pt;vertical-align:middle;text-align:center">
-      <div style="font-size:12pt;font-weight:900;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3pt">Material Approval Request Log</div>
-      <div style="font-size:8pt;font-weight:700">${project?.project_name || ''}</div>
-      <div style="font-size:6.5pt;color:#666;margin-top:1pt">${project?.project_number || ''}</div>
+    <!-- Contractor (Axion) -->
+    <td style="width:33.4%;border-right:1pt solid #ccc;padding:8pt 12pt;vertical-align:middle;text-align:center;background:#fafafa">
+      ${logoCell(AXION_LOGO, project?.contractor || 'Axion Imagineering Construction Co. W.L.L.', 'Contractor')}
     </td>
-    <td style="width:26%;padding:5pt 8pt;vertical-align:middle;text-align:center">${clientLogo || consultantLogo}</td>
+    <!-- Consultant -->
+    <td style="width:33.3%;padding:8pt 12pt;vertical-align:middle;text-align:center">
+      ${logoCell(project?.consultant_logo, project?.consultant, 'Consultant')}
+    </td>
   </tr>
 </table>
 
-<!-- INFO + SUMMARY + LEGEND -->
+<!-- ═══ TITLE BAND ═══ -->
+<table style="margin-bottom:5pt;border:1pt solid #1a1a2e;border-top:none">
+  <tr>
+    <td style="padding:6pt 14pt;text-align:center;background:#111827;color:#fff">
+      <div style="font-size:13pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Material Approval Request Log</div>
+      <div style="font-size:8pt;font-weight:600;margin-top:3pt;opacity:.85">
+        ${project?.project_name || ''}&nbsp;
+        ${project?.project_number ? `· ${project.project_number}` : ''}
+        ${project?.contract_number ? `· ${project.contract_number}` : ''}
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- ═══ SUMMARY + LEGEND ═══ -->
 <table style="margin-bottom:5pt;border:0.5pt solid #ccc">
   <tr>
-    <td style="width:36%;vertical-align:top;padding:5pt 8pt;border-right:0.5pt solid #ddd">
-      <div style="font-size:5.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:3pt;letter-spacing:.08em">Project Information</div>
-      <table style="width:100%">${infoRows}</table>
-      <div style="margin-top:4pt;font-size:6pt;color:#888">Log Updated: <b style="color:#333">${genDate}</b></div>
-    </td>
-    <td style="width:30%;vertical-align:top;padding:5pt 8pt;border-right:0.5pt solid #ddd">
+    <td style="width:35%;vertical-align:top;padding:5pt 8pt;border-right:0.5pt solid #ddd">
       <div style="font-size:5.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:3pt;letter-spacing:.08em">Register Summary</div>
       <table style="width:100%">${summaryRows}</table>
     </td>
-    <td style="width:34%;vertical-align:top;padding:5pt 8pt">
+    <td style="width:40%;vertical-align:middle;padding:5pt 8pt;border-right:0.5pt solid #ddd">
       <div style="font-size:5.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:5pt;letter-spacing:.08em">Status Legend</div>
-      <div style="display:flex;flex-direction:column;gap:3pt">${legendItems}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:3pt">${legendItems}</div>
+    </td>
+    <td style="width:25%;vertical-align:top;padding:5pt 8pt">
+      <div style="font-size:5.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:3pt;letter-spacing:.08em">Log Info</div>
+      <table style="width:100%">
+        <tr><td style="font-size:6.5pt;font-weight:700;color:#555;padding:1.5pt 0">Location</td><td style="font-size:6.5pt;padding:1.5pt 0">${project?.location || '—'}</td></tr>
+        <tr><td style="font-size:6.5pt;font-weight:700;color:#555;padding:1.5pt 0">Contract No.</td><td style="font-size:6.5pt;padding:1.5pt 0">${project?.contract_number || '—'}</td></tr>
+        <tr><td style="font-size:6.5pt;font-weight:700;color:#555;padding:1.5pt 0">Updated</td><td style="font-size:6.5pt;padding:1.5pt 0"><b>${genDate}</b></td></tr>
+      </table>
     </td>
   </tr>
 </table>
 
-<!-- MAR TABLE -->
+<!-- ═══ MAR REGISTER TABLE ═══ -->
 <table>
   <thead>
     <tr>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:1.5%">Sr.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:7%">MAR Ref. No</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:14%">MAR Subject</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:9.5%">Manufacturer / Product</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:7%">Supplier</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Sub. Date</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Resp. Date</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:2%">Rev.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:2.5%">Status</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:7%">Remarks</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:1.2%">Sr.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:6.5%">MAR Ref. No</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:13%">MAR Subject</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:9%">Manufacturer / Product</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:6.5%">Supplier</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:3%">Sub.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:3%">Ret.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:1.8%">Rev.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:2%">Sta.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:5.5%">MAC Ref.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:5.5pt;font-weight:700;background:#111827;color:#fff;width:6%">Remarks</th>
       ${revHeaderCols}
     </tr>
     <tr>${revSubCols}</tr>
   </thead>
   <tbody>
-    ${tableRows || '<tr><td colspan="25" style="text-align:center;padding:14pt;color:#aaa;font-size:7pt">No MAR records for this project</td></tr>'}
+    ${tableRows || '<tr><td colspan="26" style="text-align:center;padding:14pt;color:#aaa;font-size:7pt">No MAR records for this project</td></tr>'}
   </tbody>
 </table>
 
@@ -235,7 +248,7 @@ function exportPDF(items, project) {
 </body>
 </html>`
 
-  const win = window.open('', '_blank', 'width=1200,height=800')
+  const win = window.open('', '_blank', 'width=1400,height=900')
   win.document.write(html)
   win.document.close()
   win.focus()
@@ -468,6 +481,7 @@ export default function MARRegister() {
                 <th style={{ minWidth: 90 }}>Responded</th>
                 <th style={{ minWidth: 48 }}>Rev.</th>
                 <th style={{ minWidth: 72 }}>Status</th>
+                <th style={{ minWidth: 100 }}>MAC Ref.</th>
                 <th style={{ minWidth: 120 }}>Remarks</th>
                 {[1,2,3,4,5].map(n => (
                   <>
@@ -494,6 +508,7 @@ export default function MARRegister() {
                     <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.responded_date || '—'}</td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--brand-accent)', textAlign: 'center' }}>{m.revision_no || '—'}</td>
                     <td><StatusBadge status={m.current_status} /></td>
+                    <td style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: m.mac_ref_no ? 700 : 400, color: m.mac_ref_no ? '#1E40AF' : 'var(--text-muted)' }}>{m.mac_ref_no || '—'}</td>
                     <td style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.remarks || '—'}</td>
                     {[1,2,3,4,5].map(n => {
                       const r = hist.find(h => String(h.rev_no) === `R${n}`) || {}
@@ -617,6 +632,14 @@ export default function MARRegister() {
                     <option key={s} value={s}>{MAR_STATUS[s].code} — {s}</option>
                   ))}
                 </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Linked MAC Ref. No</label>
+                <input className="form-input" value={form.mac_ref_no}
+                  onChange={e => set('mac_ref_no', e.target.value)}
+                  placeholder="IF05-AI-2026-00001"
+                  style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#1E40AF' }}
+                />
               </div>
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label className="form-label">Remarks</label>

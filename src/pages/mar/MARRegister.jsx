@@ -262,11 +262,13 @@ export default function MARRegister() {
   const canEdit = ['Admin', 'PM', 'Document Control', 'Manager'].includes(profile?.role)
 
   useEffect(() => {
+    if (!activeProject) return
     loadData()
     supplierService.dropdown().then(setSuppliers)
   }, [activeProject])
 
   async function loadData() {
+    if (!activeProject) return
     setLoading(true)
     const { data, error } = await supabase
       .from('mars')
@@ -324,7 +326,7 @@ export default function MARRegister() {
       toast('MAR Ref No and Subject are required', 'err')
       return
     }
-    const payload = { ...form, project_code: activeProject.project_code, updated_at: new Date().toISOString() }
+    const payload = { ...form, project_code: activeProject?.project_code, updated_at: new Date().toISOString() }
     if (editItem) {
       const { error } = await supabase.from('mars').update(payload).eq('id', editItem.id)
       if (error) { toast('Save failed — ' + error.message, 'err'); return }
@@ -369,6 +371,12 @@ export default function MARRegister() {
   }
 
   const supplierNames = [...new Set(items.map(m => m.supplier_name).filter(Boolean))]
+
+  if (!activeProject) return (
+    <div style={{ padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>
+      Select an active project to view the MAR Register.
+    </div>
+  )
 
   return (
     <div>

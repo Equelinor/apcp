@@ -1,102 +1,167 @@
 // ════════════════════════════════════════════════════════════
-// APCP v3 — Sidebar (Information Architecture v1.0)
-// Lifecycle-based navigation: Setup → Execution → Control → Closeout → Admin
-// Backend, services, routes, and schema: UNCHANGED
+// APCP v1.0 — Sidebar (Master Information Architecture)
+// 9-section lifecycle: Setup → Doc Control → Procurement →
+//   Site Execution → QAQC → Project Controls → HSE → Closeout → Admin
+// Routes are unchanged — only the grouping is reorganised.
 // ════════════════════════════════════════════════════════════
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useProject } from '../context/ProjectContext'
 import {
-  // Home
-  Home, Bell, CheckSquare,
-  // Setup
-  FolderKanban, BarChart2, BookOpen, Library, Workflow,
-  // Execution
-  ShoppingCart, FileText, ClipboardCheck, FolderOpen,
-  MessageSquare, Flag, HardHat, Truck,
-  // Control
-  TrendingUp, Shield, BarChart, FileSearch, DollarSign,
-  AlertTriangle, Clock, LayoutDashboard,
+  // Home / workspace
+  LayoutDashboard, BarChart,
+  // Project Setup
+  FolderKanban, BarChart2, Building2, BookOpen, Library, Workflow, Settings,
+  // Document Control
+  FolderOpen, FileSearch, ClipboardCheck, Layers, FileText, Mail, MessageSquare,
+  // Procurement
+  ShoppingCart, ClipboardList, Truck, Package, TrendingUp,
+  // Site Execution
+  HardHat, Flag, Eye, Camera, Users, Wrench,
+  // QAQC
+  Shield, CheckSquare,
+  // Project Controls
+  Clock, AlertTriangle, DollarSign,
   // Closeout
   CheckCircle, Archive, FileBox, Key,
   // Admin
-  Users, Settings, Building2, ClipboardList, Layers,
   // UI
-  ChevronDown, ChevronRight, LogOut,
+  Bell, ChevronDown, ChevronRight, LogOut,
 } from 'lucide-react'
 import { useState } from 'react'
 
-// ── Navigation structure ───────────────────────────────────
+// ── Navigation structure (master IA v1.0) ─────────────────
 const NAV = [
   {
     group: 'HOME',
     emoji: '🏠',
     defaultOpen: true,
     items: [
-      { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+      { to: '/',          label: 'My Workspace',       icon: LayoutDashboard, exact: true },
+      { to: '/executive', label: 'Executive Snapshot', icon: BarChart,        soon: true  },
     ],
   },
   {
-    group: 'PROJECT SETUP',
+    group: '1 · PROJECT SETUP',
     emoji: '🏗',
     defaultOpen: true,
     items: [
-      { to: '/projects',          label: 'Project Information', icon: FolderKanban },
-      { to: '/boq',               label: 'BOQ',                 icon: BarChart2 },
-      { to: '/drawing-register',  label: 'Drawings Register',   icon: BookOpen },
-      { to: '/document-register', label: 'Document Register',   icon: Library },
-      { to: '/suppliers',         label: 'Supplier Register',   icon: Building2 },
+      { to: '/projects',  label: 'Project Information', icon: FolderKanban  },
+      { to: '/boq',       label: 'BOQ Register',        icon: BarChart2     },
+      { to: '/suppliers', label: 'Supplier Register',   icon: Building2     },
+      { to: '/stakeholders',      label: 'Stakeholders',         icon: Users,     soon: true },
+      { to: '/directory',         label: 'Project Directory',    icon: BookOpen,  soon: true },
+      { to: '/workflow-config',   label: 'Workflow Config',      icon: Workflow,  soon: true },
+      { to: '/project-settings',  label: 'Project Settings',     icon: Settings,  soon: true },
     ],
   },
   {
-    group: 'EXECUTION',
-    emoji: '🚧',
-    defaultOpen: true,
+    group: '2 · DOCUMENT CONTROL',
+    emoji: '📄',
+    defaultOpen: false,
     items: [
-      { to: '/mrfs',         label: 'Material Requests',    icon: FileText },
-      { to: '/procurement',  label: 'Procurement',          icon: ShoppingCart },
-      { to: '/delivery',     label: 'Delivery Tracking',    icon: Truck },
-      { to: '/mac',          label: 'Material Approvals',   icon: ClipboardCheck },
-      { to: '/shop-drawings',label: 'Shop Drawings',        icon: FolderOpen },
-      { to: '/submittals',   label: 'Doc Submittals',       icon: FileSearch },
-      { to: '/rfi',          label: 'RFIs',                 icon: MessageSquare },
-      { to: '/ir',           label: 'Inspection Requests',  icon: Flag },
-      { to: '/mockup',       label: 'Mock-up / Sample',     icon: Layers },
-      { to: '/subcontractor',label: 'Sub-contractor',       icon: ClipboardList },
-      { to: '/dar',          label: 'Daily Activity Report',icon: HardHat },
+      { to: '/drawing-register',  label: 'Drawing Register',      icon: BookOpen       },
+      { to: '/shop-drawings',     label: 'Shop Drawings',         icon: FolderOpen     },
+      { to: '/submittals',        label: 'Technical Submittals',  icon: FileSearch     },
+      { to: '/mac',               label: 'Material Approval',     icon: ClipboardCheck },
+      { to: '/mockup',            label: 'Sample Submittals',     icon: Layers         },
+      { to: '/document-register', label: 'Document Register',     icon: Library        },
+      { to: '/transmittals',      label: 'Transmittals',          icon: FileText,      soon: true },
+      { to: '/corr-in',           label: 'Correspondence IN',     icon: Mail,          soon: true },
+      { to: '/corr-out',          label: 'Correspondence OUT',    icon: Mail,          soon: true },
+      { to: '/minutes',           label: 'Meeting Minutes',       icon: MessageSquare, soon: true },
     ],
   },
   {
-    group: 'PROJECT CONTROL',
+    group: '3 · PROCUREMENT',
+    emoji: '🛒',
+    defaultOpen: false,
+    items: [
+      { to: '/mrfs',        label: 'Material Requests',    icon: FileText      },
+      { to: '/procurement', label: 'Purchase Orders',      icon: ClipboardList },
+      { to: '/delivery',    label: 'Delivery Tracking',    icon: Truck         },
+      { to: '/purchase-requests', label: 'Purchase Requests',   icon: ShoppingCart, soon: true },
+      { to: '/receiving',         label: 'Material Receiving',  icon: Package,      soon: true },
+      { to: '/supplier-perf',     label: 'Supplier Performance',icon: TrendingUp,   soon: true },
+    ],
+  },
+  {
+    group: '4 · SITE EXECUTION',
+    emoji: '🚧',
+    defaultOpen: false,
+    items: [
+      { to: '/dar',              label: 'Daily Activity Report', icon: HardHat    },
+      { to: '/site-instructions',label: 'Site Instructions',     icon: Flag,      soon: true },
+      { to: '/site-observations',label: 'Site Observations',     icon: Eye,       soon: true },
+      { to: '/site-photos',      label: 'Site Photos',           icon: Camera,    soon: true },
+      { to: '/labour',           label: 'Labour Summary',        icon: Users,     soon: true },
+      { to: '/equipment',        label: 'Equipment Log',         icon: Wrench,    soon: true },
+    ],
+  },
+  {
+    group: '5 · QA / QC',
+    emoji: '✅',
+    defaultOpen: false,
+    items: [
+      { to: '/ir',           label: 'Inspection Requests',   icon: ClipboardCheck },
+      { to: '/rfi',          label: 'RFIs',                  icon: MessageSquare  },
+      { to: '/mir',          label: 'Material Inspection',   icon: Package,        soon: true },
+      { to: '/alt-material', label: 'Alt. Material Request', icon: Layers,         soon: true },
+      { to: '/ncr',          label: 'NCR',                   icon: Shield,         soon: true },
+      { to: '/punchlist',    label: 'Punch List',            icon: CheckSquare,    soon: true },
+      { to: '/quality',      label: 'Quality Dashboard',     icon: BarChart,       soon: true },
+    ],
+  },
+  {
+    group: '6 · PROJECT CONTROLS',
     emoji: '📊',
     defaultOpen: false,
     items: [
-      { to: '/boq',          label: 'Progress Monitoring',  icon: TrendingUp },
-      { to: '/ncr',          label: 'Quality / NCR',        icon: Shield,        soon: true },
-      { to: '/delays',       label: 'Delay Register',       icon: Clock,         soon: true },
-      { to: '/risks',        label: 'Risk Register',        icon: AlertTriangle, soon: true },
-      { to: '/commercial',   label: 'Commercial Overview',  icon: DollarSign,    soon: true },
-      { to: '/reports',      label: 'Executive Dashboard',  icon: BarChart,      soon: true },
+      { to: '/boq',              label: 'Progress Monitoring',   icon: TrendingUp     },
+      { to: '/procurement-status',label: 'Procurement Status',   icon: ShoppingCart,  soon: true },
+      { to: '/doc-status',       label: 'Document Status',       icon: FileSearch,    soon: true },
+      { to: '/delays',           label: 'Delay Register',        icon: Clock,         soon: true },
+      { to: '/risks',            label: 'Risk Register',         icon: AlertTriangle, soon: true },
+      { to: '/commercial',       label: 'Commercial Dashboard',  icon: DollarSign,    soon: true },
+      { to: '/reports',          label: 'Executive Dashboard',   icon: BarChart,      soon: true },
     ],
   },
   {
-    group: 'CLOSEOUT',
+    group: '7 · HSE',
+    emoji: '🦺',
+    defaultOpen: false,
+    items: [
+      { to: '/incidents',     label: 'Incident Reports', icon: AlertTriangle, soon: true },
+      { to: '/safety-notices',label: 'Safety Notices',   icon: Bell,          soon: true },
+      { to: '/toolbox',       label: 'Toolbox Talks',    icon: HardHat,       soon: true },
+      { to: '/hse-dashboard', label: 'HSE Dashboard',    icon: Shield,        soon: true },
+    ],
+  },
+  {
+    group: '8 · CLOSEOUT',
     emoji: '📦',
     defaultOpen: false,
     items: [
-      { to: '/snagging',     label: 'Snagging',             icon: CheckCircle,   soon: true },
-      { to: '/handover',     label: 'Handover Documents',   icon: FileBox,       soon: true },
-      { to: '/asbuilt',      label: 'As-Built Drawings',    icon: Archive,       soon: true },
-      { to: '/om-manuals',   label: 'O&M Manuals',          icon: Key,           soon: true },
+      { to: '/snagging',       label: 'Snagging',            icon: CheckCircle, soon: true },
+      { to: '/desnagging',     label: 'De-snagging',         icon: CheckSquare, soon: true },
+      { to: '/asbuilt',        label: 'As-Built Drawings',   icon: Archive,     soon: true },
+      { to: '/om-manuals',     label: 'O&M Manuals',         icon: Key,         soon: true },
+      { to: '/handover',       label: 'Handover Documents',  icon: FileBox,     soon: true },
+      { to: '/closeout-report',label: 'Closeout Report',     icon: FileText,    soon: true },
     ],
   },
   {
-    group: 'ADMINISTRATION',
+    group: '9 · ADMINISTRATION',
     emoji: '⚙',
     defaultOpen: false,
+    adminOnly: true,
     items: [
-      { to: '/users',        label: 'Users',                icon: Users,         soon: true },
-      { to: '/settings',     label: 'Settings',             icon: Settings,      soon: true },
+      { to: '/users',               label: 'Users',              icon: Users,         soon: true },
+      { to: '/roles',               label: 'Roles & Permissions',icon: Shield,        soon: true },
+      { to: '/workflow-templates',  label: 'Workflow Templates', icon: Workflow,      soon: true },
+      { to: '/numbering',           label: 'Numbering Rules',    icon: ClipboardList, soon: true },
+      { to: '/company-settings',    label: 'Company Settings',   icon: Building2,     soon: true },
+      { to: '/audit',               label: 'Audit Logs',         icon: FileSearch,    soon: true },
     ],
   },
 ]
@@ -105,8 +170,12 @@ const NAV = [
 export default function Sidebar() {
   const { profile, signOut } = useAuth()
   const { activeProject } = useProject()
-  const navigate   = useNavigate()
-  const location   = useLocation()
+  const navigate  = useNavigate()
+  const location  = useLocation()
+
+  const isAdmin = ['Admin', 'Manager'].includes(profile?.role)
+
+  const visibleNav = NAV.filter(g => !g.adminOnly || isAdmin)
 
   const [collapsed, setCollapsed] = useState(() => {
     const state = {}
@@ -150,9 +219,13 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav style={{ flex: 1, overflowY: 'auto', paddingBottom: 16 }}>
-        {NAV.map(({ group, emoji, items }) => {
-          const isOpen = !collapsed[group]
-          const hasActive = items.some(i => !i.soon && (i.exact ? location.pathname === i.to : location.pathname.startsWith(i.to) && i.to !== '/'))
+        {visibleNav.map(({ group, emoji, items }) => {
+          const isOpen   = !collapsed[group]
+          const hasActive = items.some(i =>
+            !i.soon && (i.exact
+              ? location.pathname === i.to
+              : location.pathname.startsWith(i.to) && i.to !== '/')
+          )
 
           return (
             <div key={group} className="sidebar-section">
@@ -165,11 +238,14 @@ export default function Sidebar() {
                 }}
               >
                 <span style={{ fontSize: 11 }}>{emoji}</span>
-                <span className="sidebar-section-label" style={{ flex: 1, padding: 0, fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: hasActive ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.35)' }}>
+                <span className="sidebar-section-label" style={{
+                  flex: 1, padding: 0, fontSize: 9, fontWeight: 700, letterSpacing: '0.08em',
+                  color: hasActive ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.35)',
+                }}>
                   {group}
                 </span>
                 {isOpen
-                  ? <ChevronDown size={9} color="rgba(255,255,255,0.3)" />
+                  ? <ChevronDown  size={9} color="rgba(255,255,255,0.3)" />
                   : <ChevronRight size={9} color="rgba(255,255,255,0.3)" />
                 }
               </button>

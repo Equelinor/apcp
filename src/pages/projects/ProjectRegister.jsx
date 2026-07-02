@@ -74,6 +74,7 @@ export default function ProjectRegister() {
   const [editItem, setEditItem] = useState(null)
   const [form, setForm] = useState(BLANK_PROJECT)
   const [activeTab, setActiveTab] = useState('details')
+  const [justActivated, setJustActivated] = useState(null)
 
   const isAdmin = true // all authenticated users can manage projects
 
@@ -183,13 +184,32 @@ export default function ProjectRegister() {
       </div>
 
       {/* Project Cards */}
+      <style>{`
+        @keyframes cardActivate {
+          0%   { box-shadow: 0 0 0 0 rgba(var(--brand-accent-rgb, 180,30,30), 0.35); }
+          50%  { box-shadow: 0 0 0 8px rgba(var(--brand-accent-rgb, 180,30,30), 0.12); }
+          100% { box-shadow: 0 0 0 0 rgba(var(--brand-accent-rgb, 180,30,30), 0); }
+        }
+        .card-just-activated { animation: cardActivate 0.6s ease-out; }
+      `}</style>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 16, marginBottom: 24 }}>
         {loading ? (
           <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Loading…</div>
-        ) : projects.map(p => {
+        ) : [...projects]
+            .sort((a, b) => {
+              const aActive = a.project_code === activeProject?.project_code ? -1 : 0
+              const bActive = b.project_code === activeProject?.project_code ? -1 : 0
+              return aActive - bActive
+            })
+            .map(p => {
           const isActive = p.project_code === activeProject?.project_code
+          const isFlashing = p.project_code === justActivated
           return (
-            <div key={p.id} className="card" style={{ borderTop: `3px solid ${isActive ? 'var(--brand-accent)' : 'var(--border)'}`, position: 'relative' }}>
+            <div
+              key={p.id}
+              className={`card${isFlashing ? ' card-just-activated' : ''}`}
+              style={{ borderTop: `3px solid ${isActive ? 'var(--brand-accent)' : 'var(--border)'}`, position: 'relative' }}
+            >
               {isActive && (
                 <div style={{ position: 'absolute', top: 12, right: 12 }}>
                   <CheckCircle size={16} color="var(--brand-accent)" />
@@ -254,7 +274,15 @@ export default function ProjectRegister() {
                 <Badge status={p.status} label={p.status} />
                 <div style={{ display: 'flex', gap: 6 }}>
                   {!isActive && (
-                    <button className="btn btn-secondary" style={{ fontSize: 11, padding: '4px 10px' }} onClick={() => selectProject(p)}>
+                    <button
+                      className="btn btn-secondary"
+                      style={{ fontSize: 11, padding: '4px 10px' }}
+                      onClick={() => {
+                        selectProject(p)
+                        setJustActivated(p.project_code)
+                        setTimeout(() => setJustActivated(null), 700)
+                      }}
+                    >
                       Set Active
                     </button>
                   )}

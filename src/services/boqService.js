@@ -160,7 +160,7 @@ export const boqService = {
     for (const sec of sections) {
       await this.upsertSection({ ...sec, project_code: projectCode })
     }
-    // Deduplicate by item_no — last occurrence wins if CSV has duplicates
+    // Deduplicate by item_no (last occurrence wins), then upsert in chunks
     const seen = new Map()
     for (const item of items) seen.set(item.item_no, item)
     const allItems = [...seen.values()].map(i => ({ ...i, project_code: projectCode }))

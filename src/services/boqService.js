@@ -160,8 +160,10 @@ export const boqService = {
     for (const sec of sections) {
       await this.upsertSection({ ...sec, project_code: projectCode })
     }
-    // Upsert items in chunks of 50 to avoid Supabase row limits
-    const allItems = items.map(i => ({ ...i, project_code: projectCode }))
+    // Deduplicate by item_no — last occurrence wins if CSV has duplicates
+    const seen = new Map()
+    for (const item of items) seen.set(item.item_no, item)
+    const allItems = [...seen.values()].map(i => ({ ...i, project_code: projectCode }))
     const chunkSize = 50
     for (let i = 0; i < allItems.length; i += chunkSize) {
       const chunk = allItems.slice(i, i + chunkSize)

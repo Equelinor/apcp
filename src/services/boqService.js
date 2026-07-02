@@ -39,7 +39,7 @@ export const boqService = {
   async listItems(projectCode, sectionCode = null) {
     let q = supabase.from(ITEMS_TABLE).select('*').eq('project_code', projectCode)
     if (sectionCode) q = q.eq('section_code', sectionCode)
-    const { data, error } = await q.order('item_no')
+    const { data, error } = await q.order('item_no').range(0, 9999)
     if (error) { console.error(error); return [] }
     return data || []
   },
@@ -160,11 +160,13 @@ export const boqService = {
     for (const sec of sections) {
       await this.upsertSection({ ...sec, project_code: projectCode })
     }
-    // Upsert items
-    if (items.length > 0) {
+    // Upsert items in chunks of 50 to avoid Supabase row limits
+    const allItems = items.map(i => ({ ...i, project_code: projectCode }))
+    const chunkSize = 50
+    for (let i = 0; i < allItems.length; i += chunkSize) {
+      const chunk = allItems.slice(i, i + chunkSize)
       const { error } = await supabase.from(ITEMS_TABLE).upsert(
-        items.map(i => ({ ...i, project_code: projectCode })),
-        { onConflict: 'project_code,item_no' }
+        chunk, { onConflict: 'project_code,item_no' }
       )
       if (error) throw error
     }

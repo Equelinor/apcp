@@ -330,6 +330,7 @@ export default function MRFList() {
             onReject={doReject}
             onHold={doHold}
             canApprove={canApprove}
+            currency={activeProject?.currency}
           />
         </>
       )}

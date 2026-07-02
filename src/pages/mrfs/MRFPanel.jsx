@@ -21,7 +21,7 @@ function Section({ title }) {
   )
 }
 
-export default function MRFPanel({ mrf, onClose, onEdit, onApprove, onReject, onHold, canApprove }) {
+export default function MRFPanel({ mrf, onClose, onEdit, onApprove, onReject, onHold, canApprove, currency }) {
   if (!mrf) return null
 
   const ds = delayStatus(mrf)
@@ -151,7 +151,7 @@ export default function MRFPanel({ mrf, onClose, onEdit, onApprove, onReject, on
           <Info label="Quotation Ref" value={mrf.quotation_ref} mono />
           <Info label="PO Number" value={mrf.po_number} mono />
           <Info label="PO Date" value={mrf.po_date} />
-          <Info label="PO Amount" value={mrf.po_amount ? `AED ${Number(mrf.po_amount).toLocaleString()}` : null} />
+          <Info label="PO Amount" value={mrf.po_amount ? `${currency || ''} ${Number(mrf.po_amount).toLocaleString()}`.trim() : null} />
           <Info label="Expected Delivery" value={mrf.expected_delivery} warn={delWarn} />
         </div>
         {delWarn && (

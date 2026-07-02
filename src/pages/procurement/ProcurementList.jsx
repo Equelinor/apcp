@@ -93,7 +93,7 @@ export default function ProcurementList() {
         {[
           { label: 'PO Issued', value: issuedPOs, color: 'var(--status-approved-text)', bg: 'var(--status-approved-bg)' },
           { label: 'Pending PO', value: pendingPOs, color: 'var(--status-pending-text)', bg: 'var(--status-pending-bg)' },
-          { label: 'Total PO Value', value: `AED ${totalPOValue.toLocaleString()}`, color: 'var(--brand-primary)', bg: 'var(--bg-surface)' },
+          { label: 'Total PO Value', value: `${activeProject?.currency || ''} ${totalPOValue.toLocaleString()}`.trim(), color: 'var(--brand-primary)', bg: 'var(--bg-surface)' },
         ].map(s => (
           <div key={s.label} className="stat-card" style={{ borderTop: `3px solid ${s.color}` }}>
             <div className="stat-card-label">{s.label}</div>
@@ -131,7 +131,7 @@ export default function ProcurementList() {
                 <th>Quotation Ref</th>
                 <th>PO Number</th>
                 <th>PO Date</th>
-                <th>PO Amount (AED)</th>
+                <th>PO Amount ({activeProject?.currency || ''})</th>
                 <th>Expected Delivery</th>
                 <th>Delay</th>
                 {canProcure && <th></th>}
@@ -191,7 +191,7 @@ export default function ProcurementList() {
                 { label: 'Quotation Ref', field: 'quotation_ref', placeholder: 'QT-2025-0001' },
                 { label: 'PO Number', field: 'po_number', placeholder: 'PO-ANT-2025-00001' },
                 { label: 'PO Date', field: 'po_date', type: 'date' },
-                { label: 'PO Amount (AED)', field: 'po_amount', type: 'number', placeholder: '0.00' },
+                { label: `PO Amount (${activeProject?.currency || ''})`, field: 'po_amount', type: 'number', placeholder: '0.00' },
                 { label: 'Expected Delivery', field: 'expected_delivery', type: 'date' },
               ].map(({ label, field, type = 'text', placeholder }) => (
                 <div key={field} className="form-group">

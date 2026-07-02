@@ -15,7 +15,7 @@ import {
 
 // ── Helpers ────────────────────────────────────────────────
 const fmtCurrency = (v, cur) => v
-  ? `${cur || 'AED'} ${Number(v).toLocaleString('en-US', { minimumFractionDigits: 0 })}`
+  ? `${cur || ''} ${Number(v).toLocaleString('en-US', { minimumFractionDigits: 0 })}`.trim()
   : '—'
 
 const fmtDate = (d) => {

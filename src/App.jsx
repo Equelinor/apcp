@@ -20,6 +20,7 @@ import SupplierRegister from './pages/suppliers/SupplierRegister'
 import ProjectRegister from './pages/projects/ProjectRegister'
 import DARList from './pages/dar/DARList'
 import BOQRegister from './pages/boq/BOQRegister'
+import MARRegister from './pages/mar/MARRegister'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="projects" element={<ProjectRegister />} />
         <Route path="dar" element={<DARList />} />
         <Route path="boq" element={<BOQRegister />} />
+        <Route path="mar" element={<MARRegister />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

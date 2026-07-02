@@ -160,13 +160,16 @@ export const boqService = {
     for (const sec of sections) {
       await this.upsertSection({ ...sec, project_code: projectCode })
     }
-    // Upsert items in chunks of 50 to avoid Supabase row limits
-    const allItems = items.map(i => ({ ...i, project_code: projectCode }))
-    const chunkSize = 50
-    for (let i = 0; i < allItems.length; i += chunkSize) {
-      const chunk = allItems.slice(i, i + chunkSize)
+    // Deduplicate by project_code+item_no (last one wins), then upsert one by one
+    const itemMap = new Map()
+    items.forEach(i => {
+      const key = `${projectCode}|||${i.item_no}`
+      itemMap.set(key, { ...i, project_code: projectCode })
+    })
+    const uniqueItems = Array.from(itemMap.values())
+    for (const item of uniqueItems) {
       const { error } = await supabase.from(ITEMS_TABLE).upsert(
-        chunk, { onConflict: 'project_code,item_no' }
+        item, { onConflict: 'project_code,item_no' }
       )
       if (error) throw error
     }

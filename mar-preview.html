@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MAR Register — PDF Preview</title>
+<style>
+  @page { size: A4 landscape; margin: 8mm 10mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 7pt;
+    margin: 0;
+    color: #000;
+    background: #e5e7eb;
+    padding: 20px;
+  }
+  .page {
+    background: #fff;
+    width: 277mm;
+    margin: 0 auto;
+    padding: 8mm 10mm;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+  }
+  table { border-collapse: collapse; width: 100%; }
+
+  /* ── header band ── */
+  .hdr-logo { font-size: 18pt; font-weight: 900; color: #8B1A1A; letter-spacing: .04em; }
+  .hdr-sub  { font-size: 7pt; color: #555; margin-top: 1pt; }
+
+  /* ── summary table ── */
+  .sum-label { font-size: 6.5pt; color: #444; padding: 1.5pt 0; }
+  .sum-val   { font-size: 7pt; font-weight: 700; text-align: right; padding: 1.5pt 0; }
+
+  /* ── main register table ── */
+  .reg th {
+    font-size: 5.5pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .04em; padding: 3pt 4pt;
+    background: #111827; color: #fff;
+    border: 0.5pt solid #666;
+    text-align: center;
+  }
+  .reg .rev-th {
+    background: #374151; color: #fff;
+    font-size: 6pt; font-weight: 700;
+    border: 0.5pt solid #888;
+    text-align: center; padding: 3pt 2pt;
+  }
+  .reg .rev-sub-th {
+    background: #4b5563; color: #e5e7eb;
+    font-size: 5.5pt; font-weight: 700;
+    border: 0.4pt solid #aaa;
+    text-align: center; padding: 2pt;
+  }
+  .reg td {
+    font-size: 6.5pt; border: 0.4pt solid #ccc;
+    padding: 2.5pt 4pt; vertical-align: middle;
+  }
+  .reg .rev-td {
+    font-size: 6pt; border: 0.4pt solid #ccc;
+    padding: 2pt 3pt; text-align: center; vertical-align: middle;
+    border-left: 1.5pt solid #bbb;
+    background: #f9fafb;
+  }
+  .reg .rev-td-mid  { font-size: 6pt; border: 0.4pt solid #ccc; padding: 2pt 3pt; text-align: center; background: #f9fafb; vertical-align: middle; }
+  .reg .rev-td-sta  { font-size: 6.5pt; font-weight: 700; border: 0.4pt solid #ccc; padding: 2pt 3pt; text-align: center; vertical-align: middle; }
+  .reg tr:nth-child(even) td,
+  .reg tr:nth-child(even) .rev-td,
+  .reg tr:nth-child(even) .rev-td-mid { background: #f9fafb; }
+  .reg tr:nth-child(even) .rev-td-sta { } /* keep colour */
+  .mono { font-family: 'Courier New', monospace; font-weight: 700; font-size: 6.5pt; }
+  .status-a  { background: #D1FAE5; color: #065F46; }
+  .status-b  { background: #FEF3C7; color: #92400E; }
+  .status-c  { background: #FFEDD5; color: #9A3412; }
+  .status-d  { background: #FEE2E2; color: #991B1B; }
+  .status-ur { background: #DBEAFE; color: #1E40AF; }
+  .status-pnd{ background: #F1F5F9; color: #64748B; }
+  .lbl { font-size: 5.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #888; margin-bottom: 3pt; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══════════════════════════════════════════════════
+     TOP HEADER
+══════════════════════════════════════════════════ -->
+<table style="margin-bottom:5pt;border:1pt solid #333">
+  <tr>
+    <!-- Contractor -->
+    <td style="width:26%;border-right:1pt solid #ccc;padding:6pt 10pt;vertical-align:middle">
+      <div class="hdr-logo">AXION</div>
+      <div style="font-size:6.5pt;font-weight:700;color:#333;letter-spacing:.08em">IMAGINEERING CONSTRUCTIONS CO. W.L.L.</div>
+    </td>
+    <!-- Title -->
+    <td style="width:48%;border-right:1pt solid #ccc;padding:6pt 10pt;vertical-align:middle;text-align:center">
+      <div style="font-size:11pt;font-weight:900;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3pt">Material Approval Request Log</div>
+      <div style="font-size:8pt;font-weight:700">Six Storey Building for Commercial Office — Al Seef, Bahrain</div>
+      <div style="font-size:6.5pt;color:#666;margin-top:1.5pt">AX-2026-0632 &nbsp;·&nbsp; CTR-2026-0001 &nbsp;·&nbsp; Lump Sum Contract</div>
+    </td>
+    <!-- Client / Consultant placeholder -->
+    <td style="width:26%;padding:6pt 10pt;vertical-align:middle;text-align:center">
+      <div style="font-size:8pt;font-weight:700;color:#333">Architype Architects</div>
+      <div style="font-size:6pt;color:#888;margin-top:2pt">Consultant</div>
+    </td>
+  </tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════
+     INFO · SUMMARY · LEGEND ROW
+══════════════════════════════════════════════════ -->
+<table style="margin-bottom:5pt;border:0.5pt solid #ccc">
+  <tr>
+    <!-- Project info -->
+    <td style="width:36%;vertical-align:top;padding:5pt 8pt;border-right:0.5pt solid #ddd">
+      <div class="lbl">Project Information</div>
+      <table style="width:100%">
+        <tr><td class="sum-label" style="width:36%;font-weight:700;color:#555">Client / Employer</td><td class="sum-label">Ebrahim K. Kanoo</td></tr>
+        <tr><td class="sum-label" style="font-weight:700;color:#555">Consultant</td><td class="sum-label">Architype Architects</td></tr>
+        <tr><td class="sum-label" style="font-weight:700;color:#555">Contractor</td><td class="sum-label">Axion Imagineering Construction Co. W.L.L.</td></tr>
+        <tr><td class="sum-label" style="font-weight:700;color:#555">Contract No.</td><td class="sum-label">CTR-2026-0001</td></tr>
+        <tr><td class="sum-label" style="font-weight:700;color:#555">Location</td><td class="sum-label">Al Seef, Bahrain</td></tr>
+      </table>
+      <div style="margin-top:4pt;font-size:6pt;color:#888">Log Updated: <b style="color:#333">02 Jul 2026</b></div>
+    </td>
+    <!-- Summary -->
+    <td style="width:30%;vertical-align:top;padding:5pt 8pt;border-right:0.5pt solid #ddd">
+      <div class="lbl">Register Summary</div>
+      <table style="width:100%">
+        <tr><td class="sum-label">Total MARs</td><td class="sum-val">24</td></tr>
+        <tr><td class="sum-label">Submitted to Consultant</td><td class="sum-val">24</td></tr>
+        <tr><td class="sum-label">Under Review</td><td class="sum-val" style="color:#1E40AF">5</td></tr>
+        <tr><td class="sum-label">Approved (A)</td><td class="sum-val" style="color:#065F46">11</td></tr>
+        <tr><td class="sum-label">Approved with Comments (B)</td><td class="sum-val" style="color:#92400E">4</td></tr>
+        <tr><td class="sum-label">Revised &amp; Resubmit (C)</td><td class="sum-val" style="color:#9A3412">2</td></tr>
+        <tr><td class="sum-label">Rejected (D)</td><td class="sum-val" style="color:#991B1B">1</td></tr>
+        <tr><td class="sum-label">Pending Submission</td><td class="sum-val" style="color:#64748B">1</td></tr>
+      </table>
+    </td>
+    <!-- Legend -->
+    <td style="width:34%;vertical-align:top;padding:5pt 8pt">
+      <div class="lbl">Status Legend</div>
+      <div style="display:flex;flex-direction:column;gap:3pt">
+        <div style="display:flex;align-items:center;gap:5pt">
+          <span style="display:inline-block;min-width:22pt;padding:1.5pt 4pt;background:#D1FAE5;color:#065F46;font-size:6.5pt;font-weight:700;border-radius:2pt;text-align:center">A</span>
+          <span style="font-size:6.5pt;color:#333">Approved</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5pt">
+          <span style="display:inline-block;min-width:22pt;padding:1.5pt 4pt;background:#FEF3C7;color:#92400E;font-size:6.5pt;font-weight:700;border-radius:2pt;text-align:center">B</span>
+          <span style="font-size:6.5pt;color:#333">Approved with Comments</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5pt">
+          <span style="display:inline-block;min-width:22pt;padding:1.5pt 4pt;background:#FFEDD5;color:#9A3412;font-size:6.5pt;font-weight:700;border-radius:2pt;text-align:center">C</span>
+          <span style="font-size:6.5pt;color:#333">Revised and Resubmit</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5pt">
+          <span style="display:inline-block;min-width:22pt;padding:1.5pt 4pt;background:#FEE2E2;color:#991B1B;font-size:6.5pt;font-weight:700;border-radius:2pt;text-align:center">D</span>
+          <span style="font-size:6.5pt;color:#333">Rejected</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5pt">
+          <span style="display:inline-block;min-width:22pt;padding:1.5pt 4pt;background:#DBEAFE;color:#1E40AF;font-size:6.5pt;font-weight:700;border-radius:2pt;text-align:center">UR</span>
+          <span style="font-size:6.5pt;color:#333">Under Review</span>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════
+     MAR REGISTER TABLE
+══════════════════════════════════════════════════ -->
+<table class="reg">
+  <thead>
+    <tr>
+      <th rowspan="2" style="width:1.5%">Sr.</th>
+      <th rowspan="2" style="width:7%">MAR Ref. No</th>
+      <th rowspan="2" style="width:13.5%">MAR Subject</th>
+      <th rowspan="2" style="width:9.5%">Manufacturer / Product</th>
+      <th rowspan="2" style="width:7%">Supplier</th>
+      <th rowspan="2" style="width:3.5%">Sub. Date</th>
+      <th rowspan="2" style="width:3.5%">Resp. Date</th>
+      <th rowspan="2" style="width:2%">Rev.</th>
+      <th rowspan="2" style="width:2.5%">Status</th>
+      <th rowspan="2" style="width:7.5%">Remarks</th>
+      <th colspan="3" class="rev-th" style="width:9%">REV. 1</th>
+      <th colspan="3" class="rev-th" style="width:9%">REV. 2</th>
+      <th colspan="3" class="rev-th" style="width:9%">REV. 3</th>
+      <th colspan="3" class="rev-th" style="width:9%">REV. 4</th>
+      <th colspan="3" class="rev-th" style="width:9%">REV. 5</th>
+    </tr>
+    <tr>
+      <th class="rev-sub-th">Sub.</th><th class="rev-sub-th">Ret.</th><th class="rev-sub-th">Sta.</th>
+      <th class="rev-sub-th">Sub.</th><th class="rev-sub-th">Ret.</th><th class="rev-sub-th">Sta.</th>
+      <th class="rev-sub-th">Sub.</th><th class="rev-sub-th">Ret.</th><th class="rev-sub-th">Sta.</th>
+      <th class="rev-sub-th">Sub.</th><th class="rev-sub-th">Ret.</th><th class="rev-sub-th">Sta.</th>
+      <th class="rev-sub-th">Sub.</th><th class="rev-sub-th">Ret.</th><th class="rev-sub-th">Sta.</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- ROW 1 -->
+    <tr>
+      <td style="text-align:center;color:#888">1</td>
+      <td class="mono">MAR-AI-001</td>
+      <td>8-32mm Reinforcement Steel</td>
+      <td>Manama Steel — Grade 60</td>
+      <td>Ever Build Co.</td>
+      <td style="text-align:center">01/06/25</td>
+      <td style="text-align:center">15/06/25</td>
+      <td style="text-align:center;font-weight:700;color:#8B1A1A">R1</td>
+      <td class="status-a rev-td-sta">A</td>
+      <td style="color:#555">Approved. Mill certs attached.</td>
+      <td class="rev-td">01/06/25</td><td class="rev-td-mid">15/06/25</td><td class="rev-td-sta status-a">A</td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+    </tr>
+
+    <!-- ROW 2 -->
+    <tr>
+      <td style="text-align:center;color:#888">2</td>
+      <td class="mono">MAR-AI-002</td>
+      <td>Hollow Concrete Blocks 100/150/200/250/300mm</td>
+      <td>Almanaratain Co.</td>
+      <td>Almanaratain</td>
+      <td style="text-align:center">01/06/25</td>
+      <td style="text-align:center">18/06/25</td>
+      <td style="text-align:center;font-weight:700;color:#8B1A1A">R1</td>
+      <td class="status-b rev-td-sta">B</td>
+      <td style="color:#555">Approved w/ comments on face texture.</td>
+      <td class="rev-td">01/06/25</td><td class="rev-td-mid">18/06/25</td><td class="rev-td-sta status-b">B</td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+    </tr>
+
+    <!-- ROW 3 — resubmitted, now approved -->
+    <tr>
+      <td style="text-align:center;color:#888">3</td>
+      <td class="mono">MAR-AI-003</td>
+      <td>SBS Waterproofing Membrane Type A — 4mm</td>
+      <td>Sika Gulf — SikaBit P-14</td>
+      <td>Sika Gulf</td>
+      <td style="text-align:center">05/06/25</td>
+      <td style="text-align:center">20/07/25</td>
+      <td style="text-align:center;font-weight:700;color:#8B1A1A">R2</td>
+      <td class="status-a rev-td-sta">A</td>
+      <td style="color:#555">2nd submission approved.</td>
+      <td class="rev-td">05/06/25</td><td class="rev-td-mid">25/06/25</td><td class="rev-td-sta status-c">C</td>
+      <td class="rev-td">10/07/25</td><td class="rev-td-mid">20/07/25</td><td class="rev-td-sta status-a">A</td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+    </tr>
+
+    <!-- ROW 4 — under review -->
+    <tr>
+      <td style="text-align:center;color:#888">4</td>
+      <td class="mono">MAR-AI-004</td>
+      <td>Ceramic Floor Tiles 600×600 Porcelain Matt</td>
+      <td>RAK Ceramics — Slate Grey</td>
+      <td>RAK Ceramics</td>
+      <td style="text-align:center">12/06/25</td>
+      <td style="text-align:center"></td>
+      <td style="text-align:center;font-weight:700;color:#8B1A1A">R0</td>
+      <td class="status-ur rev-td-sta">UR</td>
+      <td style="color:#555">Awaiting consultant response.</td>
+      <td class="rev-td">12/06/25</td><td class="rev-td-mid"></td><td class="rev-td-sta status-ur">UR</td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+    </tr>
+
+    <!-- ROW 5 — rejected then resubmitted, then approved -->
+    <tr>
+      <td style="text-align:center;color:#888">5</td>
+      <td class="mono">MAR-AI-005</td>
+      <td>Aluminium Doors &amp; Windows — Series 55 Thermal Break</td>
+      <td>Alco — ThermoBreak 55</td>
+      <td>Gulf Aluminium</td>
+      <td style="text-align:center">15/06/25</td>
+      <td style="text-align:center">22/08/25</td>
+      <td style="text-align:center;font-weight:700;color:#8B1A1A">R3</td>
+      <td class="status-a rev-td-sta">A</td>
+      <td style="color:#555">Approved 3rd submission.</td>
+      <td class="rev-td">15/06/25</td><td class="rev-td-mid">30/06/25</td><td class="rev-td-sta status-d">D</td>
+      <td class="rev-td">20/07/25</td><td class="rev-td-mid">05/08/25</td><td class="rev-td-sta status-c">C</td>
+      <td class="rev-td">15/08/25</td><td class="rev-td-mid">22/08/25</td><td class="rev-td-sta status-a">A</td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+    </tr>
+
+    <!-- ROW 6 -->
+    <tr>
+      <td style="text-align:center;color:#888">6</td>
+      <td class="mono">MAR-AI-006</td>
+      <td>Structural Steel Grade S275JR — Columns &amp; Beams</td>
+      <td>Emirates Steel — S275JR</td>
+      <td>Emirates Steel</td>
+      <td style="text-align:center">20/06/25</td>
+      <td style="text-align:center">08/07/25</td>
+      <td style="text-align:center;font-weight:700;color:#8B1A1A">R1</td>
+      <td class="status-a rev-td-sta">A</td>
+      <td style="color:#555">MTC verified.</td>
+      <td class="rev-td">20/06/25</td><td class="rev-td-mid">08/07/25</td><td class="rev-td-sta status-a">A</td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+    </tr>
+
+    <!-- ROW 7 -->
+    <tr>
+      <td style="text-align:center;color:#888">7</td>
+      <td class="mono">MAR-AI-007</td>
+      <td>Paint System — External Masonry Acrylic</td>
+      <td>Jotun — Jotashield Extreme</td>
+      <td>Jotun Bahrain</td>
+      <td style="text-align:center">01/07/25</td>
+      <td style="text-align:center">18/07/25</td>
+      <td style="text-align:center;font-weight:700;color:#8B1A1A">R1</td>
+      <td class="status-b rev-td-sta">B</td>
+      <td style="color:#555">Colour shade to be reconfirmed.</td>
+      <td class="rev-td">01/07/25</td><td class="rev-td-mid">18/07/25</td><td class="rev-td-sta status-b">B</td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+    </tr>
+
+    <!-- ROW 8 -->
+    <tr>
+      <td style="text-align:center;color:#888">8</td>
+      <td class="mono">MAR-AI-008</td>
+      <td>Raised Access Floor System — 600×600 Steel Panel</td>
+      <td>Kingspan — Raised Floor RF</td>
+      <td>Kingspan ME</td>
+      <td style="text-align:center">10/07/25</td>
+      <td style="text-align:center"></td>
+      <td style="text-align:center;font-weight:700;color:#8B1A1A">R0</td>
+      <td class="status-ur rev-td-sta">UR</td>
+      <td style="color:#555"></td>
+      <td class="rev-td">10/07/25</td><td class="rev-td-mid"></td><td class="rev-td-sta status-ur">UR</td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+    </tr>
+
+    <!-- ROW 9 — pending -->
+    <tr>
+      <td style="text-align:center;color:#888">9</td>
+      <td class="mono">MAR-AI-009</td>
+      <td>HVAC Ductwork — Galvanised Sheet Steel</td>
+      <td>TBA</td>
+      <td></td>
+      <td style="text-align:center"></td>
+      <td style="text-align:center"></td>
+      <td style="text-align:center;font-weight:700;color:#8B1A1A">R0</td>
+      <td class="status-pnd rev-td-sta">PND</td>
+      <td style="color:#555">Pending supplier selection.</td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+      <td class="rev-td"></td><td class="rev-td-mid"></td><td class="rev-td-sta"></td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!-- ── Footer ── -->
+<div style="margin-top:5pt;padding-top:4pt;border-top:0.5pt solid #ddd;font-size:5.5pt;color:#aaa;text-align:center">
+  Generated by APCP &nbsp;·&nbsp; 02 Jul 2026 &nbsp;·&nbsp; This is a controlled register — do not alter
+</div>
+
+</div><!-- /page -->
+</body>
+</html>

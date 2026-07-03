@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext'
 import AppLayout from './layouts/AppLayout'
 import AuthLayout from './layouts/AuthLayout'
 import Login from './pages/Login'
+import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
 import MRFList from './pages/mrfs/MRFList'
 import ProcurementList from './pages/procurement/ProcurementList'
@@ -24,6 +25,7 @@ import MARRegister from './pages/mar/MARRegister'
 import RFIRegister from './pages/rfi/RFIRegister'
 import SDRegister from './pages/sd/SDRegister'
 import IRRegister from './pages/ir/IRRegister'
+import RolesPermissions from './pages/admin/RolesPermissions'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -37,6 +39,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={session ? <Navigate to="/" replace /> : <AuthLayout><Login /></AuthLayout>} />
+      <Route path="/signup" element={session ? <Navigate to="/" replace /> : <AuthLayout><SignUp /></AuthLayout>} />
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="mrfs" element={<MRFList />} />
@@ -59,6 +62,7 @@ export default function App() {
         <Route path="dar" element={<DARList />} />
         <Route path="boq" element={<BOQRegister />} />
         <Route path="mar" element={<MARRegister />} />
+        <Route path="roles" element={<RolesPermissions />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

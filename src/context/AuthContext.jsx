@@ -30,12 +30,22 @@ export function AuthProvider({ children }) {
       .select('*')
       .eq('id', userId)
       .single()
+    if (data?.account_status === 'Disabled') {
+      await supabase.auth.signOut()
+      setProfile(null)
+      setLoading(false)
+      return
+    }
     setProfile(data)
     setLoading(false)
   }
 
   async function signIn(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (!error && data?.user) {
+      // best-effort — doesn't block login if it fails
+      supabase.from('profiles').update({ last_login: new Date().toISOString() }).eq('id', data.user.id)
+    }
     return { error }
   }
 

@@ -161,7 +161,7 @@ const NAV = [
     adminOnly: true,
     items: [
       { to: '/users',               label: 'Users',              icon: Users,         soon: true },
-      { to: '/roles',               label: 'Roles & Permissions',icon: Shield,        soon: true },
+      { to: '/roles',               label: 'Roles & Permissions',icon: Shield        },
       { to: '/workflow-templates',  label: 'Workflow Templates', icon: Workflow,      soon: true },
       { to: '/numbering',           label: 'Numbering Rules',    icon: ClipboardList, soon: true },
       { to: '/company-settings',    label: 'Company Settings',   icon: Building2,     soon: true },
@@ -177,7 +177,7 @@ export default function Sidebar() {
   const navigate  = useNavigate()
   const location  = useLocation()
 
-  const isAdmin = ['Admin', 'Manager'].includes(profile?.role)
+  const isAdmin = profile?.role === 'Admin'
 
   const visibleNav = NAV.filter(g => !g.adminOnly || isAdmin)
 

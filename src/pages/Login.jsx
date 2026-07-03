@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { userService } from '../services/userService'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { AXION_BRAND_LOGO } from '../utils/axionBrandLogo'
 
@@ -9,13 +11,25 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [showPw, setShowPw]     = useState(false)
   const [error, setError]       = useState('')
+  const [notice, setNotice]     = useState('')
   const [loading, setLoading]   = useState(false)
 
   async function handleLogin() {
     if (!email || !password) { setError('Email and password are required.'); return }
-    setLoading(true); setError('')
+    setLoading(true); setError(''); setNotice('')
     const { error: err } = await signIn(email, password)
     if (err) { setError(err.message); setLoading(false) }
+  }
+
+  async function handleForgotPassword() {
+    if (!email) { setError('Enter your email above first, then click "Forgot password".'); return }
+    setError(''); setNotice('')
+    try {
+      await userService.resetPassword(email)
+      setNotice('Password reset link sent — check your email.')
+    } catch (err) {
+      setError(err.message || 'Could not send reset email.')
+    }
   }
 
   return (
@@ -167,7 +181,14 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Error */}
+        {/* Forgot password */}
+        <div style={{ textAlign: 'right', marginBottom: 16, marginTop: -12 }}>
+          <button onClick={handleForgotPassword} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', fontSize: 11.5, padding: 0 }}>
+            Forgot password?
+          </button>
+        </div>
+
+        {/* Error / notice */}
         {error && (
           <div style={{
             background: 'rgba(185,28,28,0.18)',
@@ -179,6 +200,19 @@ export default function Login() {
             marginBottom: 16,
           }}>
             {error}
+          </div>
+        )}
+        {notice && (
+          <div style={{
+            background: 'rgba(6,95,70,0.18)',
+            border: '1px solid rgba(6,95,70,0.45)',
+            borderRadius: 8,
+            padding: '9px 12px',
+            fontSize: 12,
+            color: '#A7F3D0',
+            marginBottom: 16,
+          }}>
+            {notice}
           </div>
         )}
 
@@ -211,8 +245,13 @@ export default function Login() {
           {loading ? 'Signing in…' : 'Sign In'}
         </button>
 
+        {/* New employee? */}
+        <Link to="/signup" style={{ display: 'block', textAlign: 'center', marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>
+          New employee? <span style={{ color: '#fff', fontWeight: 600 }}>Create your account</span>
+        </Link>
+
         {/* Footer */}
-        <div style={{ textAlign: 'center', marginTop: 22, fontSize: 11, color: 'rgba(255,255,255,0.22)', lineHeight: 1.6 }}>
+        <div style={{ textAlign: 'center', marginTop: 18, fontSize: 11, color: 'rgba(255,255,255,0.22)', lineHeight: 1.6 }}>
           Access is managed by your administrator<br />
           Axion Imagineering Construction Co. W.L.L
         </div>

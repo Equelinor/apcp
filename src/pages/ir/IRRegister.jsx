@@ -5,30 +5,40 @@ import { useToast, ToastContainer } from '../../utils/toast'
 import { Printer } from 'lucide-react'
 import { AXION_LOGO } from '../../utils/axionLogo'
 
-// ── Status system — derived from IF05's existing response_code / status fields
-// (not a new stored field), same convention as Shop Drawing Register ──
-const MAR_STATUS = {
-  'Pending':                  { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
-  'Under Review':             { code: 'UR',  bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
-  'Approved':                 { code: 'A',   bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
-  'Approved with Comments':   { code: 'B',   bg: '#FEF3C7', text: '#92400E', border: '#FDE68A' },
-  'Revised and Resubmit':     { code: 'C',   bg: '#FFEDD5', text: '#9A3412', border: '#FED7AA' },
-  'Rejected':                 { code: 'D',   bg: '#FEE2E2', text: '#991B1B', border: '#FCA5A5' },
-}
-const MAR_STATUS_KEYS = Object.keys(MAR_STATUS)
+// Overdue turnaround — same 7-day convention as Shop Drawing Register (IF09 has no per-record target date field either)
+const OVERDUE_DAYS = 7
 
-function computeMarStatus(d) {
-  const code = (d.response_code || '').charAt(0)
-  if (code === 'A') return 'Approved'
-  if (code === 'B') return 'Approved with Comments'
-  if (code === 'C') return 'Revised and Resubmit'
-  if (code === 'D') return 'Rejected'
+// ── Status system — same A/B/C/D/UR convention as MAR/SD Register, derived from
+// IF09's existing result / status fields (not a new stored field). Mirrors the
+// Passed→Approved / Failed→Rejected mapping already used for IF09's own badge display.
+const IR_STATUS = {
+  'Pending':                { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
+  'Under Review':           { code: 'UR',  bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
+  'Approved':               { code: 'A',   bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
+  'Approved with Comments': { code: 'B',   bg: '#FEF3C7', text: '#92400E', border: '#FDE68A' },
+  'Revised and Resubmit':   { code: 'C',   bg: '#FFEDD5', text: '#9A3412', border: '#FED7AA' },
+  'Rejected':               { code: 'D',   bg: '#FEE2E2', text: '#991B1B', border: '#FCA5A5' },
+}
+const IR_STATUS_KEYS = Object.keys(IR_STATUS)
+
+function computeIrStatus(d) {
+  if (d.result === 'Passed') return 'Approved'
+  if (d.result === 'Conditional Pass') return 'Approved with Comments'
+  if (d.result === 'Failed') return 'Rejected'
   if (d.status === 'Draft') return 'Pending'
   return 'Under Review'
 }
 
+// Overdue is a flag layered on top of "Under Review" — not one of the lettered codes
+function isOverdue(d) {
+  if (d.result) return false
+  if (!d.requested_inspection_date) return false
+  const days = (Date.now() - new Date(d.requested_inspection_date).getTime()) / 86400000
+  return days > OVERDUE_DAYS
+}
+
 function StatusBadge({ status }) {
-  const s = MAR_STATUS[status] || MAR_STATUS['Pending']
+  const s = IR_STATUS[status] || IR_STATUS['Pending']
   return (
     <span style={{
       display: 'inline-block', padding: '2px 8px', borderRadius: 4,
@@ -46,23 +56,23 @@ const fmtDate = d => {
   return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getFullYear()).slice(2)}`
 }
 
-// ── PDF export ────────────────────────────────────────────
+// ── PDF export — same layout convention as MAR / RFI / SD Register ───────────
 function exportPDF(items, project) {
   const genDate = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
 
-  const withStatus = items.map(d => ({ ...d, _status: computeMarStatus(d) }))
+  const withStatus = items.map(d => ({ ...d, _status: computeIrStatus(d), _overdue: isOverdue(d) }))
   const counts = {
-    total:    withStatus.length,
-    submitted: withStatus.filter(i => i.submitted_date).length,
-    ur:       withStatus.filter(i => i._status === 'Under Review').length,
-    a:        withStatus.filter(i => i._status === 'Approved').length,
-    b:        withStatus.filter(i => i._status === 'Approved with Comments').length,
-    c:        withStatus.filter(i => i._status === 'Revised and Resubmit').length,
-    d:        withStatus.filter(i => i._status === 'Rejected').length,
-    pending:  withStatus.filter(i => i._status === 'Pending').length,
+    total:     withStatus.length,
+    submitted: withStatus.filter(i => i.date).length,
+    ur:        withStatus.filter(i => i._status === 'Under Review').length,
+    a:         withStatus.filter(i => i._status === 'Approved').length,
+    b:         withStatus.filter(i => i._status === 'Approved with Comments').length,
+    c:         withStatus.filter(i => i._status === 'Revised and Resubmit').length,
+    d:         withStatus.filter(i => i._status === 'Rejected').length,
+    pending:   withStatus.filter(i => i._status === 'Pending').length,
+    overdue:   withStatus.filter(i => i._overdue).length,
   }
 
-  // ── Company logo/name cells ──────────────────────────────
   const logoCell = (logoSrc, name, role) => {
     const img = logoSrc
       ? `<img src="${logoSrc}" style="max-height:46pt;max-width:140pt;object-fit:contain;display:block">`
@@ -77,15 +87,15 @@ function exportPDF(items, project) {
       </div>`
   }
 
-  const tableRows = withStatus.map((m, i) => {
-    const hist = Array.isArray(m.submission_history) ? m.submission_history : []
-    const s = MAR_STATUS[m._status] || MAR_STATUS['Pending']
+  const tableRows = withStatus.map((d, i) => {
+    const hist = Array.isArray(d.submission_history) ? d.submission_history : []
+    const s = IR_STATUS[d._status] || IR_STATUS['Pending']
     const bg = i % 2 === 0 ? '#fff' : '#f9fafb'
 
     const revCells = [1,2,3,4,5].map(n => {
       const r = hist.find(h => String(h.rev_no) === `R${n}`) || {}
-      const rs = r.status ? Object.entries(MAR_STATUS).find(([k]) =>
-        MAR_STATUS[k].code === r.status
+      const rs = r.status ? Object.entries(IR_STATUS).find(([k]) =>
+        IR_STATUS[k].code === r.status
       ) : null
       const rStyle = rs
         ? `background:${rs[1].bg};color:${rs[1].text};font-weight:700`
@@ -96,18 +106,18 @@ function exportPDF(items, project) {
         <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center;${rStyle}">${r.status || ''}</td>`
     }).join('')
 
-    return `<tr style="background:${bg}">
+    const comments = d.result_remarks || d.remarks || ''
+
+    return `<tr style="background:${d._overdue ? '#FFF5F5' : bg}">
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center">${i+1}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;font-family:monospace;font-weight:700">${m.if05_number || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${m.material_desc || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${m.brand || ''}${m.mat_spec ? ` — ${m.mat_spec}` : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${m.supplier_name || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${m.submitted_date ? fmtDate(m.submitted_date) : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${m.response_date ? fmtDate(m.response_date) : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;font-weight:700;text-align:center">${m.revision_no || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;font-family:monospace;font-weight:700">${d.if09_number || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${d.subject || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${d.discipline || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.date ? fmtDate(d.date) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.inspection_date ? fmtDate(d.inspection_date) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;font-weight:700;text-align:center">${d.revision_no || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:8pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${m.remarks || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${m.consultant_remarks || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${d._overdue ? ('<b style="color:#991B1B">OVERDUE</b>' + (comments ? ' — ' + comments : '')) : comments}</td>
       ${revCells}
     </tr>`
   }).join('')
@@ -136,8 +146,8 @@ function exportPDF(items, project) {
   ).join('')
 
   const summaryRows = [
-    ['Total MARs', counts.total, ''],
-    ['Submitted to Consultant', counts.submitted, ''],
+    ['Total IRs', counts.total, ''],
+    ['Submitted', counts.submitted, ''],
     ['Under Review', counts.ur, '#1E40AF'],
     ['Approved (A)', counts.a, '#065F46'],
     ['Approved with Comments (B)', counts.b, '#92400E'],
@@ -155,7 +165,7 @@ function exportPDF(items, project) {
 <html>
 <head>
 <meta charset="utf-8">
-<title>MAR Register — ${project?.project_name || ''}</title>
+<title>Inspection Request Log — ${project?.project_name || ''}</title>
 <style>
   @page { size: A3 landscape; margin: 8mm 10mm; }
   * { box-sizing: border-box; }
@@ -169,15 +179,12 @@ function exportPDF(items, project) {
 <!-- ═══ THREE-COMPANY HEADER ═══ -->
 <table style="margin-bottom:0;border:1pt solid #1a1a2e">
   <tr>
-    <!-- Client / Employer -->
     <td style="width:33.3%;border-right:1pt solid #ccc;padding:8pt 12pt;vertical-align:middle;text-align:center">
       ${logoCell(project?.client_logo, project?.client, 'Client / Employer')}
     </td>
-    <!-- Contractor (Axion) -->
     <td style="width:33.4%;border-right:1pt solid #ccc;padding:8pt 12pt;vertical-align:middle;text-align:center;background:#fafafa">
       ${logoCell(AXION_LOGO, project?.contractor || 'Axion Imagineering Construction Co. W.L.L.', 'Contractor')}
     </td>
-    <!-- Consultant -->
     <td style="width:33.3%;padding:8pt 12pt;vertical-align:middle;text-align:center">
       ${logoCell(project?.consultant_logo, project?.consultant, 'Consultant')}
     </td>
@@ -188,7 +195,7 @@ function exportPDF(items, project) {
 <table style="margin-bottom:5pt;border:1pt solid #1a1a2e;border-top:none">
   <tr>
     <td style="padding:6pt 14pt;text-align:center;background:#111827;color:#fff">
-      <div style="font-size:13pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Material Approval Request Log</div>
+      <div style="font-size:13pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Inspection Request Log</div>
       <div style="font-size:8pt;font-weight:600;margin-top:3pt;opacity:.85">
         ${project?.project_name || ''}&nbsp;
         ${project?.project_number ? `· ${project.project_number}` : ''}
@@ -208,6 +215,10 @@ function exportPDF(items, project) {
         <tr><td style="font-size:8pt;font-weight:700;color:#555;padding:2pt 0">Contract No.</td><td style="font-size:8pt;padding:2pt 0">${project?.contract_number || '—'}</td></tr>
         <tr><td style="font-size:8pt;font-weight:700;color:#555;padding:2pt 0">Updated</td><td style="font-size:8pt;padding:2pt 0"><b>${genDate}</b></td></tr>
       </table>
+      <div style="margin-top:8pt;padding:5pt 7pt;background:#FEE2E2;border-radius:3pt;text-align:center">
+        <div style="font-size:6.5pt;font-weight:700;text-transform:uppercase;color:#991B1B;letter-spacing:.05em">Under Review — Overdue (&gt;${OVERDUE_DAYS}d)</div>
+        <div style="font-size:14pt;font-weight:900;color:#991B1B">${counts.overdue}</div>
+      </div>
     </td>
     <td style="width:35%;vertical-align:top;padding:6pt 10pt;border-right:0.5pt solid #ddd">
       <div style="font-size:7.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4pt;letter-spacing:.08em">Register Summary</div>
@@ -220,27 +231,25 @@ function exportPDF(items, project) {
   </tr>
 </table>
 
-<!-- ═══ MAR REGISTER TABLE ═══ -->
+<!-- ═══ INSPECTION REQUEST LOG TABLE ═══ -->
 <table>
   <thead>
     <tr>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:1.2%">Sr.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6.5%">MAR Ref. No</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:13%">MAR Subject</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:10%">Manufacturer / Product</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:7%">Supplier</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Sub.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Ret.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:2%">Rev.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:2.5%">Sta.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Remarks</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Consultant Remarks</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:1.5%">Sl. No</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:8%">IR Ref. No</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:16%">IR Subject</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:8%">Discipline</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:5%">Submitted Date</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:5%">Responded Date</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3%">Rev</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3%">Status</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:10%">Comments / If Any</th>
       ${revHeaderCols}
     </tr>
     <tr>${revSubCols}</tr>
   </thead>
   <tbody>
-    ${tableRows || '<tr><td colspan="26" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No MAR records for this project</td></tr>'}
+    ${tableRows || '<tr><td colspan="24" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No inspection requests for this project</td></tr>'}
   </tbody>
 </table>
 
@@ -258,9 +267,9 @@ function exportPDF(items, project) {
 }
 
 // ── Main component ────────────────────────────────────────
-// Read-only tracker: rows come from IF05 (Material Approval Certificate / MAC) automatically.
-// Editing happens on the IF05 form itself — this page only displays and prints the register.
-export default function MARRegister() {
+// Read-only tracker: rows come from IF09 (Activity Inspection Request) automatically.
+// Editing happens on the IF09 form itself — this page only displays and prints the register.
+export default function IRRegister() {
   const { activeProject } = useProject()
   const { toasts } = useToast()
 
@@ -268,7 +277,7 @@ export default function MARRegister() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
-  const [filterSupplier, setFilterSupplier] = useState('')
+  const [filterDiscipline, setFilterDiscipline] = useState('')
 
   useEffect(() => {
     if (!activeProject) return
@@ -279,44 +288,44 @@ export default function MARRegister() {
     if (!activeProject) return
     setLoading(true)
     const { data, error } = await supabase
-      .from('if05')
+      .from('if09')
       .select('*')
       .eq('project_code', activeProject.project_code)
-      .order('if05_number', { ascending: true })
+      .order('if09_number', { ascending: true })
     if (!error && data) setItems(data)
     else setItems([])
     setLoading(false)
   }
 
-  const withStatus = items.map(m => ({ ...m, _status: computeMarStatus(m) }))
+  const withStatus = items.map(d => ({ ...d, _status: computeIrStatus(d), _overdue: isOverdue(d) }))
 
-  // ── Filters ────────────────────────────────────────────
-  const filtered = withStatus.filter(m => {
-    if (filterStatus && m._status !== filterStatus) return false
-    if (filterSupplier && m.supplier_name !== filterSupplier) return false
+  const filtered = withStatus.filter(d => {
+    if (filterStatus && d._status !== filterStatus) return false
+    if (filterDiscipline && d.discipline !== filterDiscipline) return false
     if (search) {
       const q = search.toLowerCase()
-      return [m.if05_number, m.material_desc, m.brand, m.supplier_name].some(v => (v||'').toLowerCase().includes(q))
+      return [d.if09_number, d.subject, d.discipline].some(v => (v||'').toLowerCase().includes(q))
     }
     return true
   })
 
-  const supplierNames = [...new Set(items.map(m => m.supplier_name).filter(Boolean))]
+  const disciplines = [...new Set(items.map(d => d.discipline).filter(Boolean))]
 
   // ── KPI counts ─────────────────────────────────────────
   const kpi = {
     total:   withStatus.length,
+    ur:      withStatus.filter(i => i._status === 'Under Review').length,
     a:       withStatus.filter(i => i._status === 'Approved').length,
     b:       withStatus.filter(i => i._status === 'Approved with Comments').length,
     c:       withStatus.filter(i => i._status === 'Revised and Resubmit').length,
     d:       withStatus.filter(i => i._status === 'Rejected').length,
-    ur:      withStatus.filter(i => i._status === 'Under Review').length,
     pending: withStatus.filter(i => i._status === 'Pending').length,
+    overdue: withStatus.filter(i => i._overdue).length,
   }
 
   if (!activeProject) return (
     <div style={{ padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>
-      Select an active project to view the MAR Register.
+      Select an active project to view the IR Register.
     </div>
   )
 
@@ -325,8 +334,8 @@ export default function MARRegister() {
       {/* Page header */}
       <div className="page-header">
         <div>
-          <div className="page-title">Material Approval Register</div>
-          <div className="page-subtitle">{activeProject.project_name} · MAR Log · {items.length} records · auto-tracked from Material Approval Certificates</div>
+          <div className="page-title">IR Register</div>
+          <div className="page-subtitle">{activeProject.project_name} · IR Log · {items.length} records · auto-tracked from Activity Inspection Requests</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-secondary" onClick={() => exportPDF(filtered, activeProject)}>
@@ -336,7 +345,7 @@ export default function MARRegister() {
       </div>
 
       {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 10, marginBottom: 20 }}>
         {[
           { label: 'Total',         value: kpi.total,   bg: 'var(--bg-surface)', color: 'var(--text-primary)' },
           { label: 'Under Review',  value: kpi.ur,      bg: '#DBEAFE', color: '#1E40AF' },
@@ -345,6 +354,7 @@ export default function MARRegister() {
           { label: 'Resubmit (C)', value: kpi.c,        bg: '#FFEDD5', color: '#9A3412' },
           { label: 'Rejected (D)', value: kpi.d,        bg: '#FEE2E2', color: '#991B1B' },
           { label: 'Pending',      value: kpi.pending,  bg: '#F1F5F9', color: '#64748B' },
+          { label: `Overdue (>${OVERDUE_DAYS}d)`, value: kpi.overdue, bg: '#FEE2E2', color: '#991B1B' },
         ].map(k => (
           <div key={k.label} style={{ background: k.bg, border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
             <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: k.color, opacity: .75, marginBottom: 4 }}>{k.label}</div>
@@ -356,21 +366,21 @@ export default function MARRegister() {
       {/* Filters */}
       <div className="filter-bar" style={{ marginBottom: 12 }}>
         <input
-          placeholder="Search ref no, subject, manufacturer, supplier…"
+          placeholder="Search IR no, subject, discipline…"
           value={search} onChange={e => setSearch(e.target.value)}
           style={{ minWidth: 280 }}
         />
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
           <option value="">All Status</option>
-          {MAR_STATUS_KEYS.map(s => <option key={s}>{s}</option>)}
+          {IR_STATUS_KEYS.map(s => <option key={s}>{s}</option>)}
         </select>
-        <select value={filterSupplier} onChange={e => setFilterSupplier(e.target.value)}>
-          <option value="">All Suppliers</option>
-          {supplierNames.map(s => <option key={s}>{s}</option>)}
+        <select value={filterDiscipline} onChange={e => setFilterDiscipline(e.target.value)}>
+          <option value="">All Disciplines</option>
+          {disciplines.map(d => <option key={d}>{d}</option>)}
         </select>
-        {(search || filterStatus || filterSupplier) && (
+        {(search || filterStatus || filterDiscipline) && (
           <button className="btn btn-ghost" style={{ fontSize: 12 }}
-            onClick={() => { setSearch(''); setFilterStatus(''); setFilterSupplier('') }}>
+            onClick={() => { setSearch(''); setFilterStatus(''); setFilterDiscipline('') }}>
             Clear
           </button>
         )}
@@ -382,13 +392,13 @@ export default function MARRegister() {
         {loading ? (
           <div className="table-empty">Loading…</div>
         ) : !filtered.length ? (
-          <div className="table-empty">No MARs found. Raise a Material Approval Certificate from the MAC page — it'll appear here automatically.</div>
+          <div className="table-empty">No inspection requests found. Raise one from the Inspection Requests page — it'll appear here automatically.</div>
         ) : (
-          <table style={{ minWidth: 1100 }}>
+          <table style={{ minWidth: 1000 }}>
             <thead>
               {/* Revision group header */}
               <tr>
-                <th colSpan={11} style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--border)' }}></th>
+                <th colSpan={9} style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--border)' }}></th>
                 {[1,2,3,4,5].map(n => (
                   <th key={n} colSpan={3} style={{ background: '#1e293b', color: '#fff', fontSize: 10, fontWeight: 700, textAlign: 'center', padding: '4px 0', borderLeft: '2px solid var(--border)' }}>
                     REV. {n}
@@ -397,17 +407,15 @@ export default function MARRegister() {
               </tr>
               {/* Column header */}
               <tr>
-                <th style={{ minWidth: 32 }}>Sr</th>
-                <th style={{ minWidth: 110 }}>MAR Ref. No</th>
-                <th style={{ minWidth: 180 }}>Subject</th>
-                <th style={{ minWidth: 140 }}>Manufacturer / Product</th>
-                <th style={{ minWidth: 120 }}>Supplier</th>
+                <th style={{ minWidth: 32 }}>Sl. No</th>
+                <th style={{ minWidth: 110 }}>IR Ref. No</th>
+                <th style={{ minWidth: 200 }}>Subject</th>
+                <th style={{ minWidth: 90 }}>Discipline</th>
                 <th style={{ minWidth: 90 }}>Submitted</th>
                 <th style={{ minWidth: 90 }}>Responded</th>
-                <th style={{ minWidth: 48 }}>Rev.</th>
+                <th style={{ minWidth: 48 }}>Rev</th>
                 <th style={{ minWidth: 72 }}>Status</th>
-                <th style={{ minWidth: 120 }}>Remarks</th>
-                <th style={{ minWidth: 120 }}>Consultant Remarks</th>
+                <th style={{ minWidth: 160 }}>Comments / If Any</th>
                 {[1,2,3,4,5].map(n => (
                   <>
                     <th key={`r${n}s`} style={{ minWidth: 78, fontSize: 10, borderLeft: '2px solid var(--border)', background: '#f8fafc' }}>Sub.</th>
@@ -418,24 +426,23 @@ export default function MARRegister() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((m, idx) => {
-                const hist = Array.isArray(m.submission_history) ? m.submission_history : []
+              {filtered.map((d, idx) => {
+                const hist = Array.isArray(d.submission_history) ? d.submission_history : []
+                const comments = d.result_remarks || d.remarks || ''
                 return (
-                  <tr key={m.id}>
+                  <tr key={d.id} style={{ background: d._overdue ? '#FFF5F5' : undefined }}>
                     <td style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>{idx + 1}</td>
-                    <td><span className="doc-number" style={{ fontSize: 11 }}>{m.if05_number}</span></td>
-                    <td style={{ fontSize: 12, maxWidth: 200 }}>{m.material_desc}</td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{m.brand || '—'}{m.mat_spec ? ` — ${m.mat_spec}` : ''}</td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{m.supplier_name || '—'}</td>
-                    <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.submitted_date || '—'}</td>
-                    <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.response_date || '—'}</td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--brand-accent)', textAlign: 'center' }}>{m.revision_no || '—'}</td>
-                    <td><StatusBadge status={m._status} /></td>
-                    <td style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.remarks || '—'}</td>
-                    <td style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.consultant_remarks || '—'}</td>
+                    <td><span className="doc-number" style={{ fontSize: 11 }}>{d.if09_number}</span></td>
+                    <td style={{ fontSize: 12, maxWidth: 220 }}>{d.subject}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{d.discipline || '—'}</td>
+                    <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.date || '—'}</td>
+                    <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.inspection_date || '—'}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--brand-accent)', textAlign: 'center' }}>{d.revision_no || '—'}</td>
+                    <td><StatusBadge status={d._status} /></td>
+                    <td style={{ fontSize: 11, color: d._overdue ? 'var(--status-rejected-text)' : 'var(--text-muted)', fontWeight: d._overdue ? 700 : 400, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d._overdue ? ('OVERDUE' + (comments ? ' — ' + comments : '')) : (comments || '—')}</td>
                     {[1,2,3,4,5].map(n => {
                       const r = hist.find(h => String(h.rev_no) === `R${n}`) || {}
-                      const rs = r.status ? Object.entries(MAR_STATUS).find(([, v]) => v.code === r.status) : null
+                      const rs = r.status ? Object.entries(IR_STATUS).find(([, v]) => v.code === r.status) : null
                       return (
                         <>
                           <td key={`r${n}s`} style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', borderLeft: '2px solid var(--border)', background: '#f8fafc' }}>{r.submitted_date || '—'}</td>

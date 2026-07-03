@@ -7,9 +7,12 @@ import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
-import { Plus, ExternalLink, Pencil, Printer } from 'lucide-react'
+import { Plus, ExternalLink, Pencil, Printer, Trash2 } from 'lucide-react'
 import { today } from '../../utils/delay'
 import { buildIF04, printForm, mergeProjectLogos } from '../../utils/printEngine'
+
+// SD Register revision round status codes — same A/B/C/D/UR convention as MAR Register
+const REV_STATUS_CODES = ['', 'A', 'B', 'C', 'D', 'UR']
 
 const BLANK = {
   date: today(), activity_id: '', activity_name: '', wbs_code: '',
@@ -18,6 +21,7 @@ const BLANK = {
   submitted_date: today(), response_date: '', response_code: '',
   remarks: '', consultant_remarks: '', drive_link: '', status: 'Draft',
   prepared_by: '', copies: 1,
+  contractor_sub: '', reason_for_overdue: '', submission_history: [],
 }
 
 const SEED = [
@@ -28,19 +32,20 @@ export default function IF04List() {
   const { activeProject } = useProject()
   const { profile } = useAuth()
   const { toasts, toast } = useToast()
-  const mrfList = useMRFList(activeProject.code)
-  const disciplines = getDisciplines(activeProject.code)
+  const mrfList = useMRFList(activeProject.project_code)
+  const disciplines = getDisciplines(activeProject.project_code)
 
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [form, setForm] = useState(BLANK)
+  const [formTab, setFormTab] = useState('details')
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
 
   // Auto-fill hook
-  const { activityData, mrfData } = useActivityFill(activeProject.code, form.activity_id, form.mrf_number)
+  const { activityData, mrfData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
 
   // Apply auto-fills when activity or MRF data loads
   useEffect(() => {
@@ -72,15 +77,44 @@ export default function IF04List() {
 
   async function loadData() {
     setLoading(true)
-    const { data, error } = await supabase.from('if04').select('*').eq('project_code', activeProject.code).order('if04_number', { ascending: false })
-    if (error || !data?.length) setItems(SEED.filter(d => d.project_code === activeProject.code))
+    const { data, error } = await supabase.from('if04').select('*').eq('project_code', activeProject.project_code).order('if04_number', { ascending: false })
+    if (error || !data?.length) setItems(SEED.filter(d => d.project_code === activeProject.project_code))
     else setItems(data)
     setLoading(false)
   }
 
-  function openNew() { setEditItem(null); setForm({ ...BLANK, consultant: activeProject.consultant || '', client: activeProject.client || '' }); setShowForm(true) }
-  function openEdit(item) { setEditItem(item); setForm({ ...item }); setShowForm(true) }
+  function openNew() {
+    setEditItem(null)
+    setForm({ ...BLANK, consultant: activeProject.consultant || '', client: activeProject.client || '' })
+    setFormTab('details')
+    setShowForm(true)
+  }
+  function openEdit(item) {
+    setEditItem(item)
+    setForm({ ...item, submission_history: Array.isArray(item.submission_history) ? item.submission_history : [] })
+    setFormTab('details')
+    setShowForm(true)
+  }
   function set(f, v) { setForm(p => ({ ...p, [f]: v })) }
+
+  // ── Revision history helpers (SD resubmission rounds — feeds Shop Drawing Register) ──
+  function addRev() {
+    const nextRevNo = `R${(form.submission_history?.length || 0) + 1}`
+    setForm(p => ({
+      ...p,
+      submission_history: [...(p.submission_history || []), { rev_no: nextRevNo, submitted_date: '', return_date: '', status: '' }],
+    }))
+  }
+  function setRev(i, field, val) {
+    setForm(p => {
+      const hist = [...(p.submission_history || [])]
+      hist[i] = { ...hist[i], [field]: val }
+      return { ...p, submission_history: hist }
+    })
+  }
+  function removeRev(i) {
+    setForm(p => ({ ...p, submission_history: (p.submission_history || []).filter((_, idx) => idx !== i) }))
+  }
 
   async function save() {
     if (!form.drawing_title && !form.drawing_number) { toast('Drawing number or title required', 'err'); return }
@@ -89,9 +123,9 @@ export default function IF04List() {
       setItems(prev => prev.map(d => d.id === editItem.id ? { ...d, ...form } : d))
       toast('Updated ✓', 'ok')
     } else {
-      const seq = items.filter(d => d.project_code === activeProject.code).length + 1
-      const if04_number = genDocNumber('IF04', activeProject.code, seq)
-      const item = { ...form, if04_number, project_code: activeProject.code }
+      const seq = items.filter(d => d.project_code === activeProject.project_code).length + 1
+      const if04_number = genDocNumber('IF04', activeProject.project_code, seq)
+      const item = { ...form, if04_number, project_code: activeProject.project_code }
       const { data } = await supabase.from('if04').insert(item).select().single()
       setItems(prev => [data || { ...item, id: Date.now() }, ...prev])
       toast(`Shop Drawing Submittal created: ${if04_number}`, 'ok')
@@ -117,7 +151,7 @@ export default function IF04List() {
       <div className="page-header">
         <div>
           <div className="page-title">Shop Drawing Submittals</div>
-          <div className="page-subtitle">{activeProject.name} · IF04 · {items.length} records</div>
+          <div className="page-subtitle">{activeProject.project_name} · IF04 · {items.length} records</div>
         </div>
         <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New Submittal</button>
       </div>
@@ -179,6 +213,23 @@ export default function IF04List() {
 
       <Modal open={showForm} onClose={() => setShowForm(false)} title={editItem ? `Edit — ${editItem.if04_number}` : 'New Shop Drawing Submittal'} size="lg"
         footer={<><button className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button><button className="btn btn-secondary" onClick={() => { save(); setTimeout(() => window.print(), 400) }}><Printer size={13} /> Save & Print</button><button className="btn btn-primary" onClick={save}>Save</button></>}>
+
+        {/* Modal tab bar */}
+        <div style={{ display: 'flex', gap: 4, padding: '0 24px', borderBottom: '1px solid var(--border)', marginBottom: 20, marginTop: -4 }}>
+          {[{ id: 'details', label: 'Submittal Details' }, { id: 'history', label: `Revision History (${form.submission_history?.length || 0})` }].map(t => (
+            <button key={t.id} onClick={() => setFormTab(t.id)} style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: '10px 14px',
+              fontSize: 12, fontWeight: formTab === t.id ? 700 : 400,
+              color: formTab === t.id ? 'var(--brand-accent)' : 'var(--text-muted)',
+              borderBottom: formTab === t.id ? '2px solid var(--brand-accent)' : '2px solid transparent',
+              marginBottom: -1,
+            }}>{t.label}</button>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 24px 4px' }}>
+
+        {formTab === 'details' && (
         <div>
           {/* Links */}
           <div style={{ background: 'var(--bg-base)', borderRadius: 'var(--radius)', padding: '12px 14px', marginBottom: 16, fontSize: 12 }}>
@@ -213,6 +264,10 @@ export default function IF04List() {
                 <option value="">— Select —</option>
                 {disciplines.map(d => <option key={d}>{d}</option>)}
               </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Contractor / Sub-Contractor</label>
+              <input className="form-input" value={form.contractor_sub} onChange={e => set('contractor_sub', e.target.value)} placeholder="e.g. Axion, or the sub-contractor raising this" />
             </div>
           </div>
 
@@ -277,7 +332,7 @@ export default function IF04List() {
             </div>
           </div>
 
-          <div className="form-grid form-grid-2" style={{ gap: 14 }}>
+          <div className="form-grid form-grid-2" style={{ gap: 14, marginBottom: 14 }}>
             <div className="form-group">
               <label className="form-label">Remarks</label>
               <textarea className="form-textarea" value={form.remarks} onChange={e => set('remarks', e.target.value)} rows={2} />
@@ -287,6 +342,70 @@ export default function IF04List() {
               <textarea className="form-textarea" value={form.consultant_remarks} onChange={e => set('consultant_remarks', e.target.value)} rows={2} />
             </div>
           </div>
+          <div className="form-group">
+            <label className="form-label">Reason for Overdue</label>
+            <input className="form-input" value={form.reason_for_overdue} onChange={e => set('reason_for_overdue', e.target.value)} placeholder="Filled in only if this submittal ran past its review window" />
+          </div>
+        </div>
+        )}
+
+        {/* ── Tab: Revision History (SD resubmission rounds — feeds Shop Drawing Register) ── */}
+        {formTab === 'history' && (
+          <div>
+            {(!form.submission_history || form.submission_history.length === 0) ? (
+              <div style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '28px 0' }}>
+                No resubmission rounds yet. Add the first one below if this drawing was sent back for revision.
+              </div>
+            ) : (
+              <div style={{ marginBottom: 16 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <thead>
+                    <tr>
+                      {['Rev.', 'Submitted Date', 'Return Date', 'Status', ''].map(h => (
+                        <th key={h} style={{ textAlign: 'left', padding: '6px 10px', background: 'var(--bg-base)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {form.submission_history.map((r, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input className="form-input" value={r.rev_no} onChange={e => setRev(i, 'rev_no', e.target.value)}
+                            style={{ width: 64, fontFamily: 'var(--font-mono)', fontWeight: 700 }} placeholder="R1" />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input className="form-input" type="date" value={r.submitted_date}
+                            onChange={e => setRev(i, 'submitted_date', e.target.value)} style={{ width: 140 }} />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input className="form-input" type="date" value={r.return_date}
+                            onChange={e => setRev(i, 'return_date', e.target.value)} style={{ width: 140 }} />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <select className="form-select" value={r.status}
+                            onChange={e => setRev(i, 'status', e.target.value)} style={{ width: 80 }}>
+                            {REV_STATUS_CODES.map(c => <option key={c} value={c}>{c || '—'}</option>)}
+                          </select>
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <button className="btn btn-ghost" style={{ padding: '3px 6px', color: 'var(--status-rejected-text)' }}
+                            onClick={() => removeRev(i)}><Trash2 size={12} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <button className="btn btn-secondary" onClick={addRev}>
+              <Plus size={13} /> Add Resubmission Round
+            </button>
+            <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text-muted)' }}>
+              Rev. status codes: <b>A</b> = Approved · <b>B</b> = Approved w/ Comments · <b>C</b> = Revise &amp; Resubmit · <b>D</b> = Rejected · <b>UR</b> = Under Review
+            </div>
+          </div>
+        )}
+
         </div>
       </Modal>
 

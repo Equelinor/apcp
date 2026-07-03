@@ -21,6 +21,9 @@ import ProjectRegister from './pages/projects/ProjectRegister'
 import DARList from './pages/dar/DARList'
 import BOQRegister from './pages/boq/BOQRegister'
 import MARRegister from './pages/mar/MARRegister'
+import RFIRegister from './pages/rfi/RFIRegister'
+import SDRegister from './pages/sd/SDRegister'
+import IRRegister from './pages/ir/IRRegister'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -42,11 +45,14 @@ export default function App() {
         <Route path="drawing-register" element={<DrawingRegister />} />
         <Route path="document-register" element={<DocumentRegister />} />
         <Route path="shop-drawings" element={<IF04List />} />
+        <Route path="sd-register" element={<SDRegister />} />
         <Route path="mac" element={<IF05List />} />
         <Route path="mockup" element={<IF06List />} />
         <Route path="submittals" element={<IF07List />} />
         <Route path="rfi" element={<IF08List />} />
+        <Route path="rfi-register" element={<RFIRegister />} />
         <Route path="ir" element={<IF09List />} />
+        <Route path="ir-register" element={<IRRegister />} />
         <Route path="subcontractor" element={<IF12List />} />
         <Route path="suppliers" element={<SupplierRegister />} />
         <Route path="projects" element={<ProjectRegister />} />

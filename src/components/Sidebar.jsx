@@ -62,6 +62,7 @@ const NAV = [
     items: [
       { to: '/drawing-register',  label: 'Drawing Register',      icon: BookOpen       },
       { to: '/shop-drawings',     label: 'Shop Drawings',         icon: FolderOpen     },
+      { to: '/sd-register',       label: 'Shop Drawing Register', icon: FileSearch     },
       { to: '/submittals',        label: 'Technical Submittals',  icon: FileSearch     },
       { to: '/mac',               label: 'Material Approval (MAC)', icon: ClipboardCheck },
       { to: '/mar',               label: 'MAR Register',            icon: FileSearch     },
@@ -105,7 +106,9 @@ const NAV = [
     defaultOpen: false,
     items: [
       { to: '/ir',           label: 'Inspection Requests',   icon: ClipboardCheck },
+      { to: '/ir-register',  label: 'IR Register',           icon: FileSearch     },
       { to: '/rfi',          label: 'RFIs',                  icon: MessageSquare  },
+      { to: '/rfi-register', label: 'RFI Register',          icon: FileSearch     },
       { to: '/mir',          label: 'Material Inspection',   icon: Package,        soon: true },
       { to: '/alt-material', label: 'Alt. Material Request', icon: Layers,         soon: true },
       { to: '/ncr',          label: 'NCR',                   icon: Shield,         soon: true },

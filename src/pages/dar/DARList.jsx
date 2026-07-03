@@ -160,8 +160,7 @@ export default function DARList() {
   }
 
   const handlePrint = (d) => {
-    const merged = { ...d, companyLogo: d.companyLogo || activeProject?.client_logo || '' }
-    printForm(buildDAR(merged), `DAR_${d.filename || 'DAR'}`)
+    printForm(buildDAR(mergeProjectLogos(d, activeProject)), `DAR_${d.filename || 'DAR'}`)
   }
 
   return (

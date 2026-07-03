@@ -40,7 +40,7 @@ const buildHeader = (f, docNo, title, splitTitle = false) => {
 
   const clientLogo = f.clientLogo
     ? `<img src="${f.clientLogo}" style="max-height:44pt;max-width:130pt;object-fit:contain;display:block;margin:auto">`
-    : ''
+    : `<div style="font-size:8.5pt;font-weight:700;text-align:center;padding:6pt 4pt">${f.client || 'Client'}</div>`
 
   const logoRow = `
     <table style="width:100%;border-collapse:collapse;border:1.5pt solid #000">
@@ -447,8 +447,6 @@ export const printForm = (htmlString, title = 'APCP Form') => {
 // DAR — Daily Activity Report
 // Mirrors dar-v6.html buildPrintHTML exactly
 // ─────────────────────────────────────────────────────────
-import { DAR_EMBEDDED_LOGO } from './darLogo'
-
 export const buildDAR = (d) => {
   const scs       = d.subcontractors || []
   const activeSCs = scs.filter(sc => sc.name)
@@ -462,8 +460,13 @@ export const buildDAR = (d) => {
   const shS = 'background:#E0E0E0;border:0.5pt solid #999;padding:2pt 3pt;font-size:6pt;font-weight:700;text-transform:uppercase;letter-spacing:.03em;'
   const trS = 'background:#CCCCCC;border:0.5pt solid #999;padding:2pt 3pt;font-size:6.5pt;font-weight:700;'
 
-  // Use AXION_LOGO for company logo (admin-uploaded priority, else DAR embedded fallback)
-  const logoSrc = (d.companyLogo && d.companyLogo.length > 100) ? d.companyLogo : DAR_EMBEDDED_LOGO
+  // Three-party header — same Axion / Client / Consultant convention as every other printed form
+  const clientCell = d.clientLogo
+    ? `<img src="${d.clientLogo}" style="max-height:40pt;max-width:130pt;object-fit:contain;display:block;margin:auto">`
+    : `<div style="font-size:8pt;font-weight:700;text-align:center;padding:6pt 4pt">${d.client || 'Client'}</div>`
+  const consultantCell = d.consultantLogo
+    ? `<img src="${d.consultantLogo}" style="max-height:40pt;max-width:130pt;object-fit:contain;display:block;margin:auto">`
+    : `<div style="font-size:8pt;font-weight:700;text-align:center;padding:6pt 4pt">${d.consultant || 'Consultant'}</div>`
 
   const tmr = new Date(d.date)
   tmr.setDate(tmr.getDate() + 1)
@@ -551,13 +554,24 @@ export const buildDAR = (d) => {
 
   return `<style>
     .print-page{width:210mm;min-height:297mm;background:#fff;padding:10mm 12mm 8mm 12mm;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;color:#000;font-size:7pt}
-    .print-logo-row{width:100%;text-align:left;margin-bottom:5mm;padding-left:8mm}
-    .print-logo{width:200px;max-width:200px;height:auto;object-fit:contain;display:block}
+    .print-header-row{width:88%;margin:0 auto 5mm;border-collapse:collapse;border:1.5pt solid #000}
     .print-title{text-align:center;font-size:12pt;font-weight:700;text-transform:uppercase;margin-bottom:6mm;letter-spacing:.04em}
     .print-project-table{width:88%;margin:0 auto;border-collapse:collapse;font-size:7pt;border:1pt solid #000}
   </style>
   <div class="print-page">
-    <div class="print-logo-row"><img class="print-logo" src="${logoSrc}"></div>
+    <table class="print-header-row">
+      <tr>
+        <td style="width:34%;border-right:1pt solid #000;padding:6pt 8pt;vertical-align:middle">
+          <img src="${AXION_LOGO}" style="max-height:46pt;max-width:150pt;object-fit:contain;display:block">
+        </td>
+        <td style="width:32%;border-right:1pt solid #000;padding:6pt 8pt;vertical-align:middle;text-align:center">
+          ${clientCell}
+        </td>
+        <td style="width:34%;padding:6pt 8pt;vertical-align:middle;text-align:center">
+          ${consultantCell}
+        </td>
+      </tr>
+    </table>
     <div class="print-title">DAILY ACTIVITY REPORT</div>
     <table class="print-project-table" style="margin-bottom:0">
       <tr>
@@ -572,6 +586,13 @@ export const buildDAR = (d) => {
         <td style="border:0.5pt solid #999;padding:2pt 5pt;font-weight:600" colspan="2">Axion Imagineering Construction Co. WLL</td>
         <td style="border:0.5pt solid #999;padding:2pt 5pt"><span style="font-size:6pt;color:#444">Shift</span></td>
         <td style="border:0.5pt solid #999;padding:2pt 5pt;font-weight:600">${d.shift || 'Day'}</td>
+        <td style="border:none"></td>
+      </tr>
+      <tr>
+        <td style="border:0.5pt solid #999;padding:2pt 5pt"><span style="font-size:6pt;color:#444">Client:</span></td>
+        <td style="border:0.5pt solid #999;padding:2pt 5pt;font-weight:600" colspan="2">${d.client || ''}</td>
+        <td style="border:0.5pt solid #999;padding:2pt 5pt"></td>
+        <td style="border:0.5pt solid #999;padding:2pt 5pt"></td>
         <td style="border:none"></td>
       </tr>
       <tr>

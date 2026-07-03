@@ -7,13 +7,16 @@ import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
-import { Plus, ExternalLink, Pencil , Printer} from 'lucide-react'
+import { Plus, ExternalLink, Pencil , Printer, Trash2} from 'lucide-react'
 import { today } from '../../utils/delay'
 import { buildIF08, printForm, mergeProjectLogos } from '../../utils/printEngine'
 
 const RFI_STATUSES = ['Draft', 'Submitted', 'Under Review', 'Answered', 'Closed', 'Cancelled']
 const RFI_PRIORITIES = ['Critical', 'High', 'Medium', 'Low']
 const IMPACT_TYPES = ['No Impact', 'Time Impact', 'Cost Impact', 'Time & Cost Impact', 'Design Impact', 'TBD']
+const RFI_DISCIPLINES = ['Civil', 'Structural', 'Architectural', 'MEP', 'Electrical', 'Mechanical', 'Plumbing', 'HVAC', 'Landscape', 'Interior', 'Other']
+// RFI Register revision round status codes — feeds the RFI Register's own colour legend (see RFIRegister.jsx)
+const REV_STATUS_CODES = ['', 'OT', 'L', 'OD', 'X']
 
 const BLANK = {
   date: today(), subject: '', description: '', priority: 'Medium',
@@ -22,7 +25,9 @@ const BLANK = {
   requested_by: '', addressed_to: '',
   required_response_date: '', response_date: '', response: '',
   impact: 'TBD', impact_description: '',
-  status: 'Draft', drive_link: '', remarks: ''
+  status: 'Draft', drive_link: '', remarks: '',
+  discipline: '', contractor_sub: '', reason_for_overdue: '',
+  submission_history: [],
 }
 
 const SEED = [
@@ -34,18 +39,19 @@ export default function IF08List() {
   const { activeProject } = useProject()
   const { profile } = useAuth()
   const { toasts, toast } = useToast()
-  const mrfList = useMRFList(activeProject.code)
+  const mrfList = useMRFList(activeProject.project_code)
 
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [form, setForm] = useState(BLANK)
+  const [formTab, setFormTab] = useState('details')
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterPriority, setFilterPriority] = useState('')
 
-  const { activityData, mrfData } = useActivityFill(activeProject.code, form.activity_id, form.mrf_number)
+  const { activityData, mrfData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
 
   useEffect(() => {
     if (activityData && !editItem) {
@@ -70,15 +76,39 @@ export default function IF08List() {
 
   async function loadData() {
     setLoading(true)
-    const { data, error } = await supabase.from('if08').select('*').eq('project_code', activeProject.code).order('rfi_number', { ascending: false })
-    if (error || !data?.length) setItems(SEED.filter(d => d.project_code === activeProject.code))
+    const { data, error } = await supabase.from('if08').select('*').eq('project_code', activeProject.project_code).order('rfi_number', { ascending: false })
+    if (error || !data?.length) setItems(SEED.filter(d => d.project_code === activeProject.project_code))
     else setItems(data)
     setLoading(false)
   }
 
-  function openNew() { setEditItem(null); setForm(BLANK); setShowForm(true) }
-  function openEdit(item) { setEditItem(item); setForm({ ...item }); setShowForm(true) }
+  function openNew() { setEditItem(null); setForm(BLANK); setFormTab('details'); setShowForm(true) }
+  function openEdit(item) {
+    setEditItem(item)
+    setForm({ ...item, submission_history: Array.isArray(item.submission_history) ? item.submission_history : [] })
+    setFormTab('details')
+    setShowForm(true)
+  }
   function set(f, v) { setForm(p => ({ ...p, [f]: v })) }
+
+  // ── Revision history helpers (CRFI resubmission rounds — feeds RFI Register) ──
+  function addRev() {
+    const nextRevNo = `R${(form.submission_history?.length || 0) + 1}`
+    setForm(p => ({
+      ...p,
+      submission_history: [...(p.submission_history || []), { rev_no: nextRevNo, submitted_date: '', return_date: '', status: '' }],
+    }))
+  }
+  function setRev(i, field, val) {
+    setForm(p => {
+      const hist = [...(p.submission_history || [])]
+      hist[i] = { ...hist[i], [field]: val }
+      return { ...p, submission_history: hist }
+    })
+  }
+  function removeRev(i) {
+    setForm(p => ({ ...p, submission_history: (p.submission_history || []).filter((_, idx) => idx !== i) }))
+  }
 
   async function save() {
     if (!form.subject) { toast('Subject required', 'err'); return }
@@ -87,9 +117,9 @@ export default function IF08List() {
       setItems(prev => prev.map(d => d.id === editItem.id ? { ...d, ...form } : d))
       toast('RFI updated ✓', 'ok')
     } else {
-      const seq = items.filter(d => d.project_code === activeProject.code).length + 1
-      const rfi_number = genDocNumber('IF08', activeProject.code, seq)
-      const item = { ...form, rfi_number, project_code: activeProject.code }
+      const seq = items.filter(d => d.project_code === activeProject.project_code).length + 1
+      const rfi_number = genDocNumber('IF08', activeProject.project_code, seq)
+      const item = { ...form, rfi_number, project_code: activeProject.project_code }
       const { data } = await supabase.from('if08').insert(item).select().single()
       setItems(prev => [data || { ...item, id: Date.now() }, ...prev])
       toast(`RFI raised: ${rfi_number}`, 'ok')
@@ -118,7 +148,7 @@ export default function IF08List() {
       <div className="page-header">
         <div>
           <div className="page-title">Request For Information</div>
-          <div className="page-subtitle">{activeProject.name} · IF08 · {items.length} records</div>
+          <div className="page-subtitle">{activeProject.project_name} · IF08 · {items.length} records</div>
         </div>
         <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New RFI</button>
       </div>
@@ -188,6 +218,24 @@ export default function IF08List() {
 
       <Modal open={showForm} onClose={() => setShowForm(false)} title={editItem ? `Edit — ${editItem.rfi_number}` : 'New RFI'} size="lg"
         footer={<><button className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button><button className="btn btn-primary" onClick={save}>Save</button></>}>
+
+        {/* Modal tab bar */}
+        <div style={{ display: 'flex', gap: 4, padding: '0 24px', borderBottom: '1px solid var(--border)', marginBottom: 20, marginTop: -4 }}>
+          {[{ id: 'details', label: 'RFI Details' }, { id: 'history', label: `Revision History (${form.submission_history?.length || 0})` }].map(t => (
+            <button key={t.id} onClick={() => setFormTab(t.id)} style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: '10px 14px',
+              fontSize: 12, fontWeight: formTab === t.id ? 700 : 400,
+              color: formTab === t.id ? 'var(--brand-accent)' : 'var(--text-muted)',
+              borderBottom: formTab === t.id ? '2px solid var(--brand-accent)' : '2px solid transparent',
+              marginBottom: -1,
+            }}>{t.label}</button>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 24px 4px' }}>
+
+        {/* ── Tab: RFI Details ── */}
+        {formTab === 'details' && (
         <div>
           <div style={{ background: 'var(--bg-base)', borderRadius: 'var(--radius)', padding: '12px 14px', marginBottom: 16 }}>
             <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Links (optional)</div>
@@ -221,6 +269,17 @@ export default function IF08List() {
               <select className="form-select" value={form.priority} onChange={e => set('priority', e.target.value)}>
                 {RFI_PRIORITIES.map(p => <option key={p}>{p}</option>)}
               </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Discipline</label>
+              <select className="form-select" value={form.discipline} onChange={e => set('discipline', e.target.value)}>
+                <option value="">— Select —</option>
+                {RFI_DISCIPLINES.map(d => <option key={d}>{d}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Contractor / Sub-Contractor</label>
+              <input className="form-input" value={form.contractor_sub} onChange={e => set('contractor_sub', e.target.value)} placeholder="e.g. Axion, or the sub-contractor raising this" />
             </div>
             <div className="form-group">
               <label className="form-label">Requested By</label>
@@ -281,11 +340,75 @@ export default function IF08List() {
               <label className="form-label">Response</label>
               <textarea className="form-textarea" value={form.response} onChange={e => set('response', e.target.value)} rows={3} placeholder="Consultant / Engineer response…" />
             </div>
+            <div className="form-group" style={{ marginBottom: 14 }}>
+              <label className="form-label">Reason for Overdue</label>
+              <input className="form-input" value={form.reason_for_overdue} onChange={e => set('reason_for_overdue', e.target.value)} placeholder="Filled in only if this RFI ran past its required response date" />
+            </div>
             <div className="form-group">
               <label className="form-label">Google Drive Link</label>
               <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
             </div>
           </div>
+        </div>
+        )}
+
+        {/* ── Tab: Revision History (CRFI resubmission rounds — feeds RFI Register) ── */}
+        {formTab === 'history' && (
+          <div>
+            {(!form.submission_history || form.submission_history.length === 0) ? (
+              <div style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '28px 0' }}>
+                No resubmission rounds yet. Add the first one below if this RFI was sent back for more information.
+              </div>
+            ) : (
+              <div style={{ marginBottom: 16 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <thead>
+                    <tr>
+                      {['Rev.', 'Submitted Date', 'Return Date', 'Status', ''].map(h => (
+                        <th key={h} style={{ textAlign: 'left', padding: '6px 10px', background: 'var(--bg-base)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {form.submission_history.map((r, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input className="form-input" value={r.rev_no} onChange={e => setRev(i, 'rev_no', e.target.value)}
+                            style={{ width: 64, fontFamily: 'var(--font-mono)', fontWeight: 700 }} placeholder="R1" />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input className="form-input" type="date" value={r.submitted_date}
+                            onChange={e => setRev(i, 'submitted_date', e.target.value)} style={{ width: 140 }} />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input className="form-input" type="date" value={r.return_date}
+                            onChange={e => setRev(i, 'return_date', e.target.value)} style={{ width: 140 }} />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <select className="form-select" value={r.status}
+                            onChange={e => setRev(i, 'status', e.target.value)} style={{ width: 80 }}>
+                            {REV_STATUS_CODES.map(c => <option key={c} value={c}>{c || '—'}</option>)}
+                          </select>
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <button className="btn btn-ghost" style={{ padding: '3px 6px', color: 'var(--status-rejected-text)' }}
+                            onClick={() => removeRev(i)}><Trash2 size={12} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <button className="btn btn-secondary" onClick={addRev}>
+              <Plus size={13} /> Add Resubmission Round
+            </button>
+            <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text-muted)' }}>
+              Rev. status codes: <b>OT</b> = Replied On-Time · <b>L</b> = Replied Late · <b>OD</b> = Overdue · <b>X</b> = Cancelled/Withdrawn
+            </div>
+          </div>
+        )}
+
         </div>
       </Modal>
 

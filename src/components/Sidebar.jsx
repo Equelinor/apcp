@@ -160,7 +160,6 @@ const NAV = [
     defaultOpen: false,
     adminOnly: true,
     items: [
-      { to: '/users',               label: 'Users',              icon: Users,         soon: true },
       { to: '/roles',               label: 'Roles & Permissions',icon: Shield        },
       { to: '/workflow-templates',  label: 'Workflow Templates', icon: Workflow,      soon: true },
       { to: '/numbering',           label: 'Numbering Rules',    icon: ClipboardList, soon: true },

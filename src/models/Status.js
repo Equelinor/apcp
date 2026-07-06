@@ -1,6 +1,10 @@
-// ─── APCP STATUS ENGINE ──────────────────────────────────────────
-// Rule 3: One shared status lifecycle across every module.
-// All modules import from here. Never define statuses inline.
+// ─── DAR STATUS LIFECYCLE ────────────────────────────────────────
+// This generic Draft→Submitted→Reviewed→Returned→Approved→Rejected→Closed
+// lifecycle is used by DAR only. Every other module (IF04-12, MAR/RFI/Shop
+// Drawing/IR Registers) has its own domain-specific status vocabulary
+// (A/B/C/D approval codes, Passed/Failed/Conditional Pass, etc.) — those are
+// genuinely different concepts, not just inconsistently-named versions of
+// this lifecycle, so they intentionally don't import from here.
 
 export const STATUS = {
   DRAFT:     'Draft',
@@ -32,25 +36,6 @@ export const STATUS_BADGE = {
   [STATUS.APPROVED]:  'badge-approved',
   [STATUS.REJECTED]:  'badge-rejected',
   [STATUS.CLOSED]:    'badge-delivered',
-}
-
-// Which transitions are allowed from each status
-export const STATUS_TRANSITIONS = {
-  [STATUS.DRAFT]:     [STATUS.SUBMITTED],
-  [STATUS.SUBMITTED]: [STATUS.REVIEWED, STATUS.RETURNED, STATUS.APPROVED, STATUS.REJECTED],
-  [STATUS.REVIEWED]:  [STATUS.APPROVED, STATUS.RETURNED, STATUS.REJECTED],
-  [STATUS.RETURNED]:  [STATUS.SUBMITTED],
-  [STATUS.APPROVED]:  [STATUS.CLOSED],
-  [STATUS.REJECTED]:  [STATUS.SUBMITTED, STATUS.CLOSED],
-  [STATUS.CLOSED]:    [],
-}
-
-export function canTransition(from, to) {
-  return STATUS_TRANSITIONS[from]?.includes(to) ?? false
-}
-
-export function nextStatuses(current) {
-  return STATUS_TRANSITIONS[current] || []
 }
 
 // MRF-specific site statuses (separate from approval lifecycle)
@@ -85,10 +70,6 @@ export const DELAY_STATUS = {
   LATE_TO_RAISE: 'Late to Raise',
 }
 
-// Response codes (consultant)
-export const RESPONSE_CODES = [
-  'A — Approved',
-  'B — Approved with Comments',
-  'C — Revise and Resubmit',
-  'D — Rejected',
-]
+// Response codes (consultant) — single source of truth is config/docTypes.js.
+// Re-exported here only so any existing `from '../models/Status'` imports don't break.
+export { RESPONSE_CODES } from '../config/docTypes'

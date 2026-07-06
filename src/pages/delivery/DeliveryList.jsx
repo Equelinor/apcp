@@ -32,11 +32,11 @@ export default function DeliveryList() {
     const { data, error } = await supabase
       .from('mrfs')
       .select('*')
-      .eq('project_code', activeProject.code)
+      .eq('project_code', activeProject.project_code)
       .not('po_number', 'is', null)
 
     if (error || !data?.length) {
-      setMrfs(MRF_SEED.filter(m => m.project_code === activeProject.code && m.po_number))
+      setMrfs(MRF_SEED.filter(m => m.project_code === activeProject.project_code && m.po_number))
     } else {
       setMrfs(data)
     }
@@ -110,7 +110,7 @@ export default function DeliveryList() {
       <div className="page-header">
         <div>
           <div className="page-title">Delivery Tracking</div>
-          <div className="page-subtitle">{activeProject.name} · PO-issued MRFs</div>
+          <div className="page-subtitle">{activeProject.project_name} · PO-issued MRFs</div>
         </div>
       </div>
 

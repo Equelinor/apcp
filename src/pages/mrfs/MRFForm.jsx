@@ -45,7 +45,7 @@ export default function MRFForm({ initial, mrfNumber, onSave, onCancel }) {
 
   function handleSave(status) {
     if (!validate()) return
-    onSave({ ...form, approval_status: status, project_code: activeProject.code })
+    onSave({ ...form, approval_status: status, project_code: activeProject.project_code })
   }
 
   const delayWarning = form.required_on_site && form.lead_time_days && form.latest_raise_date &&

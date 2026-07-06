@@ -29,8 +29,8 @@ const SEED = [
 export default function IF06List() {
   const { activeProject } = useProject()
   const { toasts, toast } = useToast()
-  const mrfList = useMRFList(activeProject.code)
-  const disciplines = getDisciplines(activeProject.code)
+  const mrfList = useMRFList(activeProject.project_code)
+  const disciplines = getDisciplines(activeProject.project_code)
 
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -40,7 +40,7 @@ export default function IF06List() {
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
 
-  const { activityData, mrfData } = useActivityFill(activeProject.code, form.activity_id, form.mrf_number)
+  const { activityData, mrfData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
 
   useEffect(() => {
     if (activityData && !editItem) setForm(f => ({ ...f, activity_name: activityData.activity_name || f.activity_name, wbs_code: activityData.wbs_code || f.wbs_code }))
@@ -54,8 +54,8 @@ export default function IF06List() {
 
   async function loadData() {
     setLoading(true)
-    const { data, error } = await supabase.from('if06').select('*').eq('project_code', activeProject.code).order('if06_number', { ascending: false })
-    if (error || !data?.length) setItems(SEED.filter(d => d.project_code === activeProject.code))
+    const { data, error } = await supabase.from('if06').select('*').eq('project_code', activeProject.project_code).order('if06_number', { ascending: false })
+    if (error || !data?.length) setItems(SEED.filter(d => d.project_code === activeProject.project_code))
     else setItems(data)
     setLoading(false)
   }
@@ -71,9 +71,9 @@ export default function IF06List() {
       setItems(prev => prev.map(d => d.id === editItem.id ? { ...d, ...form } : d))
       toast('Updated ✓', 'ok')
     } else {
-      const seq = items.filter(d => d.project_code === activeProject.code).length + 1
-      const if06_number = genDocNumber('IF06', activeProject.code, seq)
-      const item = { ...form, if06_number, project_code: activeProject.code }
+      const seq = items.filter(d => d.project_code === activeProject.project_code).length + 1
+      const if06_number = genDocNumber('IF06', activeProject.project_code, seq)
+      const item = { ...form, if06_number, project_code: activeProject.project_code }
       const { data } = await supabase.from('if06').insert(item).select().single()
       setItems(prev => [data || { ...item, id: Date.now() }, ...prev])
       toast(`Mock-up Inspection created: ${if06_number}`, 'ok')
@@ -99,7 +99,7 @@ export default function IF06List() {
       <div className="page-header">
         <div>
           <div className="page-title">Mock-up Inspection</div>
-          <div className="page-subtitle">{activeProject.name} · IF06 · {items.length} records</div>
+          <div className="page-subtitle">{activeProject.project_name} · IF06 · {items.length} records</div>
         </div>
         <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New Mock-up</button>
       </div>

@@ -41,14 +41,14 @@ export default function DocumentRegister() {
   const isAdmin = ['Admin', 'PM'].includes(profile?.role)
 
   useEffect(() => {
-    setDisciplines(getDisciplines(activeProject.code))
+    setDisciplines(getDisciplines(activeProject.project_code))
     loadData()
   }, [activeProject])
 
   async function loadData() {
     setLoading(true)
-    const { data, error } = await supabase.from('documents').select('*').eq('project_code', activeProject.code).order('doc_number', { ascending: false })
-    if (error || !data?.length) setDocs(SEED.filter(d => d.project_code === activeProject.code))
+    const { data, error } = await supabase.from('documents').select('*').eq('project_code', activeProject.project_code).order('doc_number', { ascending: false })
+    if (error || !data?.length) setDocs(SEED.filter(d => d.project_code === activeProject.project_code))
     else setDocs(data)
     setLoading(false)
   }
@@ -64,9 +64,9 @@ export default function DocumentRegister() {
       setDocs(prev => prev.map(d => d.id === editItem.id ? { ...d, ...form } : d))
       toast('Document updated ✓', 'ok')
     } else {
-      const seq = docs.filter(d => d.project_code === activeProject.code).length + 1
-      const doc_number = genDocNumber('DOC', activeProject.code, seq)
-      const item = { ...form, doc_number, project_code: activeProject.code }
+      const seq = docs.filter(d => d.project_code === activeProject.project_code).length + 1
+      const doc_number = genDocNumber('DOC', activeProject.project_code, seq)
+      const item = { ...form, doc_number, project_code: activeProject.project_code }
       const { data } = await supabase.from('documents').insert(item).select().single()
       setDocs(prev => [data || { ...item, id: Date.now() }, ...prev])
       toast(`Document registered: ${doc_number}`, 'ok')
@@ -96,7 +96,7 @@ export default function DocumentRegister() {
       <div className="page-header">
         <div>
           <div className="page-title">Document Register</div>
-          <div className="page-subtitle">{activeProject.name} · {docs.length} documents</div>
+          <div className="page-subtitle">{activeProject.project_name} · {docs.length} documents</div>
         </div>
         <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> Register Document</button>
       </div>

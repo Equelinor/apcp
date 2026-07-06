@@ -4,7 +4,7 @@ import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { generateNumber } from '../../models/Numbering'
 import { STATUS, STATUS_FLOW } from '../../models/Status'
-import { getDisciplines } from '../../constants/disciplines'
+import { getDisciplines } from '../../config/docTypes'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
@@ -69,7 +69,7 @@ export default function DARList() {
   const { activeProject } = useProject()
   const { profile } = useAuth()
   const { toasts, toast } = useToast()
-  const disciplines = getDisciplines(activeProject.code)
+  const disciplines = getDisciplines(activeProject.project_code)
 
   const [dars, setDars] = useState([])
   const [loading, setLoading] = useState(true)
@@ -90,9 +90,9 @@ export default function DARList() {
     const { data, error } = await supabase
       .from('dars')
       .select('*')
-      .eq('project_code', activeProject.code)
+      .eq('project_code', activeProject.project_code)
       .order('date', { ascending: false })
-    if (error) setDars(SEED.filter(d => d.project_code === activeProject.code))
+    if (error) setDars(SEED.filter(d => d.project_code === activeProject.project_code))
     else setDars(data.map(d => ({ ...d, activities: d.activities || [], labour: d.labour || [], equipment: d.equipment || [], visitors: d.visitors || [], issues: d.issues || [] })))
     setLoading(false)
   }
@@ -121,14 +121,14 @@ export default function DARList() {
   }
 
   async function save(submitStatus) {
-    const saveData = { ...form, status: submitStatus || form.status, project_code: activeProject.code }
+    const saveData = { ...form, status: submitStatus || form.status, project_code: activeProject.project_code }
     if (editItem) {
       await supabase.from('dars').update(saveData).eq('id', editItem.id)
       setDars(prev => prev.map(d => d.id === editItem.id ? { ...d, ...saveData } : d))
       toast('DAR updated ✓', 'ok')
     } else {
-      const seq = dars.filter(d => d.project_code === activeProject.code).length + 1
-      const dar_number = generateNumber(activeProject.project_code || activeProject.code, 'DAR', seq)
+      const seq = dars.filter(d => d.project_code === activeProject.project_code).length + 1
+      const dar_number = generateNumber(activeProject.project_code, 'DAR', seq)
       const item = { ...saveData, dar_number }
       const { data } = await supabase.from('dars').insert(item).select().single()
       setDars(prev => [data || { ...item, id: Date.now() }, ...prev])
@@ -168,7 +168,7 @@ export default function DARList() {
       <div className="page-header">
         <div>
           <div className="page-title">Daily Activity Report</div>
-          <div className="page-subtitle">{activeProject.project_name || activeProject.name} · {dars.length} reports</div>
+          <div className="page-subtitle">{activeProject.project_name} · {dars.length} reports</div>
         </div>
         <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New DAR</button>
       </div>

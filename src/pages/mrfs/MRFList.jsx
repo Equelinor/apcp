@@ -50,11 +50,11 @@ export default function MRFList() {
     const { data, error } = await supabase
       .from('mrfs')
       .select('*')
-      .eq('project_code', activeProject.code)
+      .eq('project_code', activeProject.project_code)
       .order('date', { ascending: false })
 
     if (error || !data?.length) {
-      setMrfs(MRF_SEED.filter(m => m.project_code === activeProject.code))
+      setMrfs(MRF_SEED.filter(m => m.project_code === activeProject.project_code))
     } else {
       setMrfs(data)
     }
@@ -63,7 +63,7 @@ export default function MRFList() {
 
   async function getNextSequence() {
     const year = new Date().getFullYear()
-    const prefix = `MRF-${activeProject.code}-${year}-`
+    const prefix = `MRF-${activeProject.project_code}-${year}-`
     const existing = mrfs.filter(m => m.mrf_number?.startsWith(prefix))
     return existing.length + 1
   }
@@ -79,8 +79,8 @@ export default function MRFList() {
       toast('MRF updated ✓', 'ok')
     } else {
       const seq = await getNextSequence()
-      const mrf_number = generateDocNumber('MRF', activeProject.code, seq)
-      const newMRF = { ...formData, mrf_number, project_code: activeProject.code, delivered_qty: 0, mir_resub_count: 0 }
+      const mrf_number = generateDocNumber('MRF', activeProject.project_code, seq)
+      const newMRF = { ...formData, mrf_number, project_code: activeProject.project_code, delivered_qty: 0, mir_resub_count: 0 }
       const { data, error } = await supabase.from('mrfs').insert(newMRF).select().single()
       const saved = data || { ...newMRF, id: Date.now() }
       setMrfs(prev => [saved, ...prev])
@@ -161,7 +161,7 @@ export default function MRFList() {
       <div className="page-header">
         <div>
           <div className="page-title">Material Requests</div>
-          <div className="page-subtitle">{activeProject.name} · {mrfs.length} records</div>
+          <div className="page-subtitle">{activeProject.project_name} · {mrfs.length} records</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-secondary" onClick={loadMRFs}><RefreshCw size={13} /></button>

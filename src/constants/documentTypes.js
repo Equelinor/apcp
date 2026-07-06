@@ -29,11 +29,7 @@ export const DRAWING_REVISIONS = [
   'Rev 00', 'Rev 01', 'Rev 02', 'Rev 03', 'Rev 04', 'Rev 05', 'IFC', 'As Built',
 ]
 
-export const RESPONSE_CODES = [
-  'A — Approved',
-  'B — Approved with Comments',
-  'C — Revise and Resubmit',
-  'D — Rejected',
-]
+// Response codes (consultant) — single source of truth is config/docTypes.js.
+export { RESPONSE_CODES } from '../config/docTypes'
 
 export const UNITS = ['CUM', 'MT', 'NOS', 'SQM', 'LM', 'BAG', 'KG', 'TON', 'SET', 'EA', 'LT']

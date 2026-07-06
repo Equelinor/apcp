@@ -4,6 +4,7 @@ import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genDocNumber, RESPONSE_CODES } from '../../config/docTypes'
 import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
+import { supplierService } from '../../services/supplierService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
@@ -38,6 +39,7 @@ export default function IF05List() {
 
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [suppliers, setSuppliers] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [form, setForm] = useState(BLANK)
@@ -68,7 +70,10 @@ export default function IF05List() {
     }
   }, [mrfData])
 
-  useEffect(() => { loadData() }, [activeProject])
+  useEffect(() => {
+    loadData()
+    supplierService.dropdown().then(setSuppliers)
+  }, [activeProject])
 
   async function loadData() {
     setLoading(true)
@@ -243,7 +248,16 @@ export default function IF05List() {
             </div>
             <div className="form-group">
               <label className="form-label">Supplier</label>
-              <input className="form-input" value={form.supplier_name} onChange={e => set('supplier_name', e.target.value)} placeholder="Local supplier / distributor" />
+              <input
+                className="form-input"
+                list="if05-supplier-list"
+                value={form.supplier_name}
+                onChange={e => set('supplier_name', e.target.value)}
+                placeholder="Select or type supplier name"
+              />
+              <datalist id="if05-supplier-list">
+                {suppliers.map(s => <option key={s.id} value={s.supplier_name} />)}
+              </datalist>
             </div>
             <div className="form-group">
               <label className="form-label">Grade</label>

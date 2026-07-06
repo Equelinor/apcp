@@ -7,7 +7,7 @@ import { AXION_LOGO } from '../../utils/axionLogo'
 
 // ── Status system — derived from IF05's existing response_code / status fields
 // (not a new stored field), same convention as Shop Drawing Register ──
-const MAR_STATUS = {
+export const MAR_STATUS = {
   'Pending':                  { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
   'Under Review':             { code: 'UR',  bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
   'Approved':                 { code: 'A',   bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
@@ -17,7 +17,7 @@ const MAR_STATUS = {
 }
 const MAR_STATUS_KEYS = Object.keys(MAR_STATUS)
 
-function computeMarStatus(d) {
+export function computeMarStatus(d) {
   const code = (d.response_code || '').charAt(0)
   if (code === 'A') return 'Approved'
   if (code === 'B') return 'Approved with Comments'

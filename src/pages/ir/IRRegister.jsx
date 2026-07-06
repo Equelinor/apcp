@@ -6,12 +6,12 @@ import { Printer } from 'lucide-react'
 import { AXION_LOGO } from '../../utils/axionLogo'
 
 // Overdue turnaround — same 7-day convention as Shop Drawing Register (IF09 has no per-record target date field either)
-const OVERDUE_DAYS = 7
+export const OVERDUE_DAYS = 7
 
 // ── Status system — same A/B/C/D/UR convention as MAR/SD Register, derived from
 // IF09's existing result / status fields (not a new stored field). Mirrors the
 // Passed→Approved / Failed→Rejected mapping already used for IF09's own badge display.
-const IR_STATUS = {
+export const IR_STATUS = {
   'Pending':                { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
   'Under Review':           { code: 'UR',  bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
   'Approved':               { code: 'A',   bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
@@ -21,7 +21,7 @@ const IR_STATUS = {
 }
 const IR_STATUS_KEYS = Object.keys(IR_STATUS)
 
-function computeIrStatus(d) {
+export function computeIrStatus(d) {
   if (d.result === 'Passed') return 'Approved'
   if (d.result === 'Conditional Pass') return 'Approved with Comments'
   if (d.result === 'Failed') return 'Rejected'
@@ -30,7 +30,7 @@ function computeIrStatus(d) {
 }
 
 // Overdue is a flag layered on top of "Under Review" — not one of the lettered codes
-function isOverdue(d) {
+export function isIrOverdue(d) {
   if (d.result) return false
   if (!d.requested_inspection_date) return false
   const days = (Date.now() - new Date(d.requested_inspection_date).getTime()) / 86400000
@@ -60,7 +60,7 @@ const fmtDate = d => {
 function exportPDF(items, project) {
   const genDate = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
 
-  const withStatus = items.map(d => ({ ...d, _status: computeIrStatus(d), _overdue: isOverdue(d) }))
+  const withStatus = items.map(d => ({ ...d, _status: computeIrStatus(d), _overdue: isIrOverdue(d) }))
   const counts = {
     total:     withStatus.length,
     submitted: withStatus.filter(i => i.date).length,
@@ -297,7 +297,7 @@ export default function IRRegister() {
     setLoading(false)
   }
 
-  const withStatus = items.map(d => ({ ...d, _status: computeIrStatus(d), _overdue: isOverdue(d) }))
+  const withStatus = items.map(d => ({ ...d, _status: computeIrStatus(d), _overdue: isIrOverdue(d) }))
 
   const filtered = withStatus.filter(d => {
     if (filterStatus && d._status !== filterStatus) return false

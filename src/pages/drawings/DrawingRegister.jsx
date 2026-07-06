@@ -38,14 +38,14 @@ export default function DrawingRegister() {
   const isAdmin = ['Admin', 'PM'].includes(profile?.role)
 
   useEffect(() => {
-    setDisciplines(getDisciplines(activeProject.code))
+    setDisciplines(getDisciplines(activeProject.project_code))
     loadData()
   }, [activeProject])
 
   async function loadData() {
     setLoading(true)
-    const { data, error } = await supabase.from('drawings').select('*').eq('project_code', activeProject.code).order('drw_number', { ascending: false })
-    if (error || !data?.length) setDrawings(SEED.filter(d => d.project_code === activeProject.code))
+    const { data, error } = await supabase.from('drawings').select('*').eq('project_code', activeProject.project_code).order('drw_number', { ascending: false })
+    if (error || !data?.length) setDrawings(SEED.filter(d => d.project_code === activeProject.project_code))
     else setDrawings(data)
     setLoading(false)
   }
@@ -62,9 +62,9 @@ export default function DrawingRegister() {
       setDrawings(prev => prev.map(d => d.id === editItem.id ? { ...d, ...form } : d))
       toast('Drawing updated ✓', 'ok')
     } else {
-      const seq = drawings.filter(d => d.project_code === activeProject.code).length + 1
-      const drw_number = genDocNumber('DRW', activeProject.code, seq)
-      const item = { ...form, drw_number, project_code: activeProject.code }
+      const seq = drawings.filter(d => d.project_code === activeProject.project_code).length + 1
+      const drw_number = genDocNumber('DRW', activeProject.project_code, seq)
+      const item = { ...form, drw_number, project_code: activeProject.project_code }
       const { data, error } = await supabase.from('drawings').insert(item).select().single()
       setDrawings(prev => [data || { ...item, id: Date.now() }, ...prev])
       toast(`Drawing registered: ${drw_number}`, 'ok')
@@ -80,7 +80,7 @@ export default function DrawingRegister() {
   }
 
   function saveDisciplineList(list) {
-    saveDisciplines(activeProject.code, list)
+    saveDisciplines(activeProject.project_code, list)
     setDisciplines(list)
     toast('Disciplines updated ✓', 'ok')
   }
@@ -107,7 +107,7 @@ export default function DrawingRegister() {
       <div className="page-header">
         <div>
           <div className="page-title">Drawing Register</div>
-          <div className="page-subtitle">{activeProject.name} · {drawings.length} drawings</div>
+          <div className="page-subtitle">{activeProject.project_name} · {drawings.length} drawings</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           {isAdmin && (

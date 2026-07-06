@@ -6,7 +6,7 @@ import { Printer } from 'lucide-react'
 import { AXION_LOGO } from '../../utils/axionLogo'
 
 // ── Status system — derived, not stored (see computeRfiStatus) ─────
-const RFI_STATUS = {
+export const RFI_STATUS = {
   'Under Review':     { code: 'UR', bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
   'Replied On-Time':  { code: 'OT', bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
   'Replied Late':     { code: 'L',  bg: '#FFEDD5', text: '#9A3412', border: '#FED7AA' },
@@ -17,7 +17,7 @@ const RFI_STATUS_KEYS = Object.keys(RFI_STATUS)
 
 // An RFI's status isn't a field on if08 — it's derived from required_response_date vs response_date,
 // same convention agreed for the RFI Register: no fixed turnaround constant, each RFI's own required date decides it.
-function computeRfiStatus(d) {
+export function computeRfiStatus(d) {
   if (d.status === 'Cancelled') return 'Cancelled'
   if (!d.response_date) {
     if (d.required_response_date && new Date(d.required_response_date) < new Date()) return 'Overdue'

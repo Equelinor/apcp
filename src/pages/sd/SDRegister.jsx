@@ -6,11 +6,11 @@ import { Printer } from 'lucide-react'
 import { AXION_LOGO } from '../../utils/axionLogo'
 
 // Overdue turnaround — matches the project's own review-time convention (7 calendar days)
-const OVERDUE_DAYS = 7
+export const OVERDUE_DAYS = 7
 
 // ── Status system — same A/B/C/D/UR convention as MAR Register, derived from
 // IF04's existing response_code / status fields (not a new stored field) ──
-const SD_STATUS = {
+export const SD_STATUS = {
   'Pending':                { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
   'Under Review':           { code: 'UR',  bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
   'Approved':               { code: 'A',   bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
@@ -20,7 +20,7 @@ const SD_STATUS = {
 }
 const SD_STATUS_KEYS = Object.keys(SD_STATUS)
 
-function computeSdStatus(d) {
+export function computeSdStatus(d) {
   const code = (d.response_code || '').charAt(0)
   if (code === 'A') return 'Approved'
   if (code === 'B') return 'Approved with Comments'
@@ -32,7 +32,7 @@ function computeSdStatus(d) {
 
 // Overdue is a flag layered on top of "Under Review" — not one of the lettered codes,
 // since A/B/C/D only apply once a response has actually been given.
-function isOverdue(d) {
+export function isSdOverdue(d) {
   if (d.response_code) return false
   if (!d.submitted_date) return false
   const days = (Date.now() - new Date(d.submitted_date).getTime()) / 86400000
@@ -62,7 +62,7 @@ const fmtDate = d => {
 function exportPDF(items, project) {
   const genDate = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
 
-  const withStatus = items.map(d => ({ ...d, _status: computeSdStatus(d), _overdue: isOverdue(d) }))
+  const withStatus = items.map(d => ({ ...d, _status: computeSdStatus(d), _overdue: isSdOverdue(d) }))
   const counts = {
     total:     withStatus.length,
     submitted: withStatus.filter(i => i.submitted_date).length,
@@ -301,7 +301,7 @@ export default function SDRegister() {
     setLoading(false)
   }
 
-  const withStatus = items.map(d => ({ ...d, _status: computeSdStatus(d), _overdue: isOverdue(d) }))
+  const withStatus = items.map(d => ({ ...d, _status: computeSdStatus(d), _overdue: isSdOverdue(d) }))
 
   const filtered = withStatus.filter(d => {
     if (filterStatus && d._status !== filterStatus) return false

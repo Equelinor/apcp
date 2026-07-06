@@ -30,11 +30,11 @@ export default function ProcurementList() {
     const { data, error } = await supabase
       .from('mrfs')
       .select('*')
-      .eq('project_code', activeProject.code)
+      .eq('project_code', activeProject.project_code)
       .eq('approval_status', 'Approved')
 
     if (error || !data?.length) {
-      setMrfs(MRF_SEED.filter(m => m.project_code === activeProject.code && m.approval_status === 'Approved'))
+      setMrfs(MRF_SEED.filter(m => m.project_code === activeProject.project_code && m.approval_status === 'Approved'))
     } else {
       setMrfs(data)
     }
@@ -84,7 +84,7 @@ export default function ProcurementList() {
       <div className="page-header">
         <div>
           <div className="page-title">Procurement</div>
-          <div className="page-subtitle">{activeProject.name} · Approved MRFs only</div>
+          <div className="page-subtitle">{activeProject.project_name} · Approved MRFs only</div>
         </div>
       </div>
 

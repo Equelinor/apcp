@@ -40,7 +40,7 @@ export default function Topbar() {
     const timer = setTimeout(async () => {
       if (search.trim().length < 2) { setResults([]); setShowResults(false); return }
       setSearching(true)
-      const res = await searchService.global(activeProject.code, search)
+      const res = await searchService.global(activeProject.project_code, search)
       setResults(res)
       setShowResults(true)
       setSearching(false)

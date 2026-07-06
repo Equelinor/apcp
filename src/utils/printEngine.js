@@ -152,14 +152,23 @@ export const buildIF04 = (f) => {
 // IF05 — Material Approval Certificate
 // ─────────────────────────────────────────────────────────
 export const buildIF05 = (f) => {
-  const it = f.items || {}
+  // Maps the real if05 table columns onto the certificate's fixed 10-row item layout
+  // (rows 7/9/10 have no corresponding if05 field yet, so they render blank by design)
+  const it = {
+    i1: f.material_desc || '',
+    i2: [f.activity_name, f.wbs_code ? `WBS ${f.wbs_code}` : ''].filter(Boolean).join(' — '),
+    i3: f.brand || '',
+    i4: f.supplier_name || '',
+    i5: f.code_ref || '',
+    i6: [f.mat_spec, f.grade ? `Grade: ${f.grade}` : '', f.color ? `Color: ${f.color}` : '', f.origin ? `Origin: ${f.origin}` : ''].filter(Boolean).join('\n'),
+  }
   const td = 'border:0.5pt solid #999;padding:4pt 6pt;font-size:8pt;'
   const tdl = td + 'font-weight:700;background:#f9f9f9;width:22%;'
   return wrapper(`
     ${buildHeader(f, 'AA-IF-05', 'MATERIAL APPROVAL CERTIFICATE')}
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:8pt;font-size:8pt">
       <tr>
-        <td style="border-right:1pt solid #000;padding:5pt 8pt;width:60%"><b>MAC No.:</b> &nbsp; ${f.macNo || ''}</td>
+        <td style="border-right:1pt solid #000;padding:5pt 8pt;width:60%"><b>MAC No.:</b> &nbsp; ${f.if05_number || ''}</td>
         <td style="padding:5pt 8pt"><b>Date:</b> &nbsp; ${fmtDate(f.date)}</td>
       </tr>
     </table>
@@ -187,7 +196,7 @@ export const buildIF05 = (f) => {
         <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">9</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Enclosures</td><td style="border:0.5pt solid #999;padding:4pt 6pt"><span style="margin-right:16pt">${chk(it.encSamples)} Samples</span><span style="margin-right:16pt">${chk(it.encCatalogue)} Catalogue</span><span>${chk(it.encMockup)} Mock-up</span></td></tr>
         <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">10</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Warranty</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${it.i10 || ''}</td></tr>
         <tr style="background:#f0f0f0">
-          <td colspan="2" style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt"><b>Contractor Engineer</b> &nbsp;&nbsp; Name: ${f.engName || ''}</td>
+          <td colspan="2" style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt"><b>Contractor Engineer</b> &nbsp;&nbsp; Name: ${f.prepared_by || ''}</td>
           <td style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt">Signature: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
         </tr>
       </tbody>
@@ -202,7 +211,7 @@ export const buildIF05 = (f) => {
       <tr><td style="border-right:1pt solid #000;border-bottom:0.5pt solid #999;padding:5pt 8pt"><span style="margin-right:20pt">&#9744; Approved</span><span>&#9744; Rejected</span></td><td style="border-bottom:0.5pt solid #999;padding:5pt 8pt">Name:</td></tr>
       <tr><td style="border-right:1pt solid #000;padding:5pt 8pt">Remarks:</td><td style="padding:5pt 8pt">Signature:</td></tr>
     </table>
-    ${generated(f, f.docNumber)}
+    ${generated(f, f.if05_number)}
   `)
 }
 

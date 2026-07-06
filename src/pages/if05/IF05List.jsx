@@ -113,16 +113,20 @@ export default function IF05List() {
 
   async function save() {
     if (!form.material_desc && !form.mrf_number) { toast('Material description or MRF link required', 'err'); return }
+    // Empty string isn't valid for a date column — Postgres rejects it outright
+    const payload = { ...form, response_date: form.response_date || null }
     if (editItem) {
-      await supabase.from('if05').update(form).eq('id', editItem.id)
-      setItems(prev => prev.map(d => d.id === editItem.id ? { ...d, ...form } : d))
+      const { error } = await supabase.from('if05').update(payload).eq('id', editItem.id)
+      if (error) { toast('Save failed — ' + error.message, 'err'); return }
+      setItems(prev => prev.map(d => d.id === editItem.id ? { ...d, ...payload } : d))
       toast('MAC updated ✓', 'ok')
     } else {
       const seq = items.filter(d => d.project_code === activeProject.project_code).length + 1
       const if05_number = genDocNumber('IF05', activeProject.project_code, seq)
-      const item = { ...form, if05_number, project_code: activeProject.project_code }
-      const { data } = await supabase.from('if05').insert(item).select().single()
-      setItems(prev => [data || { ...item, id: Date.now() }, ...prev])
+      const item = { ...payload, if05_number, project_code: activeProject.project_code }
+      const { data, error } = await supabase.from('if05').insert(item).select().single()
+      if (error) { toast('Save failed — ' + error.message, 'err'); return }
+      setItems(prev => [data, ...prev])
       toast(`MAC created: ${if05_number}`, 'ok')
     }
     setShowForm(false)

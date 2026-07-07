@@ -379,6 +379,11 @@ export default function IF05List() {
     return true
   })
 
+  // Once a MAC has left Draft, its content is locked for everyone except Admin —
+  // Status/Response Code/Response Date/Consultant Remarks stay editable so the
+  // approval workflow can still progress without Admin involvement.
+  const isLocked = !!(editItem && editItem.status !== 'Draft' && profile?.role !== 'Admin')
+
   const handlePrint = (d) => {
     printForm(buildIF05(mergeProjectLogos(d, activeProject)), `Export for Transmittal — ${d.if05_number}`)
   }
@@ -460,30 +465,36 @@ export default function IF05List() {
 
         <div style={{ padding: '0 24px 4px' }}>
 
+        {isLocked && (
+          <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: 'var(--radius)', padding: '10px 14px', marginBottom: 16, fontSize: 12, color: '#92400E' }}>
+            This MAC has left Draft — most fields are locked. Only Status, Response Code, Response Date, and Consultant Remarks can still be updated. Contact an Admin if something else needs correcting.
+          </div>
+        )}
+
         {formTab === 'details' && (
         <div>
           <div className="form-grid form-grid-2" style={{ gap: 14, marginBottom: 14 }}>
             <div className="form-group">
               <label className="form-label required">MAC No. <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(auto-suggested, editable — e.g. append a/b/c for split submissions)</span></label>
-              <input className="form-input" value={form.if05_number} onChange={e => set('if05_number', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }} />
+              <input className="form-input" value={form.if05_number} disabled={isLocked} onChange={e => set('if05_number', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }} />
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label className="form-label required">Material Description</label>
-              <input className="form-input" value={form.material_desc} onChange={e => set('material_desc', e.target.value)} />
+              <input className="form-input" value={form.material_desc} disabled={isLocked} onChange={e => set('material_desc', e.target.value)} />
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label className="form-label">Description & Location of Use</label>
-              <input className="form-input" value={form.desc_location} onChange={e => set('desc_location', e.target.value)} placeholder="e.g. External Facade Cladding — Zone A, Levels 1-6" />
+              <input className="form-input" value={form.desc_location} disabled={isLocked} onChange={e => set('desc_location', e.target.value)} placeholder="e.g. External Facade Cladding — Zone A, Levels 1-6" />
             </div>
             <div className="form-group">
               <label className="form-label">Activity ID</label>
-              <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010" />
+              <input className="form-input" value={form.activity_id} disabled={isLocked} onChange={e => set('activity_id', e.target.value)} placeholder="A1010" />
             </div>
             <div className="form-group">
               <div className="form-label required" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                 <span>Specification <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(feeds Technical Details)</span></span>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 400, fontSize: 11, textTransform: 'none', letterSpacing: 0 }}>
-                  <input type="checkbox" checked={form.mat_spec === 'Attached'}
+                  <input type="checkbox" checked={form.mat_spec === 'Attached'} disabled={isLocked}
                     onChange={e => {
                       if (e.target.checked) { set('mat_spec', 'Attached'); set('grade', ''); set('color', ''); set('origin', '') }
                       else { set('mat_spec', '') }
@@ -491,11 +502,11 @@ export default function IF05List() {
                   Attached
                 </label>
               </div>
-              <input className="form-input" value={form.mat_spec} disabled={form.mat_spec === 'Attached'} onChange={e => set('mat_spec', e.target.value)} />
+              <input className="form-input" value={form.mat_spec} disabled={isLocked || form.mat_spec === 'Attached'} onChange={e => set('mat_spec', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label required">Brand / Manufacturer (Company)</label>
-              <input className="form-input" value={form.brand} onChange={e => set('brand', e.target.value)} />
+              <input className="form-input" value={form.brand} disabled={isLocked} onChange={e => set('brand', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label">Local Supplier</label>
@@ -503,6 +514,7 @@ export default function IF05List() {
                 className="form-input"
                 list="if05-supplier-list"
                 value={form.supplier_name}
+                disabled={isLocked}
                 onChange={e => set('supplier_name', e.target.value)}
                 placeholder="Select or type supplier name"
               />
@@ -512,53 +524,53 @@ export default function IF05List() {
             </div>
             <div className="form-group">
               <label className="form-label">Grade</label>
-              <input className="form-input" value={form.grade} disabled={form.mat_spec === 'Attached'} onChange={e => set('grade', e.target.value)} />
+              <input className="form-input" value={form.grade} disabled={isLocked || form.mat_spec === 'Attached'} onChange={e => set('grade', e.target.value)} />
             </div>
             <div className="form-group">
               <div className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                 <span>Code / Standard <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(Specification Clause)</span></span>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 400, fontSize: 11, textTransform: 'none', letterSpacing: 0 }}>
-                  <input type="checkbox" checked={form.code_ref === 'Attached'}
+                  <input type="checkbox" checked={form.code_ref === 'Attached'} disabled={isLocked}
                     onChange={e => set('code_ref', e.target.checked ? 'Attached' : '')} />
                   Attached
                 </label>
               </div>
-              <input className="form-input" value={form.code_ref} disabled={form.code_ref === 'Attached'} onChange={e => set('code_ref', e.target.value)} placeholder="BS / ASTM / ISO" />
+              <input className="form-input" value={form.code_ref} disabled={isLocked || form.code_ref === 'Attached'} onChange={e => set('code_ref', e.target.value)} placeholder="BS / ASTM / ISO" />
             </div>
             <div className="form-group">
               <label className="form-label">Sample Ref</label>
-              <input className="form-input" value={form.sample_ref} onChange={e => set('sample_ref', e.target.value)} />
+              <input className="form-input" value={form.sample_ref} disabled={isLocked} onChange={e => set('sample_ref', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label required">Country of Origin</label>
-              <input className="form-input" value={form.origin} disabled={form.mat_spec === 'Attached'} onChange={e => set('origin', e.target.value)} />
+              <input className="form-input" value={form.origin} disabled={isLocked || form.mat_spec === 'Attached'} onChange={e => set('origin', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label required">Color / Finish</label>
-              <input className="form-input" value={form.color} disabled={form.mat_spec === 'Attached'} onChange={e => set('color', e.target.value)} />
+              <input className="form-input" value={form.color} disabled={isLocked || form.mat_spec === 'Attached'} onChange={e => set('color', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label">Activity Name</label>
-              <input className="form-input" value={form.activity_name} onChange={e => set('activity_name', e.target.value)} />
+              <input className="form-input" value={form.activity_name} disabled={isLocked} onChange={e => set('activity_name', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label">WBS Code</label>
-              <input className="form-input" value={form.wbs_code} onChange={e => set('wbs_code', e.target.value)} placeholder="1.1.2" />
+              <input className="form-input" value={form.wbs_code} disabled={isLocked} onChange={e => set('wbs_code', e.target.value)} placeholder="1.1.2" />
             </div>
             <div className="form-group">
               <label className="form-label">Prepared By</label>
-              <input className="form-input" value={form.prepared_by} onChange={e => set('prepared_by', e.target.value)} />
+              <input className="form-input" value={form.prepared_by} disabled={isLocked} onChange={e => set('prepared_by', e.target.value)} />
             </div>
           </div>
 
           <div className="form-grid form-grid-3" style={{ gap: 14, marginBottom: 14 }}>
             <div className="form-group">
               <label className="form-label">Date</label>
-              <input className="form-input" type="date" value={form.date} onChange={e => set('date', e.target.value)} />
+              <input className="form-input" type="date" value={form.date} disabled={isLocked} onChange={e => set('date', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label">Submitted Date</label>
-              <input className="form-input" type="date" value={form.submitted_date} onChange={e => set('submitted_date', e.target.value)} />
+              <input className="form-input" type="date" value={form.submitted_date} disabled={isLocked} onChange={e => set('submitted_date', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label">Response Date</label>
@@ -579,31 +591,31 @@ export default function IF05List() {
             </div>
             <div className="form-group">
               <label className="form-label">Current Revision</label>
-              <input className="form-input" value={form.revision_no} onChange={e => set('revision_no', e.target.value)} placeholder="R0, R1, R2…" />
+              <input className="form-input" value={form.revision_no} disabled={isLocked} onChange={e => set('revision_no', e.target.value)} placeholder="R0, R1, R2…" />
             </div>
             <div className="form-group">
               <label className="form-label">Google Drive Link</label>
-              <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
+              <input className="form-input" value={form.drive_link} disabled={isLocked} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
             </div>
           </div>
           <div className="form-group" style={{ marginBottom: 14 }}>
             <label className="form-label">Enclosures</label>
             <div style={{ display: 'flex', gap: 20 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                <input type="checkbox" checked={form.enc_samples} onChange={e => set('enc_samples', e.target.checked)} /> Samples
+                <input type="checkbox" checked={form.enc_samples} disabled={isLocked} onChange={e => set('enc_samples', e.target.checked)} /> Samples
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                <input type="checkbox" checked={form.enc_catalogue} onChange={e => set('enc_catalogue', e.target.checked)} /> Catalogue
+                <input type="checkbox" checked={form.enc_catalogue} disabled={isLocked} onChange={e => set('enc_catalogue', e.target.checked)} /> Catalogue
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                <input type="checkbox" checked={form.enc_mockup} onChange={e => set('enc_mockup', e.target.checked)} /> Mock-up
+                <input type="checkbox" checked={form.enc_mockup} disabled={isLocked} onChange={e => set('enc_mockup', e.target.checked)} /> Mock-up
               </label>
             </div>
           </div>
           <div className="form-grid form-grid-2" style={{ gap: 14 }}>
             <div className="form-group">
               <label className="form-label">Remarks</label>
-              <textarea className="form-textarea" value={form.remarks} onChange={e => set('remarks', e.target.value)} rows={2} />
+              <textarea className="form-textarea" value={form.remarks} disabled={isLocked} onChange={e => set('remarks', e.target.value)} rows={2} />
             </div>
             <div className="form-group">
               <label className="form-label">Consultant Remarks</label>
@@ -634,25 +646,25 @@ export default function IF05List() {
                     {form.submission_history.map((r, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
                         <td style={{ padding: '6px 10px' }}>
-                          <input className="form-input" value={r.rev_no} onChange={e => setRev(i, 'rev_no', e.target.value)}
+                          <input className="form-input" value={r.rev_no} disabled={isLocked} onChange={e => setRev(i, 'rev_no', e.target.value)}
                             style={{ width: 64, fontFamily: 'var(--font-mono)', fontWeight: 700 }} placeholder="R1" />
                         </td>
                         <td style={{ padding: '6px 10px' }}>
-                          <input className="form-input" type="date" value={r.submitted_date}
+                          <input className="form-input" type="date" value={r.submitted_date} disabled={isLocked}
                             onChange={e => setRev(i, 'submitted_date', e.target.value)} style={{ width: 140 }} />
                         </td>
                         <td style={{ padding: '6px 10px' }}>
-                          <input className="form-input" type="date" value={r.return_date}
+                          <input className="form-input" type="date" value={r.return_date} disabled={isLocked}
                             onChange={e => setRev(i, 'return_date', e.target.value)} style={{ width: 140 }} />
                         </td>
                         <td style={{ padding: '6px 10px' }}>
-                          <select className="form-select" value={r.status}
+                          <select className="form-select" value={r.status} disabled={isLocked}
                             onChange={e => setRev(i, 'status', e.target.value)} style={{ width: 80 }}>
                             {REV_STATUS_CODES.map(c => <option key={c} value={c}>{c || '—'}</option>)}
                           </select>
                         </td>
                         <td style={{ padding: '6px 10px' }}>
-                          <button className="btn btn-ghost" style={{ padding: '3px 6px', color: 'var(--status-rejected-text)' }}
+                          <button className="btn btn-ghost" style={{ padding: '3px 6px', color: 'var(--status-rejected-text)' }} disabled={isLocked}
                             onClick={() => removeRev(i)}><Trash2 size={12} /></button>
                         </td>
                       </tr>
@@ -661,7 +673,7 @@ export default function IF05List() {
                 </table>
               </div>
             )}
-            <button className="btn btn-secondary" onClick={addRev}>
+            <button className="btn btn-secondary" onClick={addRev} disabled={isLocked}>
               <Plus size={13} /> Add Resubmission Round
             </button>
             <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text-muted)' }}>

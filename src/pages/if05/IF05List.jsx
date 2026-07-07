@@ -418,8 +418,8 @@ export default function IF05List() {
           <table>
             <thead>
               <tr>
-                <th>IF05 No.</th><th>Material</th><th>Brand</th><th>Grade</th>
-                <th>Sample Ref</th><th>Activity</th>
+                <th>IF05 No.</th><th>Material</th><th>Brand</th>
+                <th>Sample Ref</th>
                 <th>Submitted</th><th>Response</th><th>Code</th>
                 <th>Status</th><th>Drive</th><th></th>
               </tr>
@@ -428,11 +428,9 @@ export default function IF05List() {
               {filtered.map(d => (
                 <tr key={d.id}>
                   <td><span className="doc-number">{d.if05_number}</span></td>
-                  <td style={{ fontSize: 12, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.material_desc}</td>
+                  <td style={{ fontSize: 12, maxWidth: 340, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.material_desc}</td>
                   <td style={{ fontSize: 12 }}>{d.brand || '—'}</td>
-                  <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.grade || '—'}</td>
                   <td><span className="doc-number">{d.sample_ref || '—'}</span></td>
-                  <td>{d.activity_id ? <span className="doc-number">{d.activity_id}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.submitted_date || '—'}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
                   <td style={{ fontSize: 11 }}>{d.response_code ? d.response_code.split(' — ')[0] : '—'}</td>

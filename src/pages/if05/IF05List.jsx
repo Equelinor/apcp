@@ -41,15 +41,16 @@ export function computeMacApprovalStatus(d) {
   return 'Under Review'
 }
 
+const REG_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 const regFmtDate = d => {
   if (!d) return '—'
   const dt = new Date(d)
-  return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getFullYear()).slice(2)}`
+  return `${String(dt.getDate()).padStart(2,'0')}-${REG_MONTHS[dt.getMonth()]}-${String(dt.getFullYear()).slice(2)}`
 }
 
 // ── Bulk MAC Register PDF export (A3 landscape, all MACs on one sheet) ──
 function exportMacRegisterPDF(items, project) {
-  const genDate = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+  const genDate = regFmtDate(new Date())
 
   const withStatus = items.map(d => ({ ...d, _status: computeMacApprovalStatus(d) }))
   const counts = {
@@ -91,19 +92,18 @@ function exportMacRegisterPDF(items, project) {
         ? `background:${rs[1].bg};color:${rs[1].text};font-weight:700`
         : 'color:#bbb'
       return `
-        <td style="border:0.4pt solid #ccc;padding:4pt 5pt;font-size:8.5pt;text-align:center;border-left:1.5pt solid #bbb">${r.submitted_date ? regFmtDate(r.submitted_date) : ''}</td>
-        <td style="border:0.4pt solid #ccc;padding:4pt 5pt;font-size:8.5pt;text-align:center">${r.return_date ? regFmtDate(r.return_date) : ''}</td>
+        <td style="border:0.4pt solid #ccc;padding:4pt 6pt;font-size:8.5pt;text-align:center;white-space:nowrap;border-left:1.5pt solid #bbb">${r.submitted_date ? regFmtDate(r.submitted_date) : ''}</td>
+        <td style="border:0.4pt solid #ccc;padding:4pt 6pt;font-size:8.5pt;text-align:center;white-space:nowrap">${r.return_date ? regFmtDate(r.return_date) : ''}</td>
         <td style="border:0.4pt solid #ccc;padding:4pt 5pt;font-size:8.5pt;text-align:center;${rStyle}">${r.status || ''}</td>`
     }).join('')
 
     return `<tr style="background:${bg}">
       <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9.5pt;text-align:center">${i+1}</td>
-      <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt;font-family:monospace;font-weight:700">${m.if05_number || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt;font-family:monospace;font-weight:700;white-space:nowrap">${m.if05_number || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt">${m.material_desc || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt">${m.brand || ''}${m.mat_spec ? ` — ${m.mat_spec}` : ''}</td>
       <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt">${m.supplier_name || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center">${m.submitted_date ? regFmtDate(m.submitted_date) : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center">${m.response_date ? regFmtDate(m.response_date) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center;white-space:nowrap">${m.submitted_date ? regFmtDate(m.submitted_date) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center;white-space:nowrap">${m.response_date ? regFmtDate(m.response_date) : ''}</td>
       <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9.5pt;font-weight:700;text-align:center">${m.revision_no || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:10pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
       ${revCells}
@@ -115,9 +115,9 @@ function exportMacRegisterPDF(items, project) {
   ).join('')
 
   const revSubCols = [1,2,3,4,5].map(() =>
-    `<th style="border:0.4pt solid #ccc;padding:3pt;font-size:8pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;border-left:1.5pt solid #888">Sub.</th>
-     <th style="border:0.4pt solid #ccc;padding:3pt;font-size:8pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Ret.</th>
-     <th style="border:0.4pt solid #ccc;padding:3pt;font-size:8pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Sta.</th>`
+    `<th style="border:0.4pt solid #ccc;padding:3pt;font-size:8pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;white-space:nowrap;width:3.8%;border-left:1.5pt solid #888">Sub.</th>
+     <th style="border:0.4pt solid #ccc;padding:3pt;font-size:8pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;white-space:nowrap;width:3.8%">Ret.</th>
+     <th style="border:0.4pt solid #ccc;padding:3pt;font-size:8pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;width:1.6%">Sta.</th>`
   ).join('')
 
   const legendItems = [
@@ -221,12 +221,11 @@ function exportMacRegisterPDF(items, project) {
   <thead>
     <tr>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:1.5%">Sr.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:8%">MAC Ref. No</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:19%">MAC Subject</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:15%">Manufacturer / Product</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:7%;white-space:nowrap">MAC No.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:19%">Description</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:10%">Supplier</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:4.5%">Sub.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:4.5%">Ret.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:5%;white-space:nowrap">Sub. Date</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:5%;white-space:nowrap">Ret. Date</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:3%">Rev.</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Sta.</th>
       ${revHeaderCols}
@@ -234,7 +233,7 @@ function exportMacRegisterPDF(items, project) {
     <tr>${revSubCols}</tr>
   </thead>
   <tbody>
-    ${tableRows || '<tr><td colspan="24" style="text-align:center;padding:16pt;color:#aaa;font-size:9pt">No MAC records for this project</td></tr>'}
+    ${tableRows || '<tr><td colspan="23" style="text-align:center;padding:16pt;color:#aaa;font-size:9pt">No MAC records for this project</td></tr>'}
   </tbody>
 </table>
 

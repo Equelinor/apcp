@@ -260,6 +260,7 @@ const BLANK = {
   submitted_date: today(), response_date: '', response_code: '',
   status: 'Draft', remarks: '', consultant_remarks: '', drive_link: '',
   revision_no: 'R0', submission_history: [],
+  enc_samples: false, enc_catalogue: false, enc_mockup: false,
 }
 
 const SEED = [
@@ -597,6 +598,20 @@ export default function IF05List() {
             <div className="form-group">
               <label className="form-label">Google Drive Link</label>
               <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
+            </div>
+          </div>
+          <div className="form-group" style={{ marginBottom: 14 }}>
+            <label className="form-label">Enclosures</label>
+            <div style={{ display: 'flex', gap: 20 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                <input type="checkbox" checked={form.enc_samples} onChange={e => set('enc_samples', e.target.checked)} /> Samples
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                <input type="checkbox" checked={form.enc_catalogue} onChange={e => set('enc_catalogue', e.target.checked)} /> Catalogue
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                <input type="checkbox" checked={form.enc_mockup} onChange={e => set('enc_mockup', e.target.checked)} /> Mock-up
+              </label>
             </div>
           </div>
           <div className="form-grid form-grid-2" style={{ gap: 14 }}>

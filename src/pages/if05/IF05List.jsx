@@ -92,35 +92,33 @@ function exportMacRegisterPDF(items, project) {
         ? `background:${rs[1].bg};color:${rs[1].text};font-weight:700`
         : 'color:#bbb'
       return `
-        <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center;border-left:1.5pt solid #bbb">${r.submitted_date ? regFmtDate(r.submitted_date) : ''}</td>
-        <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${r.return_date ? regFmtDate(r.return_date) : ''}</td>
-        <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center;${rStyle}">${r.status || ''}</td>`
+        <td style="border:0.4pt solid #ccc;padding:4pt 5pt;font-size:8.5pt;text-align:center;border-left:1.5pt solid #bbb">${r.submitted_date ? regFmtDate(r.submitted_date) : ''}</td>
+        <td style="border:0.4pt solid #ccc;padding:4pt 5pt;font-size:8.5pt;text-align:center">${r.return_date ? regFmtDate(r.return_date) : ''}</td>
+        <td style="border:0.4pt solid #ccc;padding:4pt 5pt;font-size:8.5pt;text-align:center;${rStyle}">${r.status || ''}</td>`
     }).join('')
 
     return `<tr style="background:${bg}">
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center">${i+1}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;font-family:monospace;font-weight:700">${m.if05_number || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${m.material_desc || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${m.brand || ''}${m.mat_spec ? ` — ${m.mat_spec}` : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${m.supplier_name || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${m.submitted_date ? regFmtDate(m.submitted_date) : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${m.response_date ? regFmtDate(m.response_date) : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;font-weight:700;text-align:center">${m.revision_no || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:8pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${m.remarks || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${m.consultant_remarks || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9.5pt;text-align:center">${i+1}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt;font-family:monospace;font-weight:700">${m.if05_number || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt">${m.material_desc || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt">${m.brand || ''}${m.mat_spec ? ` — ${m.mat_spec}` : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt">${m.supplier_name || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center">${m.submitted_date ? regFmtDate(m.submitted_date) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center">${m.response_date ? regFmtDate(m.response_date) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9.5pt;font-weight:700;text-align:center">${m.revision_no || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:10pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
       ${revCells}
     </tr>`
   }).join('')
 
   const revHeaderCols = [1,2,3,4,5].map(n =>
-    `<th colspan="3" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#374151;color:#fff;text-align:center">REV. ${n}</th>`
+    `<th colspan="3" style="border:0.5pt solid #aaa;padding:4pt;font-size:8.5pt;font-weight:700;background:#374151;color:#fff;text-align:center">REV. ${n}</th>`
   ).join('')
 
   const revSubCols = [1,2,3,4,5].map(() =>
-    `<th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;border-left:1.5pt solid #888">Sub.</th>
-     <th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Ret.</th>
-     <th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Sta.</th>`
+    `<th style="border:0.4pt solid #ccc;padding:3pt;font-size:8pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;border-left:1.5pt solid #888">Sub.</th>
+     <th style="border:0.4pt solid #ccc;padding:3pt;font-size:8pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Ret.</th>
+     <th style="border:0.4pt solid #ccc;padding:3pt;font-size:8pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Sta.</th>`
   ).join('')
 
   const legendItems = [
@@ -129,6 +127,7 @@ function exportMacRegisterPDF(items, project) {
     ['C','Revised and Resubmit','#FFEDD5','#9A3412'],
     ['D','Rejected','#FEE2E2','#991B1B'],
     ['UR','Under Review','#DBEAFE','#1E40AF'],
+    ['PND','Pending','#F1F5F9','#64748B'],
   ].map(([code,label,bg,color]) =>
     `<span style="display:inline-flex;align-items:center;gap:5pt;margin-right:12pt">
       <span style="display:inline-block;padding:2pt 6pt;background:${bg};color:${color};font-size:8pt;font-weight:700;border-radius:2pt">${code}</span>
@@ -160,7 +159,7 @@ function exportMacRegisterPDF(items, project) {
 <style>
   @page { size: A3 landscape; margin: 8mm 10mm; }
   * { box-sizing: border-box; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 7.5pt; margin: 0; color: #000; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; margin: 0; color: #000; }
   table { border-collapse: collapse; width: 100%; }
   @media print { thead { display: table-header-group; } tr { page-break-inside: avoid; } }
 </style>
@@ -222,23 +221,21 @@ function exportMacRegisterPDF(items, project) {
 <table>
   <thead>
     <tr>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:1.2%">Sr.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6.5%">MAC Ref. No</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:13%">MAC Subject</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:10%">Manufacturer / Product</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:7%">Supplier</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Sub.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Ret.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:2%">Rev.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:2.5%">Sta.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Remarks</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Consultant Remarks</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:1.5%">Sr.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:8%">MAC Ref. No</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:19%">MAC Subject</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:15%">Manufacturer / Product</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:10%">Supplier</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:4.5%">Sub.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:4.5%">Ret.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:3%">Rev.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:5pt;font-size:8.5pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Sta.</th>
       ${revHeaderCols}
     </tr>
     <tr>${revSubCols}</tr>
   </thead>
   <tbody>
-    ${tableRows || '<tr><td colspan="26" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No MAC records for this project</td></tr>'}
+    ${tableRows || '<tr><td colspan="24" style="text-align:center;padding:16pt;color:#aaa;font-size:9pt">No MAC records for this project</td></tr>'}
   </tbody>
 </table>
 
@@ -371,7 +368,7 @@ export default function IF05List() {
       toast('MAC updated ✓', 'ok')
     } else {
       const seq = items.filter(d => d.project_code === activeProject.project_code).length + 1
-      const if05_number = genMacNumber(seq)
+      const if05_number = genMacNumber(activeProject.project_number, seq)
       const item = { ...payload, if05_number, project_code: activeProject.project_code }
       const { data, error } = await supabase.from('if05').insert(item).select().single()
       if (error) { toast('Save failed — ' + error.message, 'err'); return }

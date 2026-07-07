@@ -69,11 +69,16 @@ export function genDocNumber(typeKey, projectCode, sequence) {
 }
 
 // ─── MAC (IF05) NUMBER — deliberate exception, not the TYPE-PROJCODE-YEAR-SEQ
-// format above. Format: MAC-AI-XXX — "AI" is a fixed company code (Axion
-// Imagineering), not the project code, and there's no year. Sequence is
-// still counted per-project, so the same MAC-AI-001 can legitimately exist
-// on two different projects (2026-07-07, MAC-only — other doc types are
-// unaffected and still use genDocNumber above).
-export function genMacNumber(sequence) {
-  return `MAC-AI-${String(sequence).padStart(3, '0')}`
+// format above. Format: AI-<project number>-MAC-XXX — "AI" is a fixed company
+// code (Axion Imagineering), <project number> is the trailing segment of the
+// project's own project_number (e.g. "AX-2026-0632" → "0632"), and there's no
+// year. Sequence is still counted per-project, so the same AI-0632-MAC-001
+// can't repeat within SCB but a different project's own number segment keeps
+// its MACs visually distinct (2026-07-07, MAC-only — other doc types are
+// unaffected and still use genDocNumber above; superseded the earlier
+// MAC-AI-XXX format from the same day).
+export function genMacNumber(projectNumber, sequence) {
+  const parts = String(projectNumber || '').split('-')
+  const projNum = parts[parts.length - 1] || ''
+  return `AI-${projNum}-MAC-${String(sequence).padStart(3, '0')}`
 }

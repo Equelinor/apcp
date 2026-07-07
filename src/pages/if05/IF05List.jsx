@@ -251,6 +251,7 @@ function exportMacRegisterPDF(items, project) {
 }
 
 const BLANK = {
+  if05_number: '',
   date: today(), activity_id: '', activity_name: '', wbs_code: '', desc_location: '',
   material_desc: '', mat_spec: '', brand: '', grade: '',
   code_ref: '', sample_ref: '', origin: '', color: '',
@@ -294,7 +295,21 @@ export default function IF05List() {
     setLoading(false)
   }
 
-  function openNew() { setEditItem(null); setForm(BLANK); setFormTab('details'); setShowForm(true) }
+  // Suggests the next MAC No. from the highest existing numeric sequence for this
+  // project — parses just the leading digits so lettered variants (025a/025b/025c)
+  // don't confuse it into skipping numbers the way counting rows would.
+  function suggestNextMacNumber() {
+    const nums = items
+      .filter(d => d.project_code === activeProject.project_code)
+      .map(d => {
+        const m = String(d.if05_number || '').match(/MAC-(\d+)/i)
+        return m ? parseInt(m[1], 10) : 0
+      })
+    const nextSeq = (nums.length ? Math.max(...nums) : 0) + 1
+    return genMacNumber(activeProject.project_number, nextSeq)
+  }
+
+  function openNew() { setEditItem(null); setForm({ ...BLANK, if05_number: suggestNextMacNumber() }); setFormTab('details'); setShowForm(true) }
   function openEdit(item) {
     setEditItem(item)
     setForm({ ...item, submission_history: Array.isArray(item.submission_history) ? item.submission_history : [] })
@@ -331,6 +346,7 @@ export default function IF05List() {
   ]
 
   async function save() {
+    if (!form.if05_number?.trim()) { toast('MAC No. required', 'err'); return }
     if (!form.material_desc) { toast('Material description required', 'err'); return }
     // Technical Details "Attached" bypasses origin/spec/color — a datasheet is being attached instead
     const techAttached = form.mat_spec === 'Attached'
@@ -338,20 +354,18 @@ export default function IF05List() {
     const missing = fieldsToCheck.filter(f => !form[f.key]).map(f => f.label)
     if (missing.length) { toast(`Required for MAC output: ${missing.join(', ')}`, 'err'); return }
     // Empty string isn't valid for a date column — Postgres rejects it outright
-    const payload = { ...form, response_date: form.response_date || null }
+    const payload = { ...form, if05_number: form.if05_number.trim(), response_date: form.response_date || null }
     if (editItem) {
       const { error } = await supabase.from('if05').update(payload).eq('id', editItem.id)
-      if (error) { toast('Save failed — ' + error.message, 'err'); return }
+      if (error) { toast('Save failed — ' + (error.code === '23505' ? 'that MAC No. is already used on this project' : error.message), 'err'); return }
       setItems(prev => prev.map(d => d.id === editItem.id ? { ...d, ...payload } : d))
       toast('MAC updated ✓', 'ok')
     } else {
-      const seq = items.filter(d => d.project_code === activeProject.project_code).length + 1
-      const if05_number = genMacNumber(activeProject.project_number, seq)
-      const item = { ...payload, if05_number, project_code: activeProject.project_code }
+      const item = { ...payload, project_code: activeProject.project_code }
       const { data, error } = await supabase.from('if05').insert(item).select().single()
-      if (error) { toast('Save failed — ' + error.message, 'err'); return }
+      if (error) { toast('Save failed — ' + (error.code === '23505' ? 'that MAC No. is already used on this project' : error.message), 'err'); return }
       setItems(prev => [data, ...prev])
-      toast(`MAC created: ${if05_number}`, 'ok')
+      toast(`MAC created: ${item.if05_number}`, 'ok')
     }
     setShowForm(false)
   }
@@ -449,6 +463,10 @@ export default function IF05List() {
         {formTab === 'details' && (
         <div>
           <div className="form-grid form-grid-2" style={{ gap: 14, marginBottom: 14 }}>
+            <div className="form-group">
+              <label className="form-label required">MAC No. <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(auto-suggested, editable — e.g. append a/b/c for split submissions)</span></label>
+              <input className="form-input" value={form.if05_number} onChange={e => set('if05_number', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }} />
+            </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label className="form-label required">Material Description</label>
               <input className="form-input" value={form.material_desc} onChange={e => set('material_desc', e.target.value)} />

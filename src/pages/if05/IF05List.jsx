@@ -476,7 +476,7 @@ export default function IF05List() {
               <input className="form-input" value={form.brand} onChange={e => set('brand', e.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">Supplier</label>
+              <label className="form-label">Local Supplier</label>
               <input
                 className="form-input"
                 list="if05-supplier-list"
@@ -516,8 +516,12 @@ export default function IF05List() {
               <input className="form-input" value={form.color} disabled={form.mat_spec === 'Attached'} onChange={e => set('color', e.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">Activity Name</label>
+              <label className="form-label">Activity Name <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(feeds Description & Location of Use)</span></label>
               <input className="form-input" value={form.activity_name} onChange={e => set('activity_name', e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">WBS Code</label>
+              <input className="form-input" value={form.wbs_code} onChange={e => set('wbs_code', e.target.value)} placeholder="1.1.2" />
             </div>
             <div className="form-group">
               <label className="form-label">Prepared By</label>

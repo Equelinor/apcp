@@ -67,3 +67,13 @@ export function genDocNumber(typeKey, projectCode, sequence) {
   const seq = String(sequence).padStart(5, '0')
   return `${prefix}-${projectCode}-${year}-${seq}`
 }
+
+// ─── MAC (IF05) NUMBER — deliberate exception, not the TYPE-PROJCODE-YEAR-SEQ
+// format above. Format: MAC-AI-XXX — "AI" is a fixed company code (Axion
+// Imagineering), not the project code, and there's no year. Sequence is
+// still counted per-project, so the same MAC-AI-001 can legitimately exist
+// on two different projects (2026-07-07, MAC-only — other doc types are
+// unaffected and still use genDocNumber above).
+export function genMacNumber(sequence) {
+  return `MAC-AI-${String(sequence).padStart(3, '0')}`
+}

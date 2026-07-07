@@ -81,7 +81,7 @@ const buildHeader = (f, docNo, title, splitTitle = false) => {
 }
 
 const wrapper = (content) =>
-  `<div style="font-family:Arial,Helvetica,sans-serif;font-size:8pt;color:#000;width:190mm">${content}</div>`
+  `<div style="font-family:Arial,Helvetica,sans-serif;font-size:8pt;color:#000;width:190mm;margin:0 auto;padding:10mm 0">${content}</div>`
 
 const generated = (f, ref) =>
   `<div style="margin-top:10pt;font-size:6pt;color:#888;text-align:center">Generated electronically by APCP &nbsp;|&nbsp; ${now()} &nbsp;|&nbsp; Ref: ${ref || ''}</div>`

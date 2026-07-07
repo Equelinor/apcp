@@ -350,8 +350,18 @@ export default function IF05List() {
     setForm(p => ({ ...p, submission_history: (p.submission_history || []).filter((_, idx) => idx !== i) }))
   }
 
+  // Fields required to populate the MAC certificate (Output-01) and the A3 Register PDF
+  const REQUIRED_FIELDS = [
+    { key: 'brand', label: 'Company (Brand / Manufacturer)' },
+    { key: 'origin', label: 'Country of Origin' },
+    { key: 'mat_spec', label: 'Specification' },
+    { key: 'color', label: 'Color / Finish' },
+  ]
+
   async function save() {
     if (!form.material_desc && !form.mrf_number) { toast('Material description or MRF link required', 'err'); return }
+    const missing = REQUIRED_FIELDS.filter(f => !form[f.key]).map(f => f.label)
+    if (missing.length) { toast(`Required for MAC output: ${missing.join(', ')}`, 'err'); return }
     // Empty string isn't valid for a date column — Postgres rejects it outright
     const payload = { ...form, response_date: form.response_date || null }
     if (editItem) {
@@ -381,7 +391,7 @@ export default function IF05List() {
   })
 
   const handlePrint = (d) => {
-    printForm(buildIF05(mergeProjectLogos(d, activeProject)), 'IF05 — Material Approval Certificate')
+    printForm(buildIF05(mergeProjectLogos(d, activeProject)), `Export for Transmittal — ${d.if05_number}`)
   }
 
   return (
@@ -436,7 +446,7 @@ export default function IF05List() {
                   <td><Badge status={d.status} /></td>
                   <td>{d.drive_link ? <a href={d.drive_link} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ fontSize: 11, padding: '3px 8px' }}><ExternalLink size={11} /></a> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                   <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button>
-                    <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Print PDF" onClick={() => handlePrint(d)}><Printer size={12} /></button></td>
+                    <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Export for Transmittal" onClick={() => handlePrint(d)}><Printer size={12} /></button></td>
                 </tr>
               ))}
             </tbody>
@@ -487,11 +497,11 @@ export default function IF05List() {
               <input className="form-input" value={form.material_desc} onChange={e => set('material_desc', e.target.value)} placeholder="Auto-fills from MRF" />
             </div>
             <div className="form-group">
-              <label className="form-label">Specification</label>
+              <label className="form-label required">Specification</label>
               <input className="form-input" value={form.mat_spec} onChange={e => set('mat_spec', e.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">Brand / Manufacturer</label>
+              <label className="form-label required">Brand / Manufacturer (Company)</label>
               <input className="form-input" value={form.brand} onChange={e => set('brand', e.target.value)} />
             </div>
             <div className="form-group">
@@ -520,11 +530,11 @@ export default function IF05List() {
               <input className="form-input" value={form.sample_ref} onChange={e => set('sample_ref', e.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">Country of Origin</label>
+              <label className="form-label required">Country of Origin</label>
               <input className="form-input" value={form.origin} onChange={e => set('origin', e.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">Color / Finish</label>
+              <label className="form-label required">Color / Finish</label>
               <input className="form-input" value={form.color} onChange={e => set('color', e.target.value)} />
             </div>
             <div className="form-group">

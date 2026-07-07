@@ -449,8 +449,13 @@ export const printForm = (htmlString, title = 'APCP Form') => {
   el.innerHTML = htmlString
   const prev = document.title
   document.title = title
-  window.print()
-  setTimeout(() => { document.title = prev }, 1000)
+  // Give embedded base64 logo images time to decode/paint before the print
+  // snapshot is taken — without this delay they render blank (same fix the
+  // Register PDF exports already use via their own setTimeout before print()).
+  setTimeout(() => {
+    window.print()
+    setTimeout(() => { document.title = prev }, 1000)
+  }, 300)
 }
 
 // ─────────────────────────────────────────────────────────

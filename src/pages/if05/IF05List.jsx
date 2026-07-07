@@ -3,7 +3,6 @@ import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genMacNumber, RESPONSE_CODES } from '../../config/docTypes'
-import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
 import { supplierService } from '../../services/supplierService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
@@ -254,7 +253,7 @@ function exportMacRegisterPDF(items, project) {
 
 const BLANK = {
   date: today(), activity_id: '', activity_name: '', wbs_code: '',
-  mrf_number: '', material_desc: '', mat_spec: '', brand: '', grade: '',
+  material_desc: '', mat_spec: '', brand: '', grade: '',
   code_ref: '', sample_ref: '', origin: '', color: '',
   prepared_by: '', addressed_to: '', supplier_name: '',
   submitted_date: today(), response_date: '', response_code: '',
@@ -264,15 +263,14 @@ const BLANK = {
 }
 
 const SEED = [
-  { id: 1, if05_number: 'MAC-AI-001', date: '2025-01-16', project_code: 'ANT', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', wbs_code: '1.1.2', mrf_number: 'MRF-ANT-2025-00001', material_desc: 'Ready Mix Concrete M40', mat_spec: 'M40 Ready Mix', brand: 'Gulf Concrete Co.', grade: 'M40', code_ref: 'BS EN 206', sample_ref: 'SMPL-2025-001', origin: 'UAE', color: 'N/A', prepared_by: 'Ahmed Al-Rashid', addressed_to: 'Consultant', submitted_date: '2025-01-16', response_date: '2025-01-20', response_code: 'A — Approved', status: 'Approved', remarks: '', consultant_remarks: 'Material approved. Ensure fresh delivery within 90 mins.', drive_link: '' },
-  { id: 2, if05_number: 'MAC-AI-001', date: '2025-01-21', project_code: 'MRS', activity_id: 'B2030', activity_name: 'Basement Waterproofing L3', wbs_code: '2.1.3', mrf_number: 'MRF-MRS-2025-00001', material_desc: 'SBS Waterproofing Membrane Type A', mat_spec: 'SBS Modified Bitumen 4mm', brand: 'Sika', grade: 'Type A', code_ref: 'ASTM D6163', sample_ref: 'SMPL-2025-003', origin: 'Switzerland', color: 'Black', prepared_by: 'Khalid Mansoor', addressed_to: 'Consultant', submitted_date: '2025-01-21', response_date: '', response_code: '', status: 'Submitted', remarks: '', consultant_remarks: '', drive_link: '' },
+  { id: 1, if05_number: 'MAC-AI-001', date: '2025-01-16', project_code: 'ANT', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', wbs_code: '1.1.2', material_desc: 'Ready Mix Concrete M40', mat_spec: 'M40 Ready Mix', brand: 'Gulf Concrete Co.', grade: 'M40', code_ref: 'BS EN 206', sample_ref: 'SMPL-2025-001', origin: 'UAE', color: 'N/A', prepared_by: 'Ahmed Al-Rashid', addressed_to: 'Consultant', submitted_date: '2025-01-16', response_date: '2025-01-20', response_code: 'A — Approved', status: 'Approved', remarks: '', consultant_remarks: 'Material approved. Ensure fresh delivery within 90 mins.', drive_link: '' },
+  { id: 2, if05_number: 'MAC-AI-001', date: '2025-01-21', project_code: 'MRS', activity_id: 'B2030', activity_name: 'Basement Waterproofing L3', wbs_code: '2.1.3', material_desc: 'SBS Waterproofing Membrane Type A', mat_spec: 'SBS Modified Bitumen 4mm', brand: 'Sika', grade: 'Type A', code_ref: 'ASTM D6163', sample_ref: 'SMPL-2025-003', origin: 'Switzerland', color: 'Black', prepared_by: 'Khalid Mansoor', addressed_to: 'Consultant', submitted_date: '2025-01-21', response_date: '', response_code: '', status: 'Submitted', remarks: '', consultant_remarks: '', drive_link: '' },
 ]
 
 export default function IF05List() {
   const { activeProject } = useProject()
   const { profile } = useAuth()
   const { toasts, toast } = useToast()
-  const mrfList = useMRFList(activeProject.project_code)
 
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -283,29 +281,6 @@ export default function IF05List() {
   const [formTab, setFormTab] = useState('details')
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
-
-  const { activityData, mrfData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
-
-  useEffect(() => {
-    if (activityData && !editItem) setForm(f => ({ ...f, activity_name: activityData.activity_name || f.activity_name, wbs_code: activityData.wbs_code || f.wbs_code }))
-  }, [activityData])
-
-  useEffect(() => {
-    if (mrfData && !editItem) {
-      setForm(f => ({
-        ...f,
-        material_desc: mrfData.material_desc || f.material_desc,
-        mat_spec: mrfData.mat_spec || f.mat_spec,
-        brand: mrfData.brand || f.brand,
-        grade: mrfData.grade || f.grade,
-        code_ref: mrfData.code_ref || f.code_ref,
-        sample_ref: mrfData.sample_ref || f.sample_ref,
-        activity_id: f.activity_id || mrfData.activity_id || '',
-        activity_name: f.activity_name || mrfData.activity_name || '',
-        wbs_code: f.wbs_code || mrfData.wbs_code || '',
-      }))
-    }
-  }, [mrfData])
 
   useEffect(() => {
     loadData()
@@ -357,7 +332,7 @@ export default function IF05List() {
   ]
 
   async function save() {
-    if (!form.material_desc && !form.mrf_number) { toast('Material description or MRF link required', 'err'); return }
+    if (!form.material_desc) { toast('Material description required', 'err'); return }
     // Technical Details "Attached" bypasses origin/spec/color — a datasheet is being attached instead
     const techAttached = form.mat_spec === 'Attached'
     const fieldsToCheck = techAttached ? REQUIRED_FIELDS.filter(f => f.key === 'brand') : REQUIRED_FIELDS
@@ -386,7 +361,7 @@ export default function IF05List() {
     if (filterStatus && d.status !== filterStatus) return false
     if (search) {
       const q = search.toLowerCase()
-      return [d.if05_number, d.material_desc, d.brand, d.supplier_name, d.activity_id, d.mrf_number].some(v => (v || '').toLowerCase().includes(q))
+      return [d.if05_number, d.material_desc, d.brand, d.supplier_name, d.activity_id].some(v => (v || '').toLowerCase().includes(q))
     }
     return true
   })
@@ -426,7 +401,7 @@ export default function IF05List() {
             <thead>
               <tr>
                 <th>IF05 No.</th><th>Material</th><th>Brand</th><th>Grade</th>
-                <th>Sample Ref</th><th>MRF</th><th>Activity</th>
+                <th>Sample Ref</th><th>Activity</th>
                 <th>Submitted</th><th>Response</th><th>Code</th>
                 <th>Status</th><th>Drive</th><th></th>
               </tr>
@@ -439,7 +414,6 @@ export default function IF05List() {
                   <td style={{ fontSize: 12 }}>{d.brand || '—'}</td>
                   <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.grade || '—'}</td>
                   <td><span className="doc-number">{d.sample_ref || '—'}</span></td>
-                  <td>{d.mrf_number ? <span className="doc-number">{d.mrf_number}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                   <td>{d.activity_id ? <span className="doc-number">{d.activity_id}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.submitted_date || '—'}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
@@ -475,27 +449,14 @@ export default function IF05List() {
 
         {formTab === 'details' && (
         <div>
-          <div style={{ background: 'var(--bg-base)', borderRadius: 'var(--radius)', padding: '12px 14px', marginBottom: 16 }}>
-            <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Links — auto-fills material fields</div>
-            <div className="form-grid form-grid-2" style={{ gap: 10 }}>
-              <div className="form-group">
-                <label className="form-label">Linked MRF</label>
-                <select className="form-select" value={form.mrf_number} onChange={e => set('mrf_number', e.target.value)}>
-                  <option value="">— None —</option>
-                  {mrfList.map(m => <option key={m.mrf_number} value={m.mrf_number}>{m.mrf_number} — {m.material_desc?.slice(0, 35)}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Activity ID</label>
-                <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010" />
-              </div>
-            </div>
-          </div>
-
           <div className="form-grid form-grid-2" style={{ gap: 14, marginBottom: 14 }}>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label className="form-label required">Material Description</label>
-              <input className="form-input" value={form.material_desc} onChange={e => set('material_desc', e.target.value)} placeholder="Auto-fills from MRF" />
+              <input className="form-input" value={form.material_desc} onChange={e => set('material_desc', e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Activity ID</label>
+              <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010" />
             </div>
             <div className="form-group">
               <div className="form-label required" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>

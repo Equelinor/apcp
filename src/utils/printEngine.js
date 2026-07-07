@@ -28,6 +28,7 @@ export const mergeProjectLogos = (f, project) => {
     consultantLogo: f.consultantLogo || project.consultant_logo || '',
     client: f.client || project.client || '',
     consultant: f.consultant || project.consultant || '',
+    contractor: f.contractor || project.contractor || '',
     projName: f.projName || project.project_name || '',
   }
 }
@@ -45,11 +46,11 @@ const buildHeader = (f, docNo, title, splitTitle = false) => {
   const logoRow = `
     <table style="width:100%;border-collapse:collapse;border:1.5pt solid #000">
       <tr>
-        <td style="width:34%;border-right:1pt solid #000;padding:6pt 8pt;vertical-align:middle">
-          <img src="${AXION_LOGO}" style="max-height:46pt;max-width:150pt;object-fit:contain;display:block">
-        </td>
-        <td style="width:32%;border-right:1pt solid #000;padding:6pt 8pt;vertical-align:middle;text-align:center">
+        <td style="width:34%;border-right:1pt solid #000;padding:6pt 8pt;vertical-align:middle;text-align:center">
           ${clientLogo}
+        </td>
+        <td style="width:32%;border-right:1pt solid #000;padding:6pt 8pt;vertical-align:middle">
+          <img src="${AXION_LOGO}" style="max-height:46pt;max-width:150pt;object-fit:contain;display:block;margin:auto">
         </td>
         <td style="width:34%;padding:6pt 8pt;vertical-align:middle;text-align:center">
           ${consultantLogo}
@@ -102,7 +103,7 @@ export const buildIF04 = (f) => {
     ${buildHeader(f, 'AA-IF-04', 'SHOP DRAWING SUBMITTAL FORM')}
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:14pt;font-size:8pt">
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;width:22%;font-weight:700;background:#f9f9f9">Project</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.projName || ''}</td></tr>
-      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Contractor</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">AXION IMAGINEERING CONSTRUCTIONS CO. W.L.L.,</td></tr>
+      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Contractor</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr>
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Client</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.client || ''}</td></tr>
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Shop Drawing No.</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.sdFrom || ''}${f.sdTo ? ' to ' + f.sdTo : ''}</td></tr>
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Date</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${fmtDate(f.date)}</td></tr>
@@ -175,7 +176,7 @@ export const buildIF05 = (f) => {
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
       <tr><td style="${tdl}">Project:</td><td style="${td}font-weight:700">${f.projName || ''}</td></tr>
       <tr><td style="${tdl}">Client:</td><td style="${td}font-weight:700">${f.client || ''}</td></tr>
-      <tr><td style="${tdl}">Contractor:</td><td style="${td}font-weight:700">AXION IMAGINEERING CONSTRUCTIONS CO. W.L.L.,</td></tr>
+      <tr><td style="${tdl}">Contractor:</td><td style="${td}font-weight:700">${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr>
       <tr><td style="${tdl}">Consultant:</td><td style="${td}font-weight:700">${f.consultant || ''}</td></tr>
     </table>
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
@@ -267,7 +268,7 @@ export const buildIF07 = (f) => {
     ${buildHeader(f, 'AA-IF-07', 'DOCUMENT SUBMITTAL FORM')}
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:14pt;font-size:8pt">
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;width:22%;font-weight:700;background:#f9f9f9">Project</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.projName || ''}</td></tr>
-      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Contractor</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">AXION IMAGINEERING CONSTRUCTIONS CO. W.L.L.,</td></tr>
+      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Contractor</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr>
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Client</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.client || ''}</td></tr>
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Shop Document No.</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.subNo || ''}${f.subTo ? ' to ' + f.subTo : ''}</td></tr>
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Date</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${fmtDate(f.date)}</td></tr>
@@ -409,7 +410,7 @@ export const buildIF12 = (f) => {
     </table>
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
       <tr><td style="${tdl}">Project Name</td><td style="${td}font-weight:700">${f.projName || ''}</td></tr>
-      <tr><td style="${tdl}">From</td><td style="${td}font-weight:700">AXION IMAGINEERING CONSTRUCTIONS CO. W.L.L.,</td></tr>
+      <tr><td style="${tdl}">From</td><td style="${td}font-weight:700">${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr>
       <tr><td style="${tdl}">To</td><td style="${td}font-weight:700">${f.to || f.consultant || ''}</td></tr>
       <tr><td style="${tdl}">Attn</td><td style="${td}">${f.attn || ''}</td></tr>
       <tr><td style="${tdl}">Subject</td><td style="${td}font-weight:700">Sub-Contractor Approval Request</td></tr>

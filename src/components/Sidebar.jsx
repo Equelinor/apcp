@@ -65,7 +65,6 @@ const NAV = [
       { to: '/sd-register',       label: 'Shop Drawing Register', icon: FileSearch     },
       { to: '/submittals',        label: 'Technical Submittals',  icon: FileSearch     },
       { to: '/mac',               label: 'Material Approval (MAC)', icon: ClipboardCheck },
-      { to: '/mar',               label: 'MAR Register',            icon: FileSearch     },
       { to: '/mockup',            label: 'Sample Submittals',       icon: Layers         },
       { to: '/document-register', label: 'Document Register',     icon: Library        },
       { to: '/transmittals',      label: 'Transmittals',          icon: FileText,      soon: true },

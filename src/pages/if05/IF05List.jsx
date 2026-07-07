@@ -11,10 +11,249 @@ import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil, ExternalLink , Printer, Trash2} from 'lucide-react'
 import { today } from '../../utils/delay'
 import { buildIF05, printForm, mergeProjectLogos } from '../../utils/printEngine'
+import { AXION_LOGO } from '../../utils/axionLogo'
 
 const MAC_STATUSES = ['Draft', 'Submitted', 'Under Review', 'Approved', 'Approved with Comments', 'Rejected', 'Resubmitted']
-// MAR Register revision round status codes — same A/B/C/D/UR convention as SD Register
+// MAC's own resubmission-round status codes — same A/B/C/D/UR convention as SD Register
 const REV_STATUS_CODES = ['', 'A', 'B', 'C', 'D', 'UR']
+
+// ── Approval status — derived from response_code / status, not a stored field.
+// Exported so Dashboard.jsx can reuse the exact same derivation (same pattern as
+// the RFI/Shop Drawing/IR Registers). MAC used to have a separate read-only
+// "MAR Register" page duplicating this same if05 data — removed 2026-07-07 since
+// it was a 1:1 duplicate of this list; its bulk register-PDF export and computed
+// status now live here instead.
+export const MAC_APPROVAL_STATUS = {
+  'Pending':                  { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
+  'Under Review':             { code: 'UR',  bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
+  'Approved':                 { code: 'A',   bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
+  'Approved with Comments':   { code: 'B',   bg: '#FEF3C7', text: '#92400E', border: '#FDE68A' },
+  'Revised and Resubmit':     { code: 'C',   bg: '#FFEDD5', text: '#9A3412', border: '#FED7AA' },
+  'Rejected':                 { code: 'D',   bg: '#FEE2E2', text: '#991B1B', border: '#FCA5A5' },
+}
+
+export function computeMacApprovalStatus(d) {
+  const code = (d.response_code || '').charAt(0)
+  if (code === 'A') return 'Approved'
+  if (code === 'B') return 'Approved with Comments'
+  if (code === 'C') return 'Revised and Resubmit'
+  if (code === 'D') return 'Rejected'
+  if (d.status === 'Draft') return 'Pending'
+  return 'Under Review'
+}
+
+const regFmtDate = d => {
+  if (!d) return '—'
+  const dt = new Date(d)
+  return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getFullYear()).slice(2)}`
+}
+
+// ── Bulk MAC Register PDF export (A3 landscape, all MACs on one sheet) ──
+function exportMacRegisterPDF(items, project) {
+  const genDate = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+
+  const withStatus = items.map(d => ({ ...d, _status: computeMacApprovalStatus(d) }))
+  const counts = {
+    total:    withStatus.length,
+    submitted: withStatus.filter(i => i.submitted_date).length,
+    ur:       withStatus.filter(i => i._status === 'Under Review').length,
+    a:        withStatus.filter(i => i._status === 'Approved').length,
+    b:        withStatus.filter(i => i._status === 'Approved with Comments').length,
+    c:        withStatus.filter(i => i._status === 'Revised and Resubmit').length,
+    d:        withStatus.filter(i => i._status === 'Rejected').length,
+    pending:  withStatus.filter(i => i._status === 'Pending').length,
+  }
+
+  const logoCell = (logoSrc, name, role) => {
+    const img = logoSrc
+      ? `<img src="${logoSrc}" style="max-height:46pt;max-width:140pt;object-fit:contain;display:block">`
+      : ''
+    return `
+      <div style="display:inline-flex;align-items:center;gap:10pt;justify-content:center">
+        ${img}
+        <div style="text-align:left">
+          <div style="font-size:6pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:3pt">${role}</div>
+          <div style="font-size:9.5pt;font-weight:700;color:#111;max-width:150pt">${name || ''}</div>
+        </div>
+      </div>`
+  }
+
+  const tableRows = withStatus.map((m, i) => {
+    const hist = Array.isArray(m.submission_history) ? m.submission_history : []
+    const s = MAC_APPROVAL_STATUS[m._status] || MAC_APPROVAL_STATUS['Pending']
+    const bg = i % 2 === 0 ? '#fff' : '#f9fafb'
+
+    const revCells = [1,2,3,4,5].map(n => {
+      const r = hist.find(h => String(h.rev_no) === `R${n}`) || {}
+      const rs = r.status ? Object.entries(MAC_APPROVAL_STATUS).find(([k]) =>
+        MAC_APPROVAL_STATUS[k].code === r.status
+      ) : null
+      const rStyle = rs
+        ? `background:${rs[1].bg};color:${rs[1].text};font-weight:700`
+        : 'color:#bbb'
+      return `
+        <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center;border-left:1.5pt solid #bbb">${r.submitted_date ? regFmtDate(r.submitted_date) : ''}</td>
+        <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${r.return_date ? regFmtDate(r.return_date) : ''}</td>
+        <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center;${rStyle}">${r.status || ''}</td>`
+    }).join('')
+
+    return `<tr style="background:${bg}">
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center">${i+1}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;font-family:monospace;font-weight:700">${m.if05_number || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${m.material_desc || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${m.brand || ''}${m.mat_spec ? ` — ${m.mat_spec}` : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${m.supplier_name || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${m.submitted_date ? regFmtDate(m.submitted_date) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${m.response_date ? regFmtDate(m.response_date) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;font-weight:700;text-align:center">${m.revision_no || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:8pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${m.remarks || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${m.consultant_remarks || ''}</td>
+      ${revCells}
+    </tr>`
+  }).join('')
+
+  const revHeaderCols = [1,2,3,4,5].map(n =>
+    `<th colspan="3" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#374151;color:#fff;text-align:center">REV. ${n}</th>`
+  ).join('')
+
+  const revSubCols = [1,2,3,4,5].map(() =>
+    `<th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;border-left:1.5pt solid #888">Sub.</th>
+     <th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Ret.</th>
+     <th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Sta.</th>`
+  ).join('')
+
+  const legendItems = [
+    ['A','Approved','#D1FAE5','#065F46'],
+    ['B','Approved with Comments','#FEF3C7','#92400E'],
+    ['C','Revised and Resubmit','#FFEDD5','#9A3412'],
+    ['D','Rejected','#FEE2E2','#991B1B'],
+    ['UR','Under Review','#DBEAFE','#1E40AF'],
+  ].map(([code,label,bg,color]) =>
+    `<span style="display:inline-flex;align-items:center;gap:5pt;margin-right:12pt">
+      <span style="display:inline-block;padding:2pt 6pt;background:${bg};color:${color};font-size:8pt;font-weight:700;border-radius:2pt">${code}</span>
+      <span style="font-size:8pt;color:#333">${label}</span>
+    </span>`
+  ).join('')
+
+  const summaryRows = [
+    ['Total MACs', counts.total, ''],
+    ['Submitted to Consultant', counts.submitted, ''],
+    ['Under Review', counts.ur, '#1E40AF'],
+    ['Approved (A)', counts.a, '#065F46'],
+    ['Approved with Comments (B)', counts.b, '#92400E'],
+    ['Revised & Resubmit (C)', counts.c, '#9A3412'],
+    ['Rejected (D)', counts.d, '#991B1B'],
+    ['Pending', counts.pending, '#64748B'],
+  ].map(([l,v,c]) =>
+    `<tr>
+      <td style="font-size:8pt;padding:2pt 0;color:#444">${l}</td>
+      <td style="font-size:8.5pt;font-weight:700;padding:2pt 0;text-align:right;color:${c||'#111'}">${v}</td>
+    </tr>`
+  ).join('')
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MAC Register — ${project?.project_name || ''}</title>
+<style>
+  @page { size: A3 landscape; margin: 8mm 10mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 7.5pt; margin: 0; color: #000; }
+  table { border-collapse: collapse; width: 100%; }
+  @media print { thead { display: table-header-group; } tr { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+
+<!-- ═══ THREE-COMPANY HEADER ═══ -->
+<table style="margin-bottom:0;border:1pt solid #1a1a2e">
+  <tr>
+    <td style="width:33.3%;border-right:1pt solid #ccc;padding:8pt 12pt;vertical-align:middle;text-align:center">
+      ${logoCell(project?.client_logo, project?.client, 'Client / Employer')}
+    </td>
+    <td style="width:33.4%;border-right:1pt solid #ccc;padding:8pt 12pt;vertical-align:middle;text-align:center;background:#fafafa">
+      ${logoCell(AXION_LOGO, project?.contractor || 'Axion Imagineering Construction Co. W.L.L.', 'Contractor')}
+    </td>
+    <td style="width:33.3%;padding:8pt 12pt;vertical-align:middle;text-align:center">
+      ${logoCell(project?.consultant_logo, project?.consultant, 'Consultant')}
+    </td>
+  </tr>
+</table>
+
+<!-- ═══ TITLE BAND ═══ -->
+<table style="margin-bottom:5pt;border:1pt solid #1a1a2e;border-top:none">
+  <tr>
+    <td style="padding:6pt 14pt;text-align:center;background:#111827;color:#fff">
+      <div style="font-size:13pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Material Approval Certificate Log</div>
+      <div style="font-size:8pt;font-weight:600;margin-top:3pt;opacity:.85">
+        ${project?.project_name || ''}&nbsp;
+        ${project?.project_number ? `· ${project.project_number}` : ''}
+        ${project?.contract_number ? `· ${project.contract_number}` : ''}
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- ═══ LOG INFO + SUMMARY + LEGEND ═══ -->
+<table style="margin-bottom:5pt;border:0.5pt solid #ccc">
+  <tr>
+    <td style="width:25%;vertical-align:top;padding:6pt 10pt;border-right:0.5pt solid #ddd">
+      <div style="font-size:7.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4pt;letter-spacing:.08em">Log Info</div>
+      <table style="width:100%">
+        <tr><td style="font-size:8pt;font-weight:700;color:#555;padding:2pt 0">Location</td><td style="font-size:8pt;padding:2pt 0">${project?.location || '—'}</td></tr>
+        <tr><td style="font-size:8pt;font-weight:700;color:#555;padding:2pt 0">Contract No.</td><td style="font-size:8pt;padding:2pt 0">${project?.contract_number || '—'}</td></tr>
+        <tr><td style="font-size:8pt;font-weight:700;color:#555;padding:2pt 0">Updated</td><td style="font-size:8pt;padding:2pt 0"><b>${genDate}</b></td></tr>
+      </table>
+    </td>
+    <td style="width:35%;vertical-align:top;padding:6pt 10pt;border-right:0.5pt solid #ddd">
+      <div style="font-size:7.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4pt;letter-spacing:.08em">Register Summary</div>
+      <table style="width:100%">${summaryRows}</table>
+    </td>
+    <td style="width:40%;vertical-align:middle;padding:6pt 10pt">
+      <div style="font-size:7.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:6pt;letter-spacing:.08em">Status Legend</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4pt">${legendItems}</div>
+    </td>
+  </tr>
+</table>
+
+<!-- ═══ MAC REGISTER TABLE ═══ -->
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:1.2%">Sr.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6.5%">MAC Ref. No</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:13%">MAC Subject</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:10%">Manufacturer / Product</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:7%">Supplier</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Sub.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Ret.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:2%">Rev.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:2.5%">Sta.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Remarks</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Consultant Remarks</th>
+      ${revHeaderCols}
+    </tr>
+    <tr>${revSubCols}</tr>
+  </thead>
+  <tbody>
+    ${tableRows || '<tr><td colspan="26" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No MAC records for this project</td></tr>'}
+  </tbody>
+</table>
+
+<div style="margin-top:5pt;padding-top:4pt;border-top:0.5pt solid #ddd;font-size:7pt;color:#aaa;text-align:center">
+  Generated by APCP &nbsp;·&nbsp; ${genDate} &nbsp;·&nbsp; This is a controlled register — do not alter
+</div>
+</body>
+</html>`
+
+  const win = window.open('', '_blank', 'width=1400,height=900')
+  win.document.write(html)
+  win.document.close()
+  win.focus()
+  setTimeout(() => win.print(), 600)
+}
 
 const BLANK = {
   date: today(), activity_id: '', activity_name: '', wbs_code: '',
@@ -92,7 +331,7 @@ export default function IF05List() {
   }
   function set(f, v) { setForm(p => ({ ...p, [f]: v })) }
 
-  // ── Revision history helpers (MAC resubmission rounds — feeds MAR Register) ──
+  // ── Revision history helpers (MAC resubmission rounds — feeds the Export Register PDF below) ──
   function addRev() {
     const nextRevNo = `R${(form.submission_history?.length || 0) + 1}`
     setForm(p => ({
@@ -152,7 +391,12 @@ export default function IF05List() {
           <div className="page-title">Material Approval Certificate</div>
           <div className="page-subtitle">{activeProject.project_name} · IF05 (MAC) · {items.length} records</div>
         </div>
-        <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New MAC</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-secondary" onClick={() => exportMacRegisterPDF(filtered, activeProject)}>
+            <Printer size={13} /> Export Register (PDF)
+          </button>
+          <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New MAC</button>
+        </div>
       </div>
 
       <div className="filter-bar" style={{ marginBottom: 12 }}>
@@ -341,7 +585,7 @@ export default function IF05List() {
         </div>
         )}
 
-        {/* ── Tab: Revision History (MAC resubmission rounds — feeds MAR Register) ── */}
+        {/* ── Tab: Revision History (MAC resubmission rounds — feeds the Export Register PDF) ── */}
         {formTab === 'history' && (
           <div>
             {(!form.submission_history || form.submission_history.length === 0) ? (

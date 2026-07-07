@@ -11,7 +11,7 @@ import { Plus, ExternalLink, Pencil, Printer, Trash2 } from 'lucide-react'
 import { today } from '../../utils/delay'
 import { buildIF04, printForm, mergeProjectLogos } from '../../utils/printEngine'
 
-// SD Register revision round status codes — same A/B/C/D/UR convention as MAR Register
+// SD Register revision round status codes — same A/B/C/D/UR convention as the MAC page
 const REV_STATUS_CODES = ['', 'A', 'B', 'C', 'D', 'UR']
 
 const BLANK = {

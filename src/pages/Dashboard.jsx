@@ -8,7 +8,7 @@ import {
   FileText, Clock, AlertTriangle, Truck, Package,
   CheckCircle, XCircle, Zap, ClipboardCheck, MessageSquare, FolderOpen, HardHat
 } from 'lucide-react'
-import { computeMarStatus, MAR_STATUS } from './mar/MARRegister'
+import { computeMacApprovalStatus, MAC_APPROVAL_STATUS } from './if05/IF05List'
 import { computeRfiStatus, RFI_STATUS } from './rfi/RFIRegister'
 import { computeSdStatus, SD_STATUS, isSdOverdue } from './sd/SDRegister'
 import { computeIrStatus, IR_STATUS, isIrOverdue } from './ir/IRRegister'
@@ -76,7 +76,7 @@ const SITE_STATUSES = [
 export default function Dashboard() {
   const { activeProject } = useProject()
   const [mrfs, setMrfs] = useState([])
-  const [registers, setRegisters] = useState({ mar: [], rfi: [], sd: [], ir: [], dar: [] })
+  const [registers, setRegisters] = useState({ mac: [], rfi: [], sd: [], ir: [], dar: [] })
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
@@ -102,7 +102,7 @@ export default function Dashboard() {
 
     // Registers read straight from their source IF-tables — same tables the
     // Register pages themselves read from. No duplicate data stored here.
-    const [mar, rfi, sd, ir, dar] = await Promise.all([
+    const [mac, rfi, sd, ir, dar] = await Promise.all([
       supabase.from('if05').select('response_code,status').eq('project_code', projectCode),
       supabase.from('if08').select('status,response_date,required_response_date').eq('project_code', projectCode),
       supabase.from('if04').select('response_code,status,submitted_date').eq('project_code', projectCode),
@@ -110,7 +110,7 @@ export default function Dashboard() {
       supabase.from('dars').select('id,date,status').eq('project_code', projectCode),
     ])
     setRegisters({
-      mar: mar.data || [],
+      mac: mac.data || [],
       rfi: rfi.data || [],
       sd: sd.data || [],
       ir: ir.data || [],
@@ -121,17 +121,17 @@ export default function Dashboard() {
   }
 
   // ── Register summary counts — derived with each Register's own status logic, not re-implemented ──
-  const marWithStatus = registers.mar.map(d => computeMarStatus(d))
+  const macWithStatus = registers.mac.map(d => computeMacApprovalStatus(d))
   const rfiWithStatus = registers.rfi.map(d => computeRfiStatus(d))
   const sdWithStatus = registers.sd.map(d => ({ status: computeSdStatus(d), overdue: isSdOverdue(d) }))
   const irWithStatus = registers.ir.map(d => ({ status: computeIrStatus(d), overdue: isIrOverdue(d) }))
 
   const registerSummary = [
     {
-      label: 'MAR', route: '/mar', icon: FileText,
-      total: marWithStatus.length,
-      pending: marWithStatus.filter(s => s === 'Under Review' || s === 'Pending').length,
-      flagged: marWithStatus.filter(s => s === 'Rejected' || s === 'Revised and Resubmit').length,
+      label: 'MAC', route: '/mac', icon: FileText,
+      total: macWithStatus.length,
+      pending: macWithStatus.filter(s => s === 'Under Review' || s === 'Pending').length,
+      flagged: macWithStatus.filter(s => s === 'Rejected' || s === 'Revised and Resubmit').length,
       flaggedLabel: 'Rejected / Resubmit',
     },
     {
@@ -193,7 +193,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      {/* Register Summary — reads live from MAR/RFI/Shop Drawing/IR Registers + DAR, no duplicate data */}
+      {/* Register Summary — reads live from MAC/RFI/Shop Drawing/IR Registers + DAR, no duplicate data */}
       <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: 'var(--text-muted)' }}>
         Register Summary
       </div>

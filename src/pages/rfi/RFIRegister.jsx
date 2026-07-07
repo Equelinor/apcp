@@ -46,7 +46,7 @@ const fmtDate = d => {
   return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getFullYear()).slice(2)}`
 }
 
-// ── PDF export — same layout convention as MAR Register ───────────
+// ── PDF export — same layout convention as the MAC page's register export ───────────
 function exportPDF(items, project) {
   const genDate = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
 

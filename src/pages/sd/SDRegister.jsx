@@ -8,7 +8,7 @@ import { AXION_LOGO } from '../../utils/axionLogo'
 // Overdue turnaround — matches the project's own review-time convention (7 calendar days)
 export const OVERDUE_DAYS = 7
 
-// ── Status system — same A/B/C/D/UR convention as MAR Register, derived from
+// ── Status system — same A/B/C/D/UR convention as the MAC page, derived from
 // IF04's existing response_code / status fields (not a new stored field) ──
 export const SD_STATUS = {
   'Pending':                { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },

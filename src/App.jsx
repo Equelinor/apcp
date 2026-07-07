@@ -21,7 +21,6 @@ import SupplierRegister from './pages/suppliers/SupplierRegister'
 import ProjectRegister from './pages/projects/ProjectRegister'
 import DARList from './pages/dar/DARList'
 import BOQRegister from './pages/boq/BOQRegister'
-import MARRegister from './pages/mar/MARRegister'
 import RFIRegister from './pages/rfi/RFIRegister'
 import SDRegister from './pages/sd/SDRegister'
 import IRRegister from './pages/ir/IRRegister'
@@ -61,7 +60,6 @@ export default function App() {
         <Route path="projects" element={<ProjectRegister />} />
         <Route path="dar" element={<DARList />} />
         <Route path="boq" element={<BOQRegister />} />
-        <Route path="mar" element={<MARRegister />} />
         <Route path="roles" element={<RolesPermissions />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

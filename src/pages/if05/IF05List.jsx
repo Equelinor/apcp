@@ -184,7 +184,7 @@ function exportMacRegisterPDF(items, project) {
 <table style="margin-bottom:5pt;border:1pt solid #1a1a2e;border-top:none">
   <tr>
     <td style="padding:6pt 14pt;text-align:center;background:#111827;color:#fff">
-      <div style="font-size:13pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Material Approval Certificate Log</div>
+      <div style="font-size:13pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Material Approval Certificate Register</div>
       <div style="font-size:8pt;font-weight:600;margin-top:3pt;opacity:.85">
         ${project?.project_name || ''}&nbsp;
         ${project?.project_number ? `· ${project.project_number}` : ''}

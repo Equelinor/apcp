@@ -161,7 +161,9 @@ export const buildIF05 = (f) => {
     i3: f.brand || '',
     i4: f.supplier_name || '',
     i5: f.code_ref || '',
-    i6: [f.mat_spec, f.grade ? `Grade: ${f.grade}` : '', f.color ? `Color: ${f.color}` : '', f.origin ? `Origin: ${f.origin}` : ''].filter(Boolean).join('\n'),
+    // "Attached" is a sentinel value set via the New MAC form's Attached checkbox —
+    // means a datasheet is being attached with the transmittal instead of typed specs
+    i6: f.mat_spec === 'Attached' ? 'Attached' : [f.mat_spec, f.grade ? `Grade: ${f.grade}` : '', f.color ? `Color: ${f.color}` : '', f.origin ? `Origin: ${f.origin}` : ''].filter(Boolean).join('\n'),
   }
   const td = 'border:0.5pt solid #999;padding:4pt 6pt;font-size:8pt;'
   const tdl = td + 'font-weight:700;background:#f9f9f9;width:22%;'

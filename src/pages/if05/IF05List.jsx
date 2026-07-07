@@ -357,7 +357,10 @@ export default function IF05List() {
 
   async function save() {
     if (!form.material_desc && !form.mrf_number) { toast('Material description or MRF link required', 'err'); return }
-    const missing = REQUIRED_FIELDS.filter(f => !form[f.key]).map(f => f.label)
+    // Technical Details "Attached" bypasses origin/spec/color — a datasheet is being attached instead
+    const techAttached = form.mat_spec === 'Attached'
+    const fieldsToCheck = techAttached ? REQUIRED_FIELDS.filter(f => f.key === 'brand') : REQUIRED_FIELDS
+    const missing = fieldsToCheck.filter(f => !form[f.key]).map(f => f.label)
     if (missing.length) { toast(`Required for MAC output: ${missing.join(', ')}`, 'err'); return }
     // Empty string isn't valid for a date column — Postgres rejects it outright
     const payload = { ...form, response_date: form.response_date || null }
@@ -494,8 +497,18 @@ export default function IF05List() {
               <input className="form-input" value={form.material_desc} onChange={e => set('material_desc', e.target.value)} placeholder="Auto-fills from MRF" />
             </div>
             <div className="form-group">
-              <label className="form-label required">Specification</label>
-              <input className="form-input" value={form.mat_spec} onChange={e => set('mat_spec', e.target.value)} />
+              <div className="form-label required" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span>Specification <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(feeds Technical Details)</span></span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 400, fontSize: 11, textTransform: 'none', letterSpacing: 0 }}>
+                  <input type="checkbox" checked={form.mat_spec === 'Attached'}
+                    onChange={e => {
+                      if (e.target.checked) { set('mat_spec', 'Attached'); set('grade', ''); set('color', ''); set('origin', '') }
+                      else { set('mat_spec', '') }
+                    }} />
+                  Attached
+                </label>
+              </div>
+              <input className="form-input" value={form.mat_spec} disabled={form.mat_spec === 'Attached'} onChange={e => set('mat_spec', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label required">Brand / Manufacturer (Company)</label>
@@ -516,11 +529,18 @@ export default function IF05List() {
             </div>
             <div className="form-group">
               <label className="form-label">Grade</label>
-              <input className="form-input" value={form.grade} onChange={e => set('grade', e.target.value)} />
+              <input className="form-input" value={form.grade} disabled={form.mat_spec === 'Attached'} onChange={e => set('grade', e.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">Code / Standard</label>
-              <input className="form-input" value={form.code_ref} onChange={e => set('code_ref', e.target.value)} placeholder="BS / ASTM / ISO" />
+              <div className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span>Code / Standard <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(Specification Clause)</span></span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 400, fontSize: 11, textTransform: 'none', letterSpacing: 0 }}>
+                  <input type="checkbox" checked={form.code_ref === 'Attached'}
+                    onChange={e => set('code_ref', e.target.checked ? 'Attached' : '')} />
+                  Attached
+                </label>
+              </div>
+              <input className="form-input" value={form.code_ref} disabled={form.code_ref === 'Attached'} onChange={e => set('code_ref', e.target.value)} placeholder="BS / ASTM / ISO" />
             </div>
             <div className="form-group">
               <label className="form-label">Sample Ref</label>
@@ -528,11 +548,11 @@ export default function IF05List() {
             </div>
             <div className="form-group">
               <label className="form-label required">Country of Origin</label>
-              <input className="form-input" value={form.origin} onChange={e => set('origin', e.target.value)} />
+              <input className="form-input" value={form.origin} disabled={form.mat_spec === 'Attached'} onChange={e => set('origin', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label required">Color / Finish</label>
-              <input className="form-input" value={form.color} onChange={e => set('color', e.target.value)} />
+              <input className="form-input" value={form.color} disabled={form.mat_spec === 'Attached'} onChange={e => set('color', e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label">Activity Name</label>

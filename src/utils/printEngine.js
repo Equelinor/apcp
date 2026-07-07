@@ -157,7 +157,7 @@ export const buildIF05 = (f) => {
   // (rows 7/9/10 have no corresponding if05 field yet, so they render blank by design)
   const it = {
     i1: f.material_desc || '',
-    i2: [f.activity_name, f.wbs_code ? `WBS ${f.wbs_code}` : ''].filter(Boolean).join(' — '),
+    i2: f.desc_location || '',
     i3: f.brand || '',
     i4: f.supplier_name || '',
     i5: f.code_ref || '',

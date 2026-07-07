@@ -251,7 +251,7 @@ function exportMacRegisterPDF(items, project) {
 }
 
 const BLANK = {
-  date: today(), activity_id: '', activity_name: '', wbs_code: '',
+  date: today(), activity_id: '', activity_name: '', wbs_code: '', desc_location: '',
   material_desc: '', mat_spec: '', brand: '', grade: '',
   code_ref: '', sample_ref: '', origin: '', color: '',
   prepared_by: '', addressed_to: '', supplier_name: '',
@@ -288,7 +288,7 @@ export default function IF05List() {
 
   async function loadData() {
     setLoading(true)
-    const { data, error } = await supabase.from('if05').select('*').eq('project_code', activeProject.project_code).order('if05_number', { ascending: false })
+    const { data, error } = await supabase.from('if05').select('*').eq('project_code', activeProject.project_code).order('if05_number', { ascending: true })
     if (error || !data?.length) setItems(SEED.filter(d => d.project_code === activeProject.project_code))
     else setItems(data)
     setLoading(false)
@@ -453,6 +453,10 @@ export default function IF05List() {
               <label className="form-label required">Material Description</label>
               <input className="form-input" value={form.material_desc} onChange={e => set('material_desc', e.target.value)} />
             </div>
+            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+              <label className="form-label">Description & Location of Use</label>
+              <input className="form-input" value={form.desc_location} onChange={e => set('desc_location', e.target.value)} placeholder="e.g. External Facade Cladding — Zone A, Levels 1-6" />
+            </div>
             <div className="form-group">
               <label className="form-label">Activity ID</label>
               <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010" />
@@ -516,7 +520,7 @@ export default function IF05List() {
               <input className="form-input" value={form.color} disabled={form.mat_spec === 'Attached'} onChange={e => set('color', e.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">Activity Name <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(feeds Description & Location of Use)</span></label>
+              <label className="form-label">Activity Name</label>
               <input className="form-input" value={form.activity_name} onChange={e => set('activity_name', e.target.value)} />
             </div>
             <div className="form-group">

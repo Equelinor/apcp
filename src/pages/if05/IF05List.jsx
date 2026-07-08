@@ -4,7 +4,6 @@ import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genMacNumber, RESPONSE_CODES } from '../../config/docTypes'
 import { supplierService } from '../../services/supplierService'
-import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil, ExternalLink , Printer, Trash2} from 'lucide-react'
@@ -419,22 +418,25 @@ export default function IF05List() {
             <thead>
               <tr>
                 <th>IF05 No.</th><th>Material</th><th>Brand</th>
-                <th>Sample Ref</th>
-                <th>Submitted</th><th>Response</th><th>Code</th>
+                <th>Local Supplier</th>
+                <th>Submitted</th><th>Response</th>
                 <th>Status</th><th>Drive</th><th></th>
               </tr>
             </thead>
             <tbody>
               {filtered.map(d => (
                 <tr key={d.id}>
-                  <td><span className="doc-number">{d.if05_number}</span></td>
+                  <td><span className="doc-number" style={{ fontSize: 11 }}>{d.if05_number}</span></td>
                   <td style={{ fontSize: 12, maxWidth: 340, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.material_desc}</td>
                   <td style={{ fontSize: 12 }}>{d.brand || '—'}</td>
-                  <td><span className="doc-number">{d.sample_ref || '—'}</span></td>
-                  <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.submitted_date || '—'}</td>
-                  <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
-                  <td style={{ fontSize: 11 }}>{d.response_code ? d.response_code.split(' — ')[0] : '—'}</td>
-                  <td><Badge status={d.status} /></td>
+                  <td style={{ fontSize: 12 }}>{d.supplier_name || '—'}</td>
+                  <td style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{regFmtDate(d.submitted_date)}</td>
+                  <td style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{regFmtDate(d.response_date)}</td>
+                  <td>{(() => {
+                    const st = computeMacApprovalStatus(d)
+                    const s = MAC_APPROVAL_STATUS[st] || MAC_APPROVAL_STATUS['Pending']
+                    return <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: s.bg, color: s.text, border: `1px solid ${s.border}` }}>{s.code}</span>
+                  })()}</td>
                   <td>{d.drive_link ? <a href={d.drive_link} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ fontSize: 11, padding: '3px 8px' }}><ExternalLink size={11} /></a> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                   <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button>
                     <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Export for Transmittal" onClick={() => handlePrint(d)}><Printer size={12} /></button></td>

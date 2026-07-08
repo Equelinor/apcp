@@ -22,7 +22,7 @@ const REV_STATUS_CODES = ['', 'A', 'B', 'C', 'D', 'UR']
 // it was a 1:1 duplicate of this list; its bulk register-PDF export and computed
 // status now live here instead.
 export const MAC_APPROVAL_STATUS = {
-  'Pending':                  { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
+  'Draft':                    { code: 'DFT', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
   'Under Review':             { code: 'UR',  bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
   'Approved':                 { code: 'A',   bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
   'Approved with Comments':   { code: 'B',   bg: '#FEF3C7', text: '#92400E', border: '#FDE68A' },
@@ -39,8 +39,8 @@ export function computeMacApprovalStatus(d) {
   // Derived from submitted_date (objective) rather than the manually-set status
   // dropdown — the dropdown was drifting out of sync (records with a real
   // submitted_date but status left at "Draft"), which made every actually-
-  // submitted MAC still show as Pending.
-  if (!d.submitted_date) return 'Pending'
+  // submitted MAC still show as not-yet-submitted.
+  if (!d.submitted_date) return 'Draft'
   return 'Under Review'
 }
 
@@ -58,13 +58,12 @@ function exportMacRegisterPDF(items, project) {
   const withStatus = items.map(d => ({ ...d, _status: computeMacApprovalStatus(d) }))
   const counts = {
     total:    withStatus.length,
-    submitted: withStatus.filter(i => i.submitted_date).length,
     ur:       withStatus.filter(i => i._status === 'Under Review').length,
     a:        withStatus.filter(i => i._status === 'Approved').length,
     b:        withStatus.filter(i => i._status === 'Approved with Comments').length,
     c:        withStatus.filter(i => i._status === 'Revised and Resubmit').length,
     d:        withStatus.filter(i => i._status === 'Rejected').length,
-    pending:  withStatus.filter(i => i._status === 'Pending').length,
+    draft:    withStatus.filter(i => i._status === 'Draft').length,
   }
 
   const logoCell = (logoSrc, name, role) => {
@@ -83,7 +82,7 @@ function exportMacRegisterPDF(items, project) {
 
   const tableRows = withStatus.map((m, i) => {
     const hist = Array.isArray(m.submission_history) ? m.submission_history : []
-    const s = MAC_APPROVAL_STATUS[m._status] || MAC_APPROVAL_STATUS['Pending']
+    const s = MAC_APPROVAL_STATUS[m._status] || MAC_APPROVAL_STATUS['Draft']
     const bg = i % 2 === 0 ? '#fff' : '#f9fafb'
 
     const revCells = [1,2,3,4,5].map(n => {
@@ -129,7 +128,7 @@ function exportMacRegisterPDF(items, project) {
     ['C','Revised and Resubmit','#FFEDD5','#9A3412'],
     ['D','Rejected','#FEE2E2','#991B1B'],
     ['UR','Under Review','#DBEAFE','#1E40AF'],
-    ['PND','Pending','#F1F5F9','#64748B'],
+    ['DFT','Draft','#F1F5F9','#64748B'],
   ].map(([code,label,bg,color]) =>
     `<span style="display:inline-flex;align-items:center;gap:5pt;margin-right:12pt">
       <span style="display:inline-block;padding:2pt 6pt;background:${bg};color:${color};font-size:8pt;font-weight:700;border-radius:2pt">${code}</span>
@@ -139,13 +138,12 @@ function exportMacRegisterPDF(items, project) {
 
   const summaryRows = [
     ['Total MACs', counts.total, ''],
-    ['Submitted to Consultant', counts.submitted, ''],
     ['Under Review', counts.ur, '#1E40AF'],
     ['Approved (A)', counts.a, '#065F46'],
     ['Approved with Comments (B)', counts.b, '#92400E'],
     ['Revised & Resubmit (C)', counts.c, '#9A3412'],
     ['Rejected (D)', counts.d, '#991B1B'],
-    ['Pending', counts.pending, '#64748B'],
+    ['Draft', counts.draft, '#64748B'],
   ].map(([l,v,c]) =>
     `<tr>
       <td style="font-size:8pt;padding:2pt 0;color:#444">${l}</td>
@@ -438,7 +436,7 @@ export default function IF05List() {
                   <td style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{regFmtDate(d.response_date)}</td>
                   <td>{(() => {
                     const st = computeMacApprovalStatus(d)
-                    const s = MAC_APPROVAL_STATUS[st] || MAC_APPROVAL_STATUS['Pending']
+                    const s = MAC_APPROVAL_STATUS[st] || MAC_APPROVAL_STATUS['Draft']
                     return <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: s.bg, color: s.text, border: `1px solid ${s.border}` }}>{s.code}</span>
                   })()}</td>
                   <td>{d.drive_link ? <a href={d.drive_link} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ fontSize: 11, padding: '3px 8px' }}><ExternalLink size={11} /></a> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>

@@ -130,7 +130,7 @@ export default function Dashboard() {
     {
       label: 'MAC', route: '/mac', icon: FileText,
       total: macWithStatus.length,
-      pending: macWithStatus.filter(s => s === 'Under Review' || s === 'Pending').length,
+      pending: macWithStatus.filter(s => s === 'Under Review' || s === 'Draft').length,
       flagged: macWithStatus.filter(s => s === 'Rejected' || s === 'Revised and Resubmit').length,
       flaggedLabel: 'Rejected / Resubmit',
     },

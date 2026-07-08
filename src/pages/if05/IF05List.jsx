@@ -36,7 +36,11 @@ export function computeMacApprovalStatus(d) {
   if (code === 'B') return 'Approved with Comments'
   if (code === 'C') return 'Revised and Resubmit'
   if (code === 'D') return 'Rejected'
-  if (d.status === 'Draft') return 'Pending'
+  // Derived from submitted_date (objective) rather than the manually-set status
+  // dropdown — the dropdown was drifting out of sync (records with a real
+  // submitted_date but status left at "Draft"), which made every actually-
+  // submitted MAC still show as Pending.
+  if (!d.submitted_date) return 'Pending'
   return 'Under Review'
 }
 

@@ -257,7 +257,10 @@ const BLANK = {
   material_desc: '', mat_spec: '', brand: '', grade: '',
   code_ref: '', sample_ref: '', origin: '', color: '',
   prepared_by: '', addressed_to: '', supplier_name: '',
-  submitted_date: today(), response_date: '', response_code: '',
+  // Left blank, not today() — an empty submitted_date is how the Register tells
+  // Draft (not yet submitted) apart from Under Review. Auto-filling today's date
+  // here would make every new MAC look "submitted" the instant it's created.
+  submitted_date: '', response_date: '', response_code: '',
   status: 'Draft', remarks: '', consultant_remarks: '', drive_link: '',
   revision_no: 'R0', submission_history: [],
   enc_samples: false, enc_catalogue: false, enc_mockup: false,
@@ -355,7 +358,7 @@ export default function IF05List() {
     const missing = fieldsToCheck.filter(f => !form[f.key]).map(f => f.label)
     if (missing.length) { toast(`Required for MAC output: ${missing.join(', ')}`, 'err'); return }
     // Empty string isn't valid for a date column — Postgres rejects it outright
-    const payload = { ...form, if05_number: form.if05_number.trim(), response_date: form.response_date || null }
+    const payload = { ...form, if05_number: form.if05_number.trim(), response_date: form.response_date || null, submitted_date: form.submitted_date || null }
     if (editItem) {
       const { error } = await supabase.from('if05').update(payload).eq('id', editItem.id)
       if (error) { toast('Save failed — ' + (error.code === '23505' ? 'that MAC No. is already used on this project' : error.message), 'err'); return }

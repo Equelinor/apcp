@@ -370,7 +370,7 @@ export default function IF05List() {
   }
 
   const filtered = items.filter(d => {
-    if (filterStatus && d.status !== filterStatus) return false
+    if (filterStatus && computeMacApprovalStatus(d) !== filterStatus) return false
     if (search) {
       const q = search.toLowerCase()
       return [d.if05_number, d.material_desc, d.brand, d.supplier_name, d.activity_id].some(v => (v || '').toLowerCase().includes(q))
@@ -406,7 +406,7 @@ export default function IF05List() {
         <input placeholder="Search MAC number, material, brand…" value={search} onChange={e => setSearch(e.target.value)} />
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
           <option value="">All Status</option>
-          {MAC_STATUSES.map(s => <option key={s}>{s}</option>)}
+          {Object.keys(MAC_APPROVAL_STATUS).map(s => <option key={s}>{s}</option>)}
         </select>
         {(search || filterStatus) && <button className="btn btn-ghost" style={{ fontSize: 12 }} onClick={() => { setSearch(''); setFilterStatus('') }}>Clear</button>}
         <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>{filtered.length} records</span>

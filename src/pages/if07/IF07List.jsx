@@ -4,6 +4,7 @@ import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genDocNumber, SUBMITTAL_STATUSES, RESPONSE_CODES } from '../../config/docTypes'
 import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
+import { employeeService } from '../../services/employeeService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
@@ -35,6 +36,7 @@ export default function IF07List() {
 
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [employees, setEmployees] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [form, setForm] = useState(BLANK)
@@ -51,7 +53,7 @@ export default function IF07List() {
     if (mrfData && !editItem) setForm(f => ({ ...f, activity_id: f.activity_id || mrfData.activity_id || '', activity_name: f.activity_name || mrfData.activity_name || '', wbs_code: f.wbs_code || mrfData.wbs_code || '' }))
   }, [mrfData])
 
-  useEffect(() => { loadData() }, [activeProject])
+  useEffect(() => { loadData(); employeeService.dropdown().then(setEmployees) }, [activeProject])
 
   async function loadData() {
     setLoading(true)
@@ -196,7 +198,10 @@ export default function IF07List() {
             </div>
             <div className="form-group">
               <label className="form-label">Prepared By</label>
-              <input className="form-input" value={form.prepared_by} onChange={e => set('prepared_by', e.target.value)} />
+              <select className="form-select" value={form.prepared_by} onChange={e => set('prepared_by', e.target.value)}>
+                <option value="">— Select —</option>
+                {employees.map(e => <option key={e.id} value={e.full_name}>{e.full_name} — {e.designation}</option>)}
+              </select>
             </div>
             <div className="form-group">
               <label className="form-label">Addressed To</label>

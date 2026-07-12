@@ -4,6 +4,7 @@ import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genMacNumber, RESPONSE_CODES } from '../../config/docTypes'
 import { supplierService } from '../../services/supplierService'
+import { employeeService } from '../../services/employeeService'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil, ExternalLink , Printer, Trash2} from 'lucide-react'
@@ -279,6 +280,7 @@ export default function IF05List() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [suppliers, setSuppliers] = useState([])
+  const [employees, setEmployees] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [form, setForm] = useState(BLANK)
@@ -289,6 +291,7 @@ export default function IF05List() {
   useEffect(() => {
     loadData()
     supplierService.dropdown().then(setSuppliers)
+    employeeService.dropdown().then(setEmployees)
   }, [activeProject])
 
   async function loadData() {
@@ -565,7 +568,10 @@ export default function IF05List() {
             </div>
             <div className="form-group">
               <label className="form-label">Prepared By</label>
-              <input className="form-input" value={form.prepared_by} disabled={isLocked} onChange={e => set('prepared_by', e.target.value)} />
+              <select className="form-select" value={form.prepared_by} disabled={isLocked} onChange={e => set('prepared_by', e.target.value)}>
+                <option value="">— Select —</option>
+                {employees.map(e => <option key={e.id} value={e.full_name}>{e.full_name} — {e.designation}</option>)}
+              </select>
             </div>
           </div>
 

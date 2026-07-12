@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { genDocNumber, getDisciplines } from '../../config/docTypes'
 import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
+import { employeeService } from '../../services/employeeService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
@@ -38,6 +39,7 @@ export default function IF09List() {
 
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [employees, setEmployees] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [form, setForm] = useState(BLANK)
@@ -55,7 +57,7 @@ export default function IF09List() {
     if (mrfData && !editItem) setForm(f => ({ ...f, activity_id: f.activity_id || mrfData.activity_id || '', activity_name: f.activity_name || mrfData.activity_name || '', wbs_code: f.wbs_code || mrfData.wbs_code || '', ifc_drawing: f.ifc_drawing || mrfData.ifc_drawing || '', shop_drawing: f.shop_drawing || mrfData.shop_drawing || '', location: f.location || mrfData.location || '', zone: f.zone || mrfData.zone || '' }))
   }, [mrfData])
 
-  useEffect(() => { loadData() }, [activeProject])
+  useEffect(() => { loadData(); employeeService.dropdown().then(setEmployees) }, [activeProject])
 
   async function loadData() {
     setLoading(true)
@@ -256,7 +258,10 @@ export default function IF09List() {
             </div>
             <div className="form-group">
               <label className="form-label">Prepared By</label>
-              <input className="form-input" value={form.prepared_by} onChange={e => set('prepared_by', e.target.value)} />
+              <select className="form-select" value={form.prepared_by} onChange={e => set('prepared_by', e.target.value)}>
+                <option value="">— Select —</option>
+                {employees.map(e => <option key={e.id} value={e.full_name}>{e.full_name} — {e.designation}</option>)}
+              </select>
             </div>
           </div>
           <div className="form-group" style={{ marginBottom: 14 }}>

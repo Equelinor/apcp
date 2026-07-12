@@ -30,4 +30,24 @@ export const projectAssignmentService = {
   async end(id) {
     return this.update(id, { status: 'Ended', end_date: new Date().toISOString().slice(0, 10) })
   },
+
+  async remove(id) {
+    const { error } = await supabase.from(TABLE).delete().eq('id', id)
+    if (error) throw error
+  },
+
+  // Simplified employee <-> project sync used by the Employee Register's
+  // "Assigned Projects" checklist — no role/dates/reporting_to, just
+  // which projects an employee is currently on. Diffs against what's
+  // already stored and inserts/removes rows to match.
+  async setForEmployee(employeeId, projectCodes) {
+    const current = await this.listForEmployee(employeeId)
+    const currentCodes = current.map(a => a.project_code)
+    const toAdd = projectCodes.filter(c => !currentCodes.includes(c))
+    const toRemove = current.filter(a => !projectCodes.includes(a.project_code))
+    await Promise.all([
+      ...toAdd.map(project_code => this.create({ employee_id: employeeId, project_code, status: 'Active' })),
+      ...toRemove.map(a => this.remove(a.id)),
+    ])
+  },
 }

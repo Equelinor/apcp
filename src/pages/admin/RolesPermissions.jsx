@@ -11,7 +11,7 @@ import { signatureService } from '../../services/signatureService'
 import { projectService } from '../../services/projectService'
 import {
   PERMISSION_MODULES, PERMISSION_ACTIONS, EMPLOYEE_STATUSES,
-  ACCOUNT_STATUSES, ASSIGNMENT_STATUSES, DEPARTMENTS,
+  ACCOUNT_STATUSES, DEPARTMENTS,
 } from '../../config/peopleAccessConfig'
 import { Plus, Pencil, Trash2, Upload, Image, Shield, UserCircle2, Users, Briefcase, PenTool, DollarSign } from 'lucide-react'
 
@@ -19,8 +19,6 @@ const TABS = [
   { id: 'roles',       label: 'Roles & Permissions', icon: Shield },
   { id: 'employees',   label: 'Employee Register',   icon: UserCircle2 },
   { id: 'users',       label: 'User Accounts',       icon: Users },
-  { id: 'assignments', label: 'Project Assignments', icon: Briefcase },
-  { id: 'signatures',  label: 'Digital Signatures',  icon: PenTool },
   { id: 'cost',        label: 'Cost Allocation',      icon: DollarSign },
 ]
 
@@ -64,8 +62,6 @@ export default function RolesPermissions() {
       {tab === 'roles' && <RolesTab toast={toast} />}
       {tab === 'employees' && <EmployeesTab toast={toast} />}
       {tab === 'users' && <UsersTab toast={toast} />}
-      {tab === 'assignments' && <AssignmentsTab toast={toast} />}
-      {tab === 'signatures' && <SignaturesTab toast={toast} />}
       {tab === 'cost' && <CostAllocationTab />}
 
       <ToastContainer toasts={toasts} />
@@ -222,23 +218,61 @@ function EmployeesTab({ toast }) {
   const [form, setForm] = useState(BLANK_EMPLOYEE)
   const [search, setSearch] = useState('')
 
-  useEffect(() => { load() }, [])
+  // Signature (folded in from the old separate Digital Signatures tab)
+  const [existingSignature, setExistingSignature] = useState(null)
+  const [signaturePreview, setSignaturePreview] = useState('')
+  const fileRef = useRef()
+
+  // Assigned Projects (folded in from the old separate Project Assignments tab)
+  const [allProjects, setAllProjects] = useState([])
+  const [assignedCodes, setAssignedCodes] = useState([])
+
+  useEffect(() => { load(); projectService.list().then(setAllProjects) }, [])
   async function load() { setLoading(true); setItems(await employeeService.list()); setLoading(false) }
 
-  function openNew() { setEditItem(null); setForm(BLANK_EMPLOYEE); setShowForm(true) }
-  function openEdit(item) { setEditItem(item); setForm({ ...item }); setShowForm(true) }
+  function openNew() {
+    setEditItem(null); setForm(BLANK_EMPLOYEE)
+    setExistingSignature(null); setSignaturePreview(''); setAssignedCodes([])
+    setShowForm(true)
+  }
+  async function openEdit(item) {
+    setEditItem(item); setForm({ ...item })
+    setSignaturePreview('')
+    const [sig, assignments] = await Promise.all([
+      signatureService.getForEmployee(item.id),
+      projectAssignmentService.listForEmployee(item.id),
+    ])
+    setExistingSignature(sig)
+    setAssignedCodes(assignments.filter(a => a.status !== 'Ended').map(a => a.project_code))
+    setShowForm(true)
+  }
   function set(f, v) { setForm(p => ({ ...p, [f]: v })) }
+
+  function pickSignatureFile(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setSignaturePreview(reader.result)
+    reader.readAsDataURL(file)
+  }
+
+  function toggleProject(code) {
+    setAssignedCodes(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code])
+  }
 
   async function save() {
     if (!form.employee_no || !form.full_name) { toast('Employee No. and Full Name are required', 'err'); return }
     try {
+      let employeeId = editItem?.id
       if (editItem) {
         await employeeService.update(editItem.id, form)
-        toast('Employee updated ✓', 'ok')
       } else {
-        await employeeService.create(form)
-        toast(`Employee ${form.employee_no} added ✓`, 'ok')
+        const created = await employeeService.create(form)
+        employeeId = created.id
       }
+      if (signaturePreview) await signatureService.upload(employeeId, signaturePreview, 'Admin')
+      await projectAssignmentService.setForEmployee(employeeId, assignedCodes)
+      toast(editItem ? 'Employee updated ✓' : `Employee ${form.employee_no} added ✓`, 'ok')
       setShowForm(false)
       load()
     } catch (err) {
@@ -343,9 +377,39 @@ function EmployeesTab({ toast }) {
             </select>
           </div>
         </div>
-        <div className="form-group">
+        <div className="form-group" style={{ marginBottom: 14 }}>
           <label className="form-label">Remarks</label>
           <textarea className="form-textarea" rows={2} value={form.remarks} onChange={e => set('remarks', e.target.value)} />
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, marginBottom: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <PenTool size={12} /> Digital Signature
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {signaturePreview
+              ? <img src={signaturePreview} alt="" style={{ height: 40, background: '#fff', border: '1px solid var(--border)', borderRadius: 6, padding: 4 }} />
+              : existingSignature?.signature_image
+                ? <img src={existingSignature.signature_image} alt="" style={{ height: 40, background: '#fff', border: '1px solid var(--border)', borderRadius: 6, padding: 4 }} />
+                : <div style={{ height: 40, width: 110, border: '1px dashed var(--border)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Image size={16} color="var(--text-muted)" /></div>}
+            <button type="button" className="btn btn-secondary" onClick={() => fileRef.current.click()}><Upload size={13} /> {existingSignature || signaturePreview ? 'Replace' : 'Upload'} Signature</button>
+            <input ref={fileRef} type="file" accept="image/png" style={{ display: 'none' }} onChange={pickSignatureFile} />
+          </div>
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Briefcase size={12} /> Assigned Projects
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+            {allProjects.map(p => (
+              <label key={p.project_code} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, border: '1px solid var(--border)', borderRadius: 6, padding: '5px 10px' }}>
+                <input type="checkbox" checked={assignedCodes.includes(p.project_code)} onChange={() => toggleProject(p.project_code)} />
+                {p.project_code} — {p.project_name}
+              </label>
+            ))}
+            {!allProjects.length && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>No projects in Project Register yet.</span>}
+          </div>
         </div>
       </Modal>
     </div>
@@ -461,254 +525,6 @@ function UsersTab({ toast }) {
           <select className="form-select" value={form.account_status} onChange={e => setForm(p => ({ ...p, account_status: e.target.value }))}>
             {ACCOUNT_STATUSES.map(s => <option key={s}>{s}</option>)}
           </select>
-        </div>
-      </Modal>
-    </div>
-  )
-}
-
-// ════════════════════════════════════════════════════════════
-// TAB 4 — Project Assignments
-// ════════════════════════════════════════════════════════════
-const BLANK_ASSIGNMENT = {
-  employee_id: '', project_role: '', start_date: '', end_date: '',
-  status: 'Active', reporting_to: '', remarks: '',
-}
-
-function AssignmentsTab({ toast }) {
-  const [projects, setProjects] = useState([])
-  const [projectCode, setProjectCode] = useState('')
-  const [assignments, setAssignments] = useState([])
-  const [employees, setEmployees] = useState([])
-  const [roles, setRoles] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [editItem, setEditItem] = useState(null)
-  const [form, setForm] = useState(BLANK_ASSIGNMENT)
-
-  useEffect(() => { init() }, [])
-  useEffect(() => { if (projectCode) loadAssignments() }, [projectCode])
-
-  async function init() {
-    setLoading(true)
-    const [p, e, r] = await Promise.all([projectService.list(), employeeService.dropdown(), roleService.list()])
-    setProjects(p); setEmployees(e); setRoles(r)
-    if (p.length) setProjectCode(p[0].project_code)
-    setLoading(false)
-  }
-
-  async function loadAssignments() {
-    setAssignments(await projectAssignmentService.listForProject(projectCode))
-  }
-
-  function openNew() { setEditItem(null); setForm(BLANK_ASSIGNMENT); setShowForm(true) }
-  function openEdit(a) { setEditItem(a); setForm({ ...a }); setShowForm(true) }
-
-  async function save() {
-    if (!form.employee_id) { toast('Employee is required', 'err'); return }
-    try {
-      if (editItem) {
-        await projectAssignmentService.update(editItem.id, form)
-        toast('Assignment updated ✓', 'ok')
-      } else {
-        await projectAssignmentService.create({ ...form, project_code: projectCode })
-        toast('Employee assigned to project ✓', 'ok')
-      }
-      setShowForm(false)
-      loadAssignments()
-    } catch (err) {
-      toast('Save failed — ' + (err.message || 'unknown error'), 'err')
-    }
-  }
-
-  async function endAssignment(a) {
-    if (!confirm('End this assignment?')) return
-    await projectAssignmentService.end(a.id)
-    toast('Assignment ended', 'warn')
-    loadAssignments()
-  }
-
-  const employeeName = (id) => employees.find(e => e.id === id)?.full_name || '—'
-
-  return (
-    <div>
-      <div className="filter-bar" style={{ marginBottom: 12 }}>
-        <select className="form-select" style={{ minWidth: 260 }} value={projectCode} onChange={e => setProjectCode(e.target.value)}>
-          {projects.map(p => <option key={p.project_code} value={p.project_code}>{p.project_code} — {p.project_name}</option>)}
-        </select>
-        <button className="btn btn-primary" style={{ marginLeft: 'auto' }} onClick={openNew}><Plus size={14} /> Assign Employee</button>
-      </div>
-
-      <div className="table-wrap">
-        {loading ? <div className="table-empty">Loading…</div> : !assignments.length ? <div className="table-empty">No one assigned to this project yet.</div> : (
-          <table>
-            <thead>
-              <tr>
-                <th>Employee</th><th>Project Role</th><th>Start</th><th>End</th>
-                <th>Status</th><th>Reporting To</th><th>Remarks</th><th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {assignments.map(a => (
-                <tr key={a.id} style={{ opacity: a.status === 'Ended' ? 0.55 : 1 }}>
-                  <td style={{ fontWeight: 600, fontSize: 12.5 }}>{employeeName(a.employee_id)}</td>
-                  <td style={{ fontSize: 12 }}>{a.project_role || '—'}</td>
-                  <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.start_date || '—'}</td>
-                  <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.end_date || '—'}</td>
-                  <td>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: a.status === 'Active' ? '#D1FAE5' : '#F1F5F9', color: a.status === 'Active' ? '#065F46' : '#64748B' }}>{a.status}</span>
-                  </td>
-                  <td style={{ fontSize: 12 }}>{a.reporting_to ? employeeName(a.reporting_to) : '—'}</td>
-                  <td style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.remarks || '—'}</td>
-                  <td>
-                    <button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(a)}><Pencil size={12} /></button>
-                    {a.status === 'Active' && <button className="btn btn-ghost" style={{ padding: '3px 6px', color: 'var(--status-rejected-text)' }} onClick={() => endAssignment(a)}><Trash2 size={12} /></button>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      <Modal open={showForm} onClose={() => setShowForm(false)} title={editItem ? 'Edit Assignment' : 'Assign Employee to Project'}
-        footer={<><button className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button><button className="btn btn-primary" onClick={save}>Save</button></>}>
-        <div className="form-grid form-grid-2" style={{ gap: 14, marginBottom: 14 }}>
-          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-            <label className="form-label required">Employee</label>
-            <select className="form-select" value={form.employee_id} onChange={e => setForm(p => ({ ...p, employee_id: e.target.value }))}>
-              <option value="">— Select —</option>
-              {employees.map(e => <option key={e.id} value={e.id}>{e.employee_no} — {e.full_name}</option>)}
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Project Role</label>
-            <select className="form-select" value={form.project_role} onChange={e => setForm(p => ({ ...p, project_role: e.target.value }))}>
-              <option value="">— Select —</option>
-              {roles.map(r => <option key={r.name} value={r.name}>{r.name}</option>)}
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Reporting To</label>
-            <select className="form-select" value={form.reporting_to} onChange={e => setForm(p => ({ ...p, reporting_to: e.target.value }))}>
-              <option value="">— None —</option>
-              {employees.map(e => <option key={e.id} value={e.id}>{e.full_name}</option>)}
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Start Date</label>
-            <input className="form-input" type="date" value={form.start_date} onChange={e => setForm(p => ({ ...p, start_date: e.target.value }))} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">End Date</label>
-            <input className="form-input" type="date" value={form.end_date} onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Status</label>
-            <select className="form-select" value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}>
-              {ASSIGNMENT_STATUSES.map(s => <option key={s}>{s}</option>)}
-            </select>
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Remarks</label>
-          <textarea className="form-textarea" rows={2} value={form.remarks} onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))} />
-        </div>
-      </Modal>
-    </div>
-  )
-}
-
-// ════════════════════════════════════════════════════════════
-// TAB 5 — Digital Signatures
-// ════════════════════════════════════════════════════════════
-function SignaturesTab({ toast }) {
-  const [signatures, setSignatures] = useState([])
-  const [employees, setEmployees] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [employeeId, setEmployeeId] = useState('')
-  const [preview, setPreview] = useState('')
-  const fileRef = useRef()
-
-  useEffect(() => { load() }, [])
-  async function load() {
-    setLoading(true)
-    const [s, e] = await Promise.all([signatureService.listAll(), employeeService.dropdown()])
-    setSignatures(s); setEmployees(e)
-    setLoading(false)
-  }
-
-  function pickFile(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setPreview(reader.result)
-    reader.readAsDataURL(file)
-  }
-
-  async function save() {
-    if (!employeeId || !preview) { toast('Select an employee and upload a signature image', 'err'); return }
-    try {
-      await signatureService.upload(employeeId, preview, 'Admin')
-      toast('Signature uploaded ✓', 'ok')
-      setShowForm(false); setEmployeeId(''); setPreview('')
-      load()
-    } catch (err) {
-      toast('Upload failed — ' + (err.message || 'unknown error'), 'err')
-    }
-  }
-
-  const employeeName = (id) => employees.find(e => e.id === id)?.full_name || '—'
-
-  return (
-    <div>
-      <div style={{ background: 'var(--bg-base)', borderRadius: 'var(--radius)', padding: '10px 14px', marginBottom: 14, fontSize: 12, color: 'var(--text-muted)' }}>
-        Prepared for future PDF output (Name / Designation / Signature / Date) — not yet applied to any printed form.
-      </div>
-      <div className="filter-bar" style={{ marginBottom: 12 }}>
-        <button className="btn btn-primary" style={{ marginLeft: 'auto' }} onClick={() => setShowForm(true)}><Upload size={14} /> Upload Signature</button>
-      </div>
-
-      <div className="table-wrap">
-        {loading ? <div className="table-empty">Loading…</div> : !signatures.length ? <div className="table-empty">No signatures uploaded yet.</div> : (
-          <table>
-            <thead>
-              <tr><th>Employee</th><th>Signature</th><th>Uploaded Date</th><th>Uploaded By</th><th>Status</th></tr>
-            </thead>
-            <tbody>
-              {signatures.map(s => (
-                <tr key={s.id} style={{ opacity: s.active ? 1 : 0.5 }}>
-                  <td style={{ fontWeight: 600, fontSize: 12.5 }}>{employeeName(s.employee_id)}</td>
-                  <td>{s.signature_image ? <img src={s.signature_image} alt="" style={{ height: 28, background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: 2 }} /> : '—'}</td>
-                  <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(s.uploaded_date).toLocaleDateString()}</td>
-                  <td style={{ fontSize: 12 }}>{s.uploaded_by || '—'}</td>
-                  <td><span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: s.active ? '#D1FAE5' : '#F1F5F9', color: s.active ? '#065F46' : '#64748B' }}>{s.active ? 'Active' : 'Inactive'}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      <Modal open={showForm} onClose={() => setShowForm(false)} title="Upload Digital Signature"
-        footer={<><button className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button><button className="btn btn-primary" onClick={save}>Save</button></>}>
-        <div className="form-group" style={{ marginBottom: 14 }}>
-          <label className="form-label required">Employee</label>
-          <select className="form-select" value={employeeId} onChange={e => setEmployeeId(e.target.value)}>
-            <option value="">— Select —</option>
-            {employees.map(e => <option key={e.id} value={e.id}>{e.employee_no} — {e.full_name}</option>)}
-          </select>
-        </div>
-        <div className="form-group">
-          <label className="form-label required">Signature Image (transparent PNG)</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {preview
-              ? <img src={preview} alt="" style={{ height: 44, background: '#fff', border: '1px solid var(--border)', borderRadius: 6, padding: 4 }} />
-              : <div style={{ height: 44, width: 120, border: '1px dashed var(--border)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Image size={16} color="var(--text-muted)" /></div>}
-            <button type="button" className="btn btn-secondary" onClick={() => fileRef.current.click()}><Upload size={13} /> Choose File</button>
-            <input ref={fileRef} type="file" accept="image/png" style={{ display: 'none' }} onChange={pickFile} />
-          </div>
         </div>
       </Modal>
     </div>

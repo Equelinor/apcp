@@ -5,6 +5,8 @@ import {
   projectService, PROJECT_STATUSES, CONTRACT_TYPES,
   CURRENCIES, THIRD_PARTY_ROLES, BLANK_PROJECT
 } from '../../services/projectService'
+import { projectAssignmentService } from '../../services/projectAssignmentService'
+import { employeeService } from '../../services/employeeService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
@@ -75,10 +77,27 @@ export default function ProjectRegister() {
   const [form, setForm] = useState(BLANK_PROJECT)
   const [activeTab, setActiveTab] = useState('details')
   const [justActivated, setJustActivated] = useState(null)
+  const [assignedEmployees, setAssignedEmployees] = useState([])
 
   const isAdmin = true // all authenticated users can manage projects
 
   useEffect(() => { loadData() }, [])
+
+  // Read-only — auto-derived from each employee's "Assigned Projects" checklist
+  // in the Employee Register (Roles & Permissions), not managed here.
+  useEffect(() => {
+    if (activeTab !== 'people' || !form.project_code) { setAssignedEmployees([]); return }
+    let cancelled = false
+    Promise.all([
+      projectAssignmentService.listForProject(form.project_code),
+      employeeService.dropdown(),
+    ]).then(([assignments, employees]) => {
+      if (cancelled) return
+      const active = assignments.filter(a => a.status !== 'Ended')
+      setAssignedEmployees(active.map(a => employees.find(e => e.id === a.employee_id)).filter(Boolean))
+    })
+    return () => { cancelled = true }
+  }, [activeTab, form.project_code])
 
   async function loadData() {
     setLoading(true)
@@ -420,6 +439,26 @@ export default function ProjectRegister() {
               <div className="form-group">
                 <label className="form-label">Planning Engineer</label>
                 <input className="form-input" value={form.planning_engineer} onChange={e => set('planning_engineer', e.target.value)} />
+              </div>
+
+              <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--border)', paddingTop: 14, marginTop: 4 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 }}>
+                  Assigned Employees <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>— from each employee's own record in Roles &amp; Permissions → Employee Register, read-only here</span>
+                </div>
+                {!editItem ? (
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Save the project first, then assign employees via Employee Register.</div>
+                ) : !assignedEmployees.length ? (
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No one is currently assigned to this project.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                    {assignedEmployees.map(e => (
+                      <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, border: '1px solid var(--border)', borderRadius: 6, padding: '5px 10px' }}>
+                        <span style={{ fontWeight: 600 }}>{e.full_name}</span>
+                        {e.designation && <span style={{ color: 'var(--text-muted)' }}>— {e.designation}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

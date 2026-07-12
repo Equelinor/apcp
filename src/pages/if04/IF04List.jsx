@@ -9,7 +9,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, ExternalLink, Pencil, Printer, Trash2 } from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildIF04, printForm, mergeProjectLogos } from '../../utils/printEngine'
+import { buildIF04, printForm, mergeProjectLogos, getSignatureForName } from '../../utils/printEngine'
 
 // SD Register revision round status codes — same A/B/C/D/UR convention as the MAC page
 const REV_STATUS_CODES = ['', 'A', 'B', 'C', 'D', 'UR']
@@ -142,8 +142,9 @@ export default function IF04List() {
     return true
   })
 
-  const handlePrint = (d) => {
-    printForm(buildIF04(mergeProjectLogos(d, activeProject)), 'IF04 — Shop Drawing Submittal')
+  const handlePrint = async (d) => {
+    const signatureImg = await getSignatureForName(d.prepared_by)
+    printForm(buildIF04({ ...mergeProjectLogos(d, activeProject), signatureImg }), 'IF04 — Shop Drawing Submittal')
   }
 
   return (

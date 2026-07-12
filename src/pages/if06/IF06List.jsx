@@ -8,7 +8,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil , Printer} from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildIF06, printForm, mergeProjectLogos } from '../../utils/printEngine'
+import { buildIF06, printForm, mergeProjectLogos, getSignatureForName } from '../../utils/printEngine'
 
 const MOCKUP_STATUSES = ['Draft', 'Submitted', 'Inspection Scheduled', 'Inspected', 'Approved', 'Rejected', 'Resubmitted']
 
@@ -90,8 +90,9 @@ export default function IF06List() {
     return true
   })
 
-  const handlePrint = (d) => {
-    printForm(buildIF06(mergeProjectLogos(d, activeProject)), 'IF06 — Sample Mockup Inspection')
+  const handlePrint = async (d) => {
+    const signatureImg = await getSignatureForName(d.prepared_by)
+    printForm(buildIF06({ ...mergeProjectLogos(d, activeProject), signatureImg }), 'IF06 — Sample Mockup Inspection')
   }
 
   return (

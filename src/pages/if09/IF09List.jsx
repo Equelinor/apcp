@@ -8,7 +8,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil , Printer, Trash2} from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildIF09, printForm, mergeProjectLogos } from '../../utils/printEngine'
+import { buildIF09, printForm, mergeProjectLogos, getSignatureForName } from '../../utils/printEngine'
 
 const IR_STATUSES = ['Draft', 'Submitted', 'Inspection Scheduled', 'Passed', 'Failed', 'Conditional Pass', 'Cancelled']
 const INSPECTION_TYPES = ['Pre-pour', 'In-process', 'Post-pour', 'Rebar Inspection', 'Formwork Check', 'Backfill', 'Waterproofing', 'Structural', 'Finishing', 'MEP Rough-in', 'Commissioning', 'Final Inspection', 'Other']
@@ -119,8 +119,9 @@ export default function IF09List() {
     return true
   })
 
-  const handlePrint = (d) => {
-    printForm(buildIF09(mergeProjectLogos(d, activeProject)), 'IF09 — Activity Inspection Request')
+  const handlePrint = async (d) => {
+    const signatureImg = await getSignatureForName(d.prepared_by)
+    printForm(buildIF09({ ...mergeProjectLogos(d, activeProject), signatureImg }), 'IF09 — Activity Inspection Request')
   }
 
   return (

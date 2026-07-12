@@ -4,6 +4,8 @@
 // ════════════════════════════════════════════════════════════
 
 import { AXION_LOGO } from './axionLogo'
+import { employeeService } from '../services/employeeService'
+import { signatureService } from '../services/signatureService'
 
 const chk = (v) => v ? '&#9746;' : '&#9744;'
 const fmtDate = (d) => {
@@ -16,6 +18,25 @@ const now = () => {
   const d = new Date()
   return d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
 }
+
+// Looks up an uploaded digital signature for a free-text signer name (e.g. the
+// "Prepared By" / "Project Engineer" field on a form) by matching it against
+// the Employee Register. Returns the base64 signature image, or '' if the name
+// is blank, no employee matches, or that employee has no active signature —
+// callers fall back to the usual blank signing line in all of those cases.
+export async function getSignatureForName(name) {
+  const employee = await employeeService.getByFullName(name)
+  if (!employee) return ''
+  const sig = await signatureService.getForEmployee(employee.id)
+  return sig?.signature_image || ''
+}
+
+// Renders an uploaded signature image if present, else the original blank
+// underscore line — same visual footprint either way.
+const signatureLine = (f, widthPt = 200) =>
+  f.signatureImg
+    ? `<img src="${f.signatureImg}" style="max-height:26pt;max-width:${widthPt}pt;object-fit:contain;vertical-align:middle">`
+    : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
 
 
 // Merge project-level logos into form data (project record is source of truth)
@@ -119,8 +140,8 @@ export const buildIF04 = (f) => {
     </table>
     <table style="width:100%;border-collapse:collapse;margin-bottom:14pt">
       <tr>
-        <td style="width:50%;padding:4pt 0;font-size:8pt"><u><b>Project Engineer:</b></u> ${f.pe || ''}</td>
-        <td style="width:50%;padding:4pt 0;font-size:8pt;text-align:right"><u><b>Signature:</b></u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td style="width:50%;padding:4pt 0;font-size:8pt"><u><b>Project Engineer:</b></u> ${f.prepared_by || ''}</td>
+        <td style="width:50%;padding:4pt 0;font-size:8pt;text-align:right"><u><b>Signature:</b></u> ${signatureLine(f)}</td>
       </tr>
     </table>
     <div style="margin-bottom:14pt">
@@ -200,7 +221,7 @@ export const buildIF05 = (f) => {
         <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">10</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Warranty</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${it.i10 || ''}</td></tr>
         <tr style="background:#f0f0f0">
           <td colspan="2" style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt"><b>Contractor Engineer</b> &nbsp;&nbsp; Name: ${f.prepared_by || ''}</td>
-          <td style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt">Signature: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt">Signature: ${signatureLine(f)}</td>
         </tr>
       </tbody>
     </table>
@@ -241,7 +262,7 @@ export const buildIF06 = (f) => {
       <tr><td style="${tdl}">Location of Works <i>(sketch attached)</i>:</td><td style="${td}white-space:pre-wrap">${f.location || ''}</td></tr>
       <tr><td style="${tdl}">Requested Date &amp; Time of Inspection:</td><td style="${td}">${fmtDate(f.inspDate)}${f.inspTime ? ' & ' + f.inspTime : ''}</td></tr>
       <tr><td style="${tdl}"><i>Approved Drawing Ref/MAC:<br>(as applicable)</i></td><td style="${td}">${f.macRef || ''}</td></tr>
-      <tr><td colspan="2" style="border-top:0.5pt solid #999;padding:8pt 8pt;font-size:8pt">Signed by &nbsp;———————————————————:&nbsp;&nbsp; Project Engineer: &nbsp;———————————————&nbsp;&nbsp; Name: ${f.pe || ''}</td></tr>
+      <tr><td colspan="2" style="border-top:0.5pt solid #999;padding:8pt 8pt;font-size:8pt">Signed by &nbsp;${signatureLine(f, 140)}:&nbsp;&nbsp; Project Engineer: &nbsp;———————————————&nbsp;&nbsp; Name: ${f.prepared_by || ''}</td></tr>
     </table>
     <div style="margin-top:14pt">
       <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:6pt">Consultant's Comments:</div>
@@ -286,8 +307,8 @@ export const buildIF07 = (f) => {
     </table>
     <table style="width:100%;border-collapse:collapse;margin-bottom:20pt">
       <tr>
-        <td style="width:50%;padding:4pt 0;font-size:8pt"><u><b>Project Engineer:</b></u>&nbsp; ${f.pe || ''}<br><div style="border-bottom:1pt solid #000;margin-top:22pt;width:80%"></div></td>
-        <td style="width:50%;padding:4pt 0;font-size:8pt;text-align:right"><u><b>Signature:</b></u><br><div style="border-bottom:1pt solid #000;margin-top:22pt;margin-left:40%"></div></td>
+        <td style="width:50%;padding:4pt 0;font-size:8pt"><u><b>Project Engineer:</b></u>&nbsp; ${f.prepared_by || ''}<br><div style="border-bottom:1pt solid #000;margin-top:22pt;width:80%"></div></td>
+        <td style="width:50%;padding:4pt 0;font-size:8pt;text-align:right"><u><b>Signature:</b></u><br><div style="border-bottom:1pt solid #000;margin-top:22pt;margin-left:40%">${f.signatureImg ? `<img src="${f.signatureImg}" style="max-height:24pt;max-width:100%;object-fit:contain">` : ''}</div></td>
       </tr>
     </table>
     <div style="margin-bottom:12pt"><div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:8pt">Consultant's Comments</div>
@@ -381,7 +402,7 @@ export const buildIF09 = (f) => {
       <tr><td style="${tdl}">Location of Works:</td><td style="${td}white-space:pre-wrap">${f.location || ''}</td></tr>
       <tr><td style="${tdl}">Requested Date &amp; Time of Inspection:</td><td style="${td}">${fmtDate(f.inspDate)}${f.inspTime ? ' & ' + f.inspTime : ''}</td></tr>
       <tr><td style="${tdl}"><i>Approved Drawing Ref/MAC:<br>(as applicable)</i></td><td style="${td}">${f.macRef || ''}</td></tr>
-      <tr><td colspan="2" style="border-top:0.5pt solid #999;padding:8pt 8pt;font-size:8pt">Signed by &nbsp;———————————————————:&nbsp;&nbsp; Project Engineer: &nbsp;———————————————&nbsp;&nbsp; Name: ${f.pe || ''}</td></tr>
+      <tr><td colspan="2" style="border-top:0.5pt solid #999;padding:8pt 8pt;font-size:8pt">Signed by &nbsp;${signatureLine(f, 140)}:&nbsp;&nbsp; Project Engineer: &nbsp;———————————————&nbsp;&nbsp; Name: ${f.prepared_by || ''}</td></tr>
     </table>
     <div style="margin-top:14pt">
       <table style="width:100%;border-collapse:collapse;border:1pt solid #000;font-size:8pt">

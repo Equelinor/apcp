@@ -8,7 +8,7 @@ import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, Pencil, ExternalLink , Printer, Trash2} from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildIF05, printForm, mergeProjectLogos } from '../../utils/printEngine'
+import { buildIF05, printForm, mergeProjectLogos, getSignatureForName } from '../../utils/printEngine'
 import { AXION_LOGO } from '../../utils/axionLogo'
 
 const MAC_STATUSES = ['Draft', 'Submitted', 'Under Review', 'Approved', 'Approved with Comments', 'Rejected', 'Resubmitted']
@@ -388,8 +388,9 @@ export default function IF05List() {
   // approval workflow can still progress without Admin involvement.
   const isLocked = !!(editItem && editItem.status !== 'Draft' && profile?.role !== 'Admin')
 
-  const handlePrint = (d) => {
-    printForm(buildIF05(mergeProjectLogos(d, activeProject)), `Export for Transmittal — ${d.if05_number}`)
+  const handlePrint = async (d) => {
+    const signatureImg = await getSignatureForName(d.prepared_by)
+    printForm(buildIF05({ ...mergeProjectLogos(d, activeProject), signatureImg }), `Export for Transmittal — ${d.if05_number}`)
   }
 
   return (

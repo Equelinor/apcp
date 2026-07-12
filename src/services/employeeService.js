@@ -21,6 +21,15 @@ export const employeeService = {
     return data
   },
 
+  // Case-insensitive exact match — used to match a free-text signer name
+  // (e.g. "Prepared By" on a form) back to an Employee Register record.
+  async getByFullName(fullName) {
+    if (!fullName?.trim()) return null
+    const { data, error } = await supabase.from(TABLE).select('*').ilike('full_name', fullName.trim()).limit(1)
+    if (error || !data?.length) return null
+    return data[0]
+  },
+
   async create(employee) {
     const { data, error } = await supabase.from(TABLE).insert(employee).select().single()
     if (error) throw error

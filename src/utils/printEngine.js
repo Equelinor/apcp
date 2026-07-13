@@ -32,10 +32,12 @@ export async function getSignatureForName(name) {
 }
 
 // Renders an uploaded signature image if present, else the original blank
-// underscore line — same visual footprint either way.
-const signatureLine = (f, widthPt = 200) =>
+// underscore line — same visual footprint either way. mix-blend-mode:multiply
+// drops out a white background (transparent PNG or not) so the signature
+// blends into the page instead of showing as a white box.
+const signatureLine = (f, widthPt = 240) =>
   f.signatureImg
-    ? `<img src="${f.signatureImg}" style="max-height:26pt;max-width:${widthPt}pt;object-fit:contain;vertical-align:middle">`
+    ? `<img src="${f.signatureImg}" style="max-height:38pt;max-width:${widthPt}pt;object-fit:contain;vertical-align:middle;mix-blend-mode:multiply">`
     : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
 
 
@@ -220,7 +222,7 @@ export const buildIF05 = (f) => {
         <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">9</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Enclosures</td><td style="border:0.5pt solid #999;padding:4pt 6pt"><span style="margin-right:16pt">${chk(f.enc_samples)} Samples</span><span style="margin-right:16pt">${chk(f.enc_catalogue)} Catalogue</span><span>${chk(f.enc_mockup)} Mock-up</span></td></tr>
         <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">10</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Warranty</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${it.i10 || ''}</td></tr>
         <tr style="background:#f0f0f0">
-          <td colspan="2" style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt"><b>Contractor Engineer</b> &nbsp;&nbsp; Name: ${f.prepared_by || ''}</td>
+          <td colspan="2" style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt"><b>Contractor Engineer</b> &nbsp;&nbsp; ${f.prepared_by || ''}</td>
           <td style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt">Signature: ${signatureLine(f)}</td>
         </tr>
       </tbody>

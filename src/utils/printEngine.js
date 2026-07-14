@@ -35,9 +35,9 @@ export async function getSignatureForName(name) {
 // underscore line — same visual footprint either way. mix-blend-mode:multiply
 // drops out a white background (transparent PNG or not) so the signature
 // blends into the page instead of showing as a white box.
-const signatureLine = (f, widthPt = 240) =>
+const signatureLine = (f, widthPt = 300) =>
   f.signatureImg
-    ? `<img src="${f.signatureImg}" style="max-height:38pt;max-width:${widthPt}pt;object-fit:contain;vertical-align:middle;mix-blend-mode:multiply">`
+    ? `<img src="${f.signatureImg}" style="max-height:50pt;max-width:${widthPt}pt;object-fit:contain;vertical-align:middle;mix-blend-mode:multiply">`
     : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
 
 

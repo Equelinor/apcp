@@ -510,24 +510,31 @@ export const buildMRF = (f) => {
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:12pt">
       <thead>
         <tr>
-          <th style="${th}width:3%">S.No</th>
-          <th style="${th}width:8%">Item / BOQ Ref.</th>
-          <th style="${th}width:8%">AICC Tender Qty Allowance</th>
-          <th style="${th}width:8%">Material Code</th>
-          <th style="${th}width:20%">Description of Materials to be Purchased or Hired</th>
-          <th style="${th}width:7%">Total Qty Required</th>
-          <th style="${th}width:7%">Additional Qty</th>
-          <th style="${th}width:8%">Current Qty / Days Required</th>
-          <th style="${th}width:7%">Date Required</th>
-          <th style="${th}width:5%">UOM</th>
-          <th style="${th}width:7%">Unit Rate</th>
-          <th style="${th}width:7%">Total Amount</th>
-          <th style="${th}width:8%">Remarks</th>
+          <th style="${th}width:2.5%" rowspan="2">S.No</th>
+          <th style="${th}width:6%" rowspan="2">Item / BOQ Ref.</th>
+          <th style="${th}width:14%" colspan="3">AICC Tender Quantity Allowance</th>
+          <th style="${th}width:7%" rowspan="2">Material Code</th>
+          <th style="${th}width:17%" rowspan="2">Description of Materials to be Purchased or Hired</th>
+          <th style="${th}width:6%" rowspan="2">Total Qty Required</th>
+          <th style="${th}width:6%" rowspan="2">Additional Qty</th>
+          <th style="${th}width:7%" rowspan="2">Current Qty / Days Required</th>
+          <th style="${th}width:6%" rowspan="2">Date Required</th>
+          <th style="${th}width:4%" rowspan="2">UOM</th>
+          <th style="${th}width:5%" rowspan="2">Unit Rate</th>
+          <th style="${th}width:6%" rowspan="2">Total Amount</th>
+          <th style="${th}width:7%" rowspan="2">Remarks</th>
+        </tr>
+        <tr>
+          <th style="${th}">UOM</th>
+          <th style="${th}">Unit Rate</th>
+          <th style="${th}">Tender Allowance</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td style="${td}">1</td>
+          <td style="${td}"></td>
+          <td style="${td}"></td>
           <td style="${td}"></td>
           <td style="${td}">${f.tender_allowance ?? ''}</td>
           <td style="${td}">${f.material_code || ''}</td>

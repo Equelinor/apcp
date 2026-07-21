@@ -72,11 +72,13 @@ export default function MRFList() {
     return (nums.length ? Math.max(...nums) : 0) + 1
   }
 
-  // Empty string isn't valid for a date column — Postgres rejects it outright
+  // Empty string isn't valid for a date/numeric column — Postgres rejects it outright
   const DATE_FIELDS = ['date', 'required_on_site', 'latest_raise_date', 'planned_start', 'planned_finish', 'consult_approval_date']
+  const NUMBER_FIELDS = ['qty', 'lead_time_days', 'tender_allowance', 'additional_qty', 'unit_rate', 'total_amount']
   function nullifyEmptyDates(data) {
     const out = { ...data }
     for (const f of DATE_FIELDS) if (out[f] === '') out[f] = null
+    for (const f of NUMBER_FIELDS) if (out[f] === '') out[f] = null
     return out
   }
 

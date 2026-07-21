@@ -590,7 +590,7 @@ export const buildMRF = (f) => {
     ${notesBlock}
     ${signatures}
     ${generated(f, f.mrf_number)}
-  `, '277mm', '6mm 0')
+  `, '288mm', '6mm 0')
 }
 
 // ─────────────────────────────────────────────────────────
@@ -610,7 +610,7 @@ export const printForm = (htmlString, title = 'APCP Form', orientation = 'portra
   let landscapeStyle = null
   if (orientation === 'landscape') {
     landscapeStyle = document.createElement('style')
-    landscapeStyle.textContent = '@media print { @page { size: A4 landscape; } }'
+    landscapeStyle.textContent = '@media print { @page { size: A4 landscape; margin: 0; } }'
     document.head.appendChild(landscapeStyle)
   }
 

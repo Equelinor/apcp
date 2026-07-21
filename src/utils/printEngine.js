@@ -480,7 +480,7 @@ const mrfSig = (url, widthPt = 160) =>
 
 export const buildMRF = (f) => {
   const td = 'border:0.5pt solid #999;padding:4pt 5pt;font-size:7.5pt;text-align:center;vertical-align:middle;overflow-wrap:break-word;'
-  const th = 'border:0.5pt solid #999;padding:4pt 5pt;font-size:7pt;text-align:center;font-weight:700;background:#f0f0f0;overflow-wrap:break-word;'
+  const th = 'border:0.5pt solid #999;padding:5pt 4pt;font-size:7pt;line-height:1.25;text-align:center;font-weight:700;background:#f0f0f0;overflow-wrap:break-word;word-break:normal;'
 
   const header = `
     <table style="width:100%;border-collapse:collapse;border:1.5pt solid #000;margin-bottom:0">
@@ -590,7 +590,7 @@ export const buildMRF = (f) => {
     ${notesBlock}
     ${signatures}
     ${generated(f, f.mrf_number)}
-  `, '288mm', '6mm 0')
+  `, '294mm', '1.5mm 0')
 }
 
 // ─────────────────────────────────────────────────────────

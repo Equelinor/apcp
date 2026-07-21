@@ -117,7 +117,7 @@ export default function MRFList() {
       projName: activeProject.project_name,
       projNo: activeProject.project_number,
       sigReq, sigPE, sigPM,
-    }), `Export for Transmittal — ${m.mrf_number}`)
+    }), `Export for Transmittal — ${m.mrf_number}`, 'landscape')
   }
 
   function openNewForm() {

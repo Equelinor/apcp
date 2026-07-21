@@ -104,8 +104,8 @@ const buildHeader = (f, docNo, title, splitTitle = false) => {
   return logoRow + titleBar
 }
 
-const wrapper = (content) =>
-  `<div style="font-family:Arial,Helvetica,sans-serif;font-size:8pt;color:#000;width:190mm;margin:0 auto;padding:10mm 0">${content}</div>`
+const wrapper = (content, width = '190mm') =>
+  `<div style="font-family:Arial,Helvetica,sans-serif;font-size:8pt;color:#000;width:${width};margin:0 auto;padding:10mm 0">${content}</div>`
 
 const generated = (f, ref) =>
   `<div style="margin-top:10pt;font-size:6pt;color:#888;text-align:center">Generated electronically by APCP &nbsp;|&nbsp; ${now()} &nbsp;|&nbsp; Ref: ${ref || ''}</div>`
@@ -559,18 +559,23 @@ export const buildMRF = (f) => {
     </table>
   `
 
-  const sigRow = (label, name, sig) => `
-    <tr>
-      <td style="width:50%;padding:8pt 0;font-size:8pt;border-top:0.5pt solid #999"><b>${label}:</b> &nbsp; ${name || ''}</td>
-      <td style="width:50%;padding:8pt 0;font-size:8pt;border-top:0.5pt solid #999;text-align:right"><b>Signature:</b> &nbsp; ${mrfSig(sig)}</td>
-    </tr>
+  // One row, 3 equal columns (left/middle/right) — name, then signature, then
+  // a line + role label underneath, mirroring the paper form's bottom row.
+  const sigCol = (label, name, sig) => `
+    <td style="width:33.33%;text-align:center;padding:0 10pt;vertical-align:bottom">
+      <div style="font-size:8pt;font-weight:700;margin-bottom:4pt">${name || '&nbsp;'}</div>
+      <div style="height:34pt;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3pt">${mrfSig(sig, 130)}</div>
+      <div style="border-top:1pt solid #000;padding-top:4pt;font-size:7.5pt;font-weight:700;letter-spacing:.02em">${label}</div>
+    </td>
   `
 
   const signatures = `
-    <table style="width:100%;border-collapse:collapse;margin-top:6pt">
-      ${sigRow('REQUISITIONER', f.requested_by, f.sigReq)}
-      ${sigRow('PROJECT ENGINEER', f.project_engineer, f.sigPE)}
-      ${sigRow('PROJECT MANAGER / MANAGING DIRECTOR', f.project_manager, f.sigPM)}
+    <table style="width:100%;border-collapse:collapse;margin-top:10pt">
+      <tr>
+        ${sigCol('REQUISITIONER', f.requested_by, f.sigReq)}
+        ${sigCol('PROJECT ENGINEER', f.project_engineer, f.sigPE)}
+        ${sigCol('PROJECT MANAGER / MANAGING DIRECTOR', f.project_manager, f.sigPM)}
+      </tr>
     </table>
   `
 
@@ -581,24 +586,39 @@ export const buildMRF = (f) => {
     ${notesBlock}
     ${signatures}
     ${generated(f, f.mrf_number)}
-  `)
+  `, '277mm')
 }
 
 // ─────────────────────────────────────────────────────────
 // Universal print trigger
 // ─────────────────────────────────────────────────────────
-export const printForm = (htmlString, title = 'APCP Form') => {
+export const printForm = (htmlString, title = 'APCP Form', orientation = 'portrait') => {
   const el = document.getElementById('print-area')
   if (!el) return
   el.innerHTML = htmlString
   const prev = document.title
   document.title = title
+
+  // index.css declares a global @page { size: A4 portrait } for every
+  // #print-area document. For the rare form that needs landscape (MRF's wide
+  // materials table), inject a temporary override and remove it right after
+  // printing — every other form keeps using the global portrait rule untouched.
+  let landscapeStyle = null
+  if (orientation === 'landscape') {
+    landscapeStyle = document.createElement('style')
+    landscapeStyle.textContent = '@media print { @page { size: A4 landscape; } }'
+    document.head.appendChild(landscapeStyle)
+  }
+
   // Give embedded base64 logo images time to decode/paint before the print
   // snapshot is taken — without this delay they render blank (same fix the
   // Register PDF exports already use via their own setTimeout before print()).
   setTimeout(() => {
     window.print()
-    setTimeout(() => { document.title = prev }, 1000)
+    setTimeout(() => {
+      document.title = prev
+      if (landscapeStyle) landscapeStyle.remove()
+    }, 1000)
   }, 300)
 }
 

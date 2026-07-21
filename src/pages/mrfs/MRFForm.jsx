@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
+import { employeeService } from '../../services/employeeService'
 import { calcLatestRaiseDate, today } from '../../utils/delay'
 import { LOCATIONS, ZONES, UNITS, PRIORITIES, SUBM_STATUSES } from './mrfData'
 
@@ -15,6 +16,7 @@ const BLANK = {
   wbs_code: '', activity_id: '', activity_name: '', programme_ref: '',
   planned_start: '', planned_finish: '',
   tender_allowance: '', additional_qty: '', unit_rate: '', total_amount: '',
+  project_engineer: '', project_manager: '',
 }
 
 export default function MRFForm({ initial, mrfNumber, onSave, onCancel }) {
@@ -22,6 +24,9 @@ export default function MRFForm({ initial, mrfNumber, onSave, onCancel }) {
   const { profile } = useAuth()
   const [form, setForm] = useState({ ...BLANK, ...(initial || {}) })
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [employees, setEmployees] = useState([])
+
+  useEffect(() => { employeeService.dropdown().then(setEmployees) }, [])
 
   // Auto-calc latest raise date
   useEffect(() => {
@@ -77,8 +82,27 @@ export default function MRFForm({ initial, mrfNumber, onSave, onCancel }) {
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Requested By</label>
-            <input className="form-input" value={form.requested_by} onChange={e => set('requested_by', e.target.value)} placeholder="Name" />
+            <label className="form-label">Requested By (Requisitioner)</label>
+            <select className="form-select" value={form.requested_by} onChange={e => set('requested_by', e.target.value)}>
+              <option value="">— Select —</option>
+              {employees.map(e => <option key={e.id} value={e.full_name}>{e.full_name} — {e.designation}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="form-grid form-grid-3" style={{ marginBottom: 12 }}>
+          <div className="form-group">
+            <label className="form-label">Project Engineer</label>
+            <select className="form-select" value={form.project_engineer} onChange={e => set('project_engineer', e.target.value)}>
+              <option value="">— Select —</option>
+              {employees.map(e => <option key={e.id} value={e.full_name}>{e.full_name} — {e.designation}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Project Manager</label>
+            <select className="form-select" value={form.project_manager} onChange={e => set('project_manager', e.target.value)}>
+              <option value="">— Select —</option>
+              {employees.map(e => <option key={e.id} value={e.full_name}>{e.full_name} — {e.designation}</option>)}
+            </select>
           </div>
         </div>
         <div className="form-grid form-grid-3" style={{ marginBottom: 12 }}>

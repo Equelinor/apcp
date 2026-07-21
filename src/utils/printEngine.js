@@ -104,8 +104,8 @@ const buildHeader = (f, docNo, title, splitTitle = false) => {
   return logoRow + titleBar
 }
 
-const wrapper = (content, width = '190mm') =>
-  `<div style="font-family:Arial,Helvetica,sans-serif;font-size:8pt;color:#000;width:${width};margin:0 auto;padding:10mm 0">${content}</div>`
+const wrapper = (content, width = '190mm', padding = '10mm 0') =>
+  `<div style="font-family:Arial,Helvetica,sans-serif;font-size:8pt;color:#000;width:${width};margin:0 auto;padding:${padding}">${content}</div>`
 
 const generated = (f, ref) =>
   `<div style="margin-top:10pt;font-size:6pt;color:#888;text-align:center">Generated electronically by APCP &nbsp;|&nbsp; ${now()} &nbsp;|&nbsp; Ref: ${ref || ''}</div>`
@@ -531,7 +531,7 @@ export const buildMRF = (f) => {
         </tr>
       </thead>
       <tbody>
-        <tr>
+        <tr style="height:22pt">
           <td style="${td}">1</td>
           <td style="${td}"></td>
           <td style="${td}"></td>
@@ -548,6 +548,10 @@ export const buildMRF = (f) => {
           <td style="${td}">${f.total_amount ?? ''}</td>
           <td style="${td}text-align:left">${f.remarks || ''}</td>
         </tr>
+        ${Array.from({ length: 6 }).map(() => `
+        <tr style="height:22pt">
+          ${Array.from({ length: 15 }).map(() => `<td style="${td}">&nbsp;</td>`).join('')}
+        </tr>`).join('')}
       </tbody>
     </table>
   `
@@ -586,7 +590,7 @@ export const buildMRF = (f) => {
     ${notesBlock}
     ${signatures}
     ${generated(f, f.mrf_number)}
-  `, '277mm')
+  `, '277mm', '6mm 0')
 }
 
 // ─────────────────────────────────────────────────────────

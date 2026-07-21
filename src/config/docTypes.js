@@ -82,3 +82,17 @@ export function genMacNumber(projectNumber, sequence) {
   const projNum = parts[parts.length - 1] || ''
   return `AI-${projNum}-MAC-${String(sequence).padStart(3, '0')}`
 }
+
+// ─── MRF (Material Request) NUMBER — deliberate exception, matching the
+// paper "Resource Requisition" reference: AICC/MRF/<project number>-<year>-<seq>
+// (e.g. AICC/MRF/494-2026-47). "AICC" is a fixed company code, <project number>
+// is the trailing segment of the project's own project_number (same convention
+// as genMacNumber), no zero-padding on the sequence (reference shows plain
+// "47", not "047"). MRF-only, added 2026-07-19 — other doc types are
+// unaffected and still use genDocNumber above.
+export function genMrfNumber(projectNumber, sequence) {
+  const parts = String(projectNumber || '').split('-')
+  const projNum = parts[parts.length - 1] || ''
+  const year = new Date().getFullYear()
+  return `AICC/MRF/${projNum}-${year}-${sequence}`
+}

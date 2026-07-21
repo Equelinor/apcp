@@ -3,7 +3,7 @@ import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { delayStatus, today } from '../../utils/delay'
-import { generateDocNumber } from '../../utils/docNumber'
+import { genMrfNumber } from '../../config/docTypes'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import MRFForm from './MRFForm'
@@ -61,29 +61,40 @@ export default function MRFList() {
     setLoading(false)
   }
 
-  async function getNextSequence() {
-    const year = new Date().getFullYear()
-    const prefix = `MRF-${activeProject.project_code}-${year}-`
-    const existing = mrfs.filter(m => m.mrf_number?.startsWith(prefix))
-    return existing.length + 1
+  // Next sequence from the highest existing trailing number, not a row count —
+  // counting rows breaks the moment a number is ever edited/removed/skipped.
+  function nextMrfSeq() {
+    const nums = mrfs.map(m => {
+      const match = String(m.mrf_number || '').match(/-(\d+)$/)
+      return match ? parseInt(match[1], 10) : 0
+    })
+    return (nums.length ? Math.max(...nums) : 0) + 1
+  }
+
+  // Empty string isn't valid for a date column — Postgres rejects it outright
+  const DATE_FIELDS = ['date', 'required_on_site', 'latest_raise_date', 'planned_start', 'planned_finish', 'consult_approval_date']
+  function nullifyEmptyDates(data) {
+    const out = { ...data }
+    for (const f of DATE_FIELDS) if (out[f] === '') out[f] = null
+    return out
   }
 
   async function saveMRF(formData) {
     const isEdit = !!editMRF?.id
+    const payload = nullifyEmptyDates(formData)
 
     if (isEdit) {
-      // Update local (Supabase update if real data)
-      const { error } = await supabase.from('mrfs').update(formData).eq('id', editMRF.id)
-      setMrfs(prev => prev.map(m => m.id === editMRF.id ? { ...m, ...formData } : m))
-      if (selectedMRF?.id === editMRF.id) setSelectedMRF({ ...selectedMRF, ...formData })
+      const { error } = await supabase.from('mrfs').update(payload).eq('id', editMRF.id)
+      if (error) { toast('Save failed — ' + error.message, 'err'); return }
+      setMrfs(prev => prev.map(m => m.id === editMRF.id ? { ...m, ...payload } : m))
+      if (selectedMRF?.id === editMRF.id) setSelectedMRF({ ...selectedMRF, ...payload })
       toast('MRF updated ✓', 'ok')
     } else {
-      const seq = await getNextSequence()
-      const mrf_number = generateDocNumber('MRF', activeProject.project_code, seq)
-      const newMRF = { ...formData, mrf_number, project_code: activeProject.project_code, delivered_qty: 0, mir_resub_count: 0 }
+      const mrf_number = genMrfNumber(activeProject.project_number, nextMrfSeq())
+      const newMRF = { ...payload, mrf_number, project_code: activeProject.project_code, delivered_qty: 0, mir_resub_count: 0 }
       const { data, error } = await supabase.from('mrfs').insert(newMRF).select().single()
-      const saved = data || { ...newMRF, id: Date.now() }
-      setMrfs(prev => [saved, ...prev])
+      if (error) { toast('Save failed — ' + error.message, 'err'); return }
+      setMrfs(prev => [data, ...prev])
       toast(`MRF created: ${mrf_number}`, 'ok')
     }
     setShowForm(false)

@@ -1,20 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
-import { generateDocNumber } from '../../utils/docNumber'
 import { calcLatestRaiseDate, today } from '../../utils/delay'
 import { LOCATIONS, ZONES, UNITS, PRIORITIES, SUBM_STATUSES } from './mrfData'
 
 const BLANK = {
   date: today(),
   location: '', zone: '', requested_by: '', priority: 'Medium',
-  material_desc: '', qty: '', unit: 'NOS', required_on_site: '',
+  material_desc: '', material_code: '', qty: '', unit: 'NOS', required_on_site: '',
   lead_time_days: '', latest_raise_date: '', related_activity: '', remarks: '',
   mat_spec: '', brand: '', grade: '', code_ref: '',
   sample_ref: '', subm_ref: '', subm_status: 'Pending', consult_approval_date: '',
   ifc_drawing: '', shop_drawing: '', drawing_rev: '',
   wbs_code: '', activity_id: '', activity_name: '', programme_ref: '',
   planned_start: '', planned_finish: '',
+  tender_allowance: '', additional_qty: '', unit_rate: '', total_amount: '',
 }
 
 export default function MRFForm({ initial, mrfNumber, onSave, onCancel }) {
@@ -101,9 +101,15 @@ export default function MRFForm({ initial, mrfNumber, onSave, onCancel }) {
             <input className="form-input" value={form.related_activity} onChange={e => set('related_activity', e.target.value)} placeholder="Activity description" />
           </div>
         </div>
-        <div className="form-group" style={{ marginBottom: 12 }}>
-          <label className="form-label required">Material Description</label>
-          <input className="form-input" value={form.material_desc} onChange={e => set('material_desc', e.target.value)} placeholder="Full material description, type, grade, size…" />
+        <div className="form-grid form-grid-4" style={{ marginBottom: 12 }}>
+          <div className="form-group" style={{ gridColumn: '1 / span 3' }}>
+            <label className="form-label required">Material Description</label>
+            <input className="form-input" value={form.material_desc} onChange={e => set('material_desc', e.target.value)} placeholder="Full material description, type, grade, size…" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Material Code</label>
+            <input className="form-input" value={form.material_code} onChange={e => set('material_code', e.target.value)} />
+          </div>
         </div>
         <div className="form-grid form-grid-4" style={{ marginBottom: 12 }}>
           <div className="form-group">
@@ -123,6 +129,24 @@ export default function MRFForm({ initial, mrfNumber, onSave, onCancel }) {
           <div className="form-group">
             <label className="form-label">Lead Time (days)</label>
             <input className="form-input" type="number" value={form.lead_time_days} onChange={e => set('lead_time_days', e.target.value)} min="0" placeholder="Auto-calcs raise date" />
+          </div>
+        </div>
+        <div className="form-grid form-grid-4" style={{ marginBottom: 12 }}>
+          <div className="form-group">
+            <label className="form-label">Tender Allowance</label>
+            <input className="form-input" type="number" value={form.tender_allowance} onChange={e => set('tender_allowance', e.target.value)} min="0" placeholder="AICC Tender Qty Allowance" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Additional Qty</label>
+            <input className="form-input" type="number" value={form.additional_qty} onChange={e => set('additional_qty', e.target.value)} min="0" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Unit Rate</label>
+            <input className="form-input" type="number" value={form.unit_rate} onChange={e => set('unit_rate', e.target.value)} min="0" step="0.01" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Total Amount</label>
+            <input className="form-input" type="number" value={form.total_amount} onChange={e => set('total_amount', e.target.value)} min="0" step="0.01" />
           </div>
         </div>
         {form.latest_raise_date && (

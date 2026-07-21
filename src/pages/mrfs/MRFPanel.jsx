@@ -21,7 +21,7 @@ function Section({ title }) {
   )
 }
 
-export default function MRFPanel({ mrf, onClose, onEdit, onApprove, onReject, onHold, canApprove, currency }) {
+export default function MRFPanel({ mrf, onClose, onEdit, onApprove, onReject, onHold, onPrint, canApprove, currency }) {
   if (!mrf) return null
 
   const ds = delayStatus(mrf)
@@ -56,7 +56,7 @@ export default function MRFPanel({ mrf, onClose, onEdit, onApprove, onReject, on
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{mrf.material_desc}</div>
         </div>
         <Badge status={mrf.approval_status} />
-        <button className="btn btn-ghost no-print" title="Print" onClick={() => window.print()} style={{ padding: 6 }}>
+        <button className="btn btn-ghost no-print" title="Export for Transmittal" onClick={() => onPrint?.(mrf)} style={{ padding: 6 }}>
           <Printer size={15} />
         </button>
       </div>

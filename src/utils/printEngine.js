@@ -466,6 +466,118 @@ export const buildIF12 = (f) => {
 }
 
 // ─────────────────────────────────────────────────────────
+// MRF — Resource Requisition transmittal
+// Axion-internal document (no client/consultant header) — matches the paper
+// "Resource Requisition" template: logo only, From/Project No/Project Title,
+// To (fixed "Procurement Dept.") / Date, one material row, 3 signature blocks
+// (Requisitioner / Project Engineer / Project Manager). No register/log page
+// for MRF, per explicit user request — transmittal only.
+// ─────────────────────────────────────────────────────────
+const mrfSig = (url, widthPt = 160) =>
+  url
+    ? `<img src="${url}" style="max-height:36pt;max-width:${widthPt}pt;object-fit:contain;vertical-align:middle;mix-blend-mode:multiply">`
+    : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+
+export const buildMRF = (f) => {
+  const td = 'border:0.5pt solid #999;padding:4pt 5pt;font-size:7.5pt;text-align:center;vertical-align:middle;'
+  const th = 'border:0.5pt solid #999;padding:4pt 5pt;font-size:7pt;text-align:center;font-weight:700;background:#f0f0f0;'
+
+  const header = `
+    <table style="width:100%;border-collapse:collapse;border:1.5pt solid #000;margin-bottom:0">
+      <tr><td style="padding:8pt;vertical-align:middle"><img src="${AXION_LOGO}" style="max-height:46pt;max-width:170pt;object-fit:contain"></td></tr>
+    </table>
+    <div style="background:#000;color:#fff;text-align:center;padding:7pt 10pt;font-size:13pt;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10pt">RESOURCE REQUISITION</div>
+  `
+
+  const infoBlock = `
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
+      <tr>
+        <td style="width:55%;border-right:1pt solid #000;padding:6pt 8pt;vertical-align:top">
+          <div style="margin-bottom:5pt"><b>FROM:</b> ${f.requested_by || ''}</div>
+          <div style="margin-bottom:5pt"><b>PROJECT NO:</b> ${f.projNo || ''}</div>
+          <div><b>PROJECT TITLE:</b> ${f.projName || ''}</div>
+        </td>
+        <td style="width:45%;padding:6pt 8pt;vertical-align:top">
+          <div style="margin-bottom:5pt"><b>No.:</b> ${f.mrf_number || ''}</div>
+          <div style="margin-bottom:5pt"><b>To:</b> Procurement Dept.</div>
+          <div><b>Date:</b> ${fmtDate(f.date)}</div>
+        </td>
+      </tr>
+    </table>
+  `
+
+  const materialsTable = `
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:12pt">
+      <thead>
+        <tr>
+          <th style="${th}width:3%">S.No</th>
+          <th style="${th}width:8%">Item / BOQ Ref.</th>
+          <th style="${th}width:8%">AICC Tender Qty Allowance</th>
+          <th style="${th}width:8%">Material Code</th>
+          <th style="${th}width:20%">Description of Materials to be Purchased or Hired</th>
+          <th style="${th}width:7%">Total Qty Required</th>
+          <th style="${th}width:7%">Additional Qty</th>
+          <th style="${th}width:8%">Current Qty / Days Required</th>
+          <th style="${th}width:7%">Date Required</th>
+          <th style="${th}width:5%">UOM</th>
+          <th style="${th}width:7%">Unit Rate</th>
+          <th style="${th}width:7%">Total Amount</th>
+          <th style="${th}width:8%">Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="${td}">1</td>
+          <td style="${td}"></td>
+          <td style="${td}">${f.tender_allowance ?? ''}</td>
+          <td style="${td}">${f.material_code || ''}</td>
+          <td style="${td}text-align:left">${f.material_desc || ''}</td>
+          <td style="${td}">${f.qty ?? ''}</td>
+          <td style="${td}">${f.additional_qty ?? ''}</td>
+          <td style="${td}"></td>
+          <td style="${td}">${fmtDate(f.required_on_site)}</td>
+          <td style="${td}">${f.unit || ''}</td>
+          <td style="${td}">${f.unit_rate ?? ''}</td>
+          <td style="${td}">${f.total_amount ?? ''}</td>
+          <td style="${td}text-align:left">${f.remarks || ''}</td>
+        </tr>
+      </tbody>
+    </table>
+  `
+
+  const notesBlock = `
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16pt;font-size:8pt">
+      <tr><td style="padding:3pt 0"><b>For Deliveries: Site Contact:</b> &nbsp;<span style="border-bottom:0.5pt solid #000;display:inline-block;width:70%">&nbsp;</span></td></tr>
+      <tr><td style="padding:6pt 0"><b>REMARKS:</b> &nbsp;<span style="border-bottom:0.5pt solid #000;display:inline-block;width:85%">&nbsp;</span></td></tr>
+    </table>
+  `
+
+  const sigRow = (label, name, sig) => `
+    <tr>
+      <td style="width:50%;padding:8pt 0;font-size:8pt;border-top:0.5pt solid #999"><b>${label}:</b> &nbsp; ${name || ''}</td>
+      <td style="width:50%;padding:8pt 0;font-size:8pt;border-top:0.5pt solid #999;text-align:right"><b>Signature:</b> &nbsp; ${mrfSig(sig)}</td>
+    </tr>
+  `
+
+  const signatures = `
+    <table style="width:100%;border-collapse:collapse;margin-top:6pt">
+      ${sigRow('REQUISITIONER', f.requested_by, f.sigReq)}
+      ${sigRow('PROJECT ENGINEER', f.project_engineer, f.sigPE)}
+      ${sigRow('PROJECT MANAGER / MANAGING DIRECTOR', f.project_manager, f.sigPM)}
+    </table>
+  `
+
+  return wrapper(`
+    ${header}
+    ${infoBlock}
+    ${materialsTable}
+    ${notesBlock}
+    ${signatures}
+    ${generated(f, f.mrf_number)}
+  `)
+}
+
+// ─────────────────────────────────────────────────────────
 // Universal print trigger
 // ─────────────────────────────────────────────────────────
 export const printForm = (htmlString, title = 'APCP Form') => {

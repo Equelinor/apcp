@@ -10,7 +10,8 @@ import MRFForm from './MRFForm'
 import MRFPanel from './MRFPanel'
 import { MRF_SEED, PRIORITIES, APPROVAL_STATUSES } from './mrfData'
 import { useToast, ToastContainer } from '../../utils/toast'
-import { Plus, Download, RefreshCw } from 'lucide-react'
+import { Plus, Download, RefreshCw, Printer } from 'lucide-react'
+import { buildMRF, printForm, getSignatureForName } from '../../utils/printEngine'
 
 const TABS = [
   { label: 'All', value: null },
@@ -99,6 +100,22 @@ export default function MRFList() {
     }
     setShowForm(false)
     setEditMRF(null)
+  }
+
+  // Transmittal print — matches the paper "Resource Requisition" template,
+  // 3 signature lookups (Requisitioner, Project Engineer, Project Manager)
+  async function handlePrint(m) {
+    const [sigReq, sigPE, sigPM] = await Promise.all([
+      getSignatureForName(m.requested_by),
+      getSignatureForName(m.project_engineer),
+      getSignatureForName(m.project_manager),
+    ])
+    printForm(buildMRF({
+      ...m,
+      projName: activeProject.project_name,
+      projNo: activeProject.project_number,
+      sigReq, sigPE, sigPM,
+    }), `Export for Transmittal — ${m.mrf_number}`)
   }
 
   function openNewForm() {
@@ -301,6 +318,7 @@ export default function MRFList() {
                         {canEdit && (
                           <button className="btn btn-ghost" style={{ padding: '3px 7px', fontSize: 11 }} onClick={() => openEditForm(m)}>Edit</button>
                         )}
+                        <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Export for Transmittal" onClick={() => handlePrint(m)}><Printer size={12} /></button>
                       </div>
                     </td>
                   </tr>
@@ -340,6 +358,7 @@ export default function MRFList() {
             onApprove={doApprove}
             onReject={doReject}
             onHold={doHold}
+            onPrint={handlePrint}
             canApprove={canApprove}
             currency={activeProject?.currency}
           />

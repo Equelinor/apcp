@@ -479,8 +479,8 @@ const mrfSig = (url, widthPt = 160) =>
     : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
 
 export const buildMRF = (f) => {
-  const td = 'border:0.5pt solid #999;padding:4pt 5pt;font-size:7.5pt;text-align:center;vertical-align:middle;'
-  const th = 'border:0.5pt solid #999;padding:4pt 5pt;font-size:7pt;text-align:center;font-weight:700;background:#f0f0f0;'
+  const td = 'border:0.5pt solid #999;padding:4pt 5pt;font-size:7.5pt;text-align:center;vertical-align:middle;overflow-wrap:break-word;'
+  const th = 'border:0.5pt solid #999;padding:4pt 5pt;font-size:7pt;text-align:center;font-weight:700;background:#f0f0f0;overflow-wrap:break-word;'
 
   const header = `
     <table style="width:100%;border-collapse:collapse;border:1.5pt solid #000;margin-bottom:0">
@@ -507,7 +507,7 @@ export const buildMRF = (f) => {
   `
 
   const materialsTable = `
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:12pt">
+    <table style="width:100%;table-layout:fixed;border-collapse:collapse;border:1pt solid #000;margin-bottom:12pt">
       <thead>
         <tr>
           <th style="${th}width:2.5%" rowspan="2">S.No</th>

@@ -1,4 +1,4 @@
-import { X, Printer } from 'lucide-react'
+import { X, Printer, Trash2 } from 'lucide-react'
 import Badge from '../../components/Badge'
 import { delayStatus } from '../../utils/delay'
 
@@ -21,7 +21,7 @@ function Section({ title }) {
   )
 }
 
-export default function MRFPanel({ mrf, onClose, onEdit, onApprove, onReject, onHold, onPrint, canApprove, currency }) {
+export default function MRFPanel({ mrf, onClose, onEdit, onApprove, onReject, onHold, onPrint, onDelete, canApprove, currency }) {
   if (!mrf) return null
 
   const ds = delayStatus(mrf)
@@ -59,6 +59,11 @@ export default function MRFPanel({ mrf, onClose, onEdit, onApprove, onReject, on
         <button className="btn btn-ghost no-print" title="Export for Transmittal" onClick={() => onPrint?.(mrf)} style={{ padding: 6 }}>
           <Printer size={15} />
         </button>
+        {canApprove && (
+          <button className="btn btn-ghost no-print" title="Delete" onClick={() => onDelete?.(mrf.id)} style={{ padding: 6, color: 'var(--status-rejected-text)' }}>
+            <Trash2 size={15} />
+          </button>
+        )}
       </div>
 
       {/* Workflow bar */}

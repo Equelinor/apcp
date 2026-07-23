@@ -10,7 +10,7 @@ import MRFForm from './MRFForm'
 import MRFPanel from './MRFPanel'
 import { MRF_SEED, PRIORITIES, APPROVAL_STATUSES } from './mrfData'
 import { useToast, ToastContainer } from '../../utils/toast'
-import { Plus, Download, RefreshCw, Printer } from 'lucide-react'
+import { Plus, Download, RefreshCw, Printer, Trash2 } from 'lucide-react'
 import { buildMRF, printForm, getSignatureForName } from '../../utils/printEngine'
 
 const TABS = [
@@ -156,6 +156,15 @@ export default function MRFList() {
     setMrfs(prev => prev.map(m => m.id === id ? { ...m, ...update } : m))
     if (selectedMRF?.id === id) setSelectedMRF(p => ({ ...p, ...update }))
     toast('MRF On Hold', 'warn')
+  }
+
+  async function doDelete(id) {
+    if (!confirm('Delete this MRF record? This cannot be undone.')) return
+    const { error } = await supabase.from('mrfs').delete().eq('id', id)
+    if (error) { toast('Delete failed — ' + error.message, 'err'); return }
+    setMrfs(prev => prev.filter(m => m.id !== id))
+    if (selectedMRF?.id === id) setSelectedMRF(null)
+    toast('MRF deleted', 'warn')
   }
 
   // Filter + sort
@@ -321,6 +330,9 @@ export default function MRFList() {
                           <button className="btn btn-ghost" style={{ padding: '3px 7px', fontSize: 11 }} onClick={() => openEditForm(m)}>Edit</button>
                         )}
                         <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Export for Transmittal" onClick={() => handlePrint(m)}><Printer size={12} /></button>
+                        {canApprove && (
+                          <button className="btn btn-ghost" style={{ padding: '3px 6px', color: 'var(--status-rejected-text)' }} title="Delete" onClick={() => doDelete(m.id)}><Trash2 size={12} /></button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -361,6 +373,7 @@ export default function MRFList() {
             onReject={doReject}
             onHold={doHold}
             onPrint={handlePrint}
+            onDelete={doDelete}
             canApprove={canApprove}
             currency={activeProject?.currency}
           />

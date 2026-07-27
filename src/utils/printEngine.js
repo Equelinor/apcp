@@ -422,15 +422,22 @@ export const buildIF08 = (f) => {
           <td style="padding:0">
             <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-top:6pt">
               <tr>
-                <td style="${td}width:16%;vertical-align:top">Reply required by<br><b>${fmtDate(f.required_response_date)}</b></td>
-                <td style="${td}width:34%;vertical-align:top">
-                  <div style="margin-bottom:4pt"><b>Prime Contractor</b> — ${f.requested_by || ''} &nbsp; ${signatureLine(f, 90)}</div>
-                  <div><b>Sub-Contractor</b> — ${f.contractor_sub || ''} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
+                <td style="${td}width:16%;vertical-align:top;padding:0">
+                  <div style="height:68pt;overflow:hidden;padding:5pt 7pt">Reply required by<br><b>${fmtDate(f.required_response_date)}</b></div>
                 </td>
-                <td style="${td}width:50%;vertical-align:top">
-                  <b>Cost and time involvement</b>
-                  <div style="border-top:0.5pt solid #999;margin-top:5pt;padding-top:5pt">Additional cost involved &nbsp; <b>${f.cost_impact_yn === 'Y' ? 'Y' : f.cost_impact_yn === 'N' ? 'N' : 'Y / N'}</b></div>
-                  <div style="border-top:0.5pt solid #999;margin-top:5pt;padding-top:5pt">Additional time involved &nbsp; <b>${f.time_impact_yn === 'Y' ? 'Y' : f.time_impact_yn === 'N' ? 'N' : 'Y / N'}</b></div>
+                <td style="${td}width:34%;vertical-align:top;padding:0">
+                  <div style="height:68pt;overflow:hidden;padding:4pt 7pt;line-height:1.15">
+                    <div style="margin-bottom:1pt"><b>Prime Contractor</b> — ${f.requested_by || ''}</div>
+                    <div style="margin-bottom:1pt">Signature: &nbsp; ${f.signatureImg ? signatureLine(f, 90) : '<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
+                    <div><b>Sub-Contractor</b> — ${f.contractor_sub || ''} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
+                  </div>
+                </td>
+                <td style="${td}width:50%;vertical-align:top;padding:0">
+                  <div style="height:68pt;overflow:hidden;padding:5pt 7pt">
+                    <b>Cost and time involvement</b>
+                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt">Additional cost involved &nbsp; <b>${f.cost_impact_yn === 'Y' ? 'Y' : f.cost_impact_yn === 'N' ? 'N' : 'Y / N'}</b></div>
+                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt">Additional time involved &nbsp; <b>${f.time_impact_yn === 'Y' ? 'Y' : f.time_impact_yn === 'N' ? 'N' : 'Y / N'}</b></div>
+                  </div>
                 </td>
               </tr>
               <tr>

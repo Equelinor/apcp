@@ -630,15 +630,22 @@ ${p}`}class Ne extends Error{constructor({message:t,code:r,cause:s,name:i}){var 
           <td style="padding:0">
             <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-top:6pt">
               <tr>
-                <td style="${s}width:16%;vertical-align:top">Reply required by<br><b>${gt(e.required_response_date)}</b></td>
-                <td style="${s}width:34%;vertical-align:top">
-                  <div style="margin-bottom:4pt"><b>Prime Contractor</b> — ${e.requested_by||""} &nbsp; ${Ko(e,90)}</div>
-                  <div><b>Sub-Contractor</b> — ${e.contractor_sub||""} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
+                <td style="${s}width:16%;vertical-align:top;padding:0">
+                  <div style="height:68pt;overflow:hidden;padding:5pt 7pt">Reply required by<br><b>${gt(e.required_response_date)}</b></div>
                 </td>
-                <td style="${s}width:50%;vertical-align:top">
-                  <b>Cost and time involvement</b>
-                  <div style="border-top:0.5pt solid #999;margin-top:5pt;padding-top:5pt">Additional cost involved &nbsp; <b>${e.cost_impact_yn==="Y"?"Y":e.cost_impact_yn==="N"?"N":"Y / N"}</b></div>
-                  <div style="border-top:0.5pt solid #999;margin-top:5pt;padding-top:5pt">Additional time involved &nbsp; <b>${e.time_impact_yn==="Y"?"Y":e.time_impact_yn==="N"?"N":"Y / N"}</b></div>
+                <td style="${s}width:34%;vertical-align:top;padding:0">
+                  <div style="height:68pt;overflow:hidden;padding:4pt 7pt;line-height:1.15">
+                    <div style="margin-bottom:1pt"><b>Prime Contractor</b> — ${e.requested_by||""}</div>
+                    <div style="margin-bottom:1pt">Signature: &nbsp; ${e.signatureImg?Ko(e,90):'<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
+                    <div><b>Sub-Contractor</b> — ${e.contractor_sub||""} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
+                  </div>
+                </td>
+                <td style="${s}width:50%;vertical-align:top;padding:0">
+                  <div style="height:68pt;overflow:hidden;padding:5pt 7pt">
+                    <b>Cost and time involvement</b>
+                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt">Additional cost involved &nbsp; <b>${e.cost_impact_yn==="Y"?"Y":e.cost_impact_yn==="N"?"N":"Y / N"}</b></div>
+                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt">Additional time involved &nbsp; <b>${e.time_impact_yn==="Y"?"Y":e.time_impact_yn==="N"?"N":"Y / N"}</b></div>
+                  </div>
                 </td>
               </tr>
               <tr>

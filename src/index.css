@@ -483,6 +483,10 @@ tr:last-child td { border-bottom: none; }
 
 tr:hover td { background: rgba(244, 246, 249, 0.6); }
 
+/* Print templates render as real HTML tables too — never let the app's
+   interactive-table hover tint bleed into #print-area content. */
+#print-area tr:hover td { background: none; }
+
 .table-empty {
   text-align: center;
   padding: 48px 24px;

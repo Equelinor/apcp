@@ -403,11 +403,17 @@ export const buildIF08 = (f) => {
           // on this approach).
           const paras = (f.description || '').split(/\n\n+/).filter(Boolean)
           const rows = paras.length ? paras : ['']
+          // Single-paragraph (the common case) gets a taller minimum so the box
+          // uses the space freed up by shrinking Consultant/Client Comments,
+          // instead of looking cramped around one short line of text. A longer,
+          // multi-paragraph query still just grows/flows across pages normally —
+          // this only pads the common short-query case.
+          const minH = rows.length === 1 ? 'min-height:90pt;' : ''
           return `
             <tr><td style="border:none;padding:8pt 7pt 4pt;font-weight:700">Description:</td></tr>
             ${rows.map((p, i) => `
             <tr>
-              <td style="border-left:1pt solid #000;border-right:1pt solid #000;${i === 0 ? 'border-top:1pt solid #000;' : ''}${i === rows.length - 1 ? 'border-bottom:1pt solid #000;' : ''}padding:${i === 0 ? '8pt' : '2pt'} 7pt ${i === rows.length - 1 ? '8pt' : '2pt'};vertical-align:top;white-space:pre-wrap;line-height:1.6">
+              <td style="border-left:1pt solid #000;border-right:1pt solid #000;${i === 0 ? 'border-top:1pt solid #000;' : ''}${i === rows.length - 1 ? 'border-bottom:1pt solid #000;' : ''}${i === 0 ? minH : ''}padding:${i === 0 ? '8pt' : '2pt'} 7pt ${i === rows.length - 1 ? '8pt' : '2pt'};vertical-align:top;white-space:pre-wrap;line-height:1.6">
                 ${p}
               </td>
             </tr>`).join('')}`
@@ -429,24 +435,24 @@ export const buildIF08 = (f) => {
               </tr>
               <tr>
                 <td style="${td}vertical-align:top"><b>Consultant<br>Comments</b></td>
-                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap;height:34pt;max-height:34pt;overflow:hidden">
-                  <table style="width:100%;height:100%;border-collapse:collapse"><tr>
-                    <td style="border:none;padding:0;vertical-align:top;width:65%">${f.response || ''}</td>
-                    <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">
+                <td colspan="2" style="${td}vertical-align:top;padding:0">
+                  <div style="height:102pt;overflow:hidden;padding:5pt 7pt;display:flex">
+                    <div style="width:65%;white-space:pre-wrap">${f.response || ''}</div>
+                    <div style="width:35%;padding-left:10pt;border-left:0.5pt solid #999">
                       <div style="margin-bottom:8pt">Name:</div><div style="margin-bottom:8pt">Signature:</div><div>Date:</div>
-                    </td>
-                  </tr></table>
+                    </div>
+                  </div>
                 </td>
               </tr>
               <tr>
                 <td style="${td}vertical-align:top"><b>Client<br>Comments</b></td>
-                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap;height:34pt;max-height:34pt;overflow:hidden">
-                  <table style="width:100%;height:100%;border-collapse:collapse"><tr>
-                    <td style="border:none;padding:0;vertical-align:top;width:65%">&nbsp;</td>
-                    <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">
+                <td colspan="2" style="${td}vertical-align:top;padding:0">
+                  <div style="height:102pt;overflow:hidden;padding:5pt 7pt;display:flex">
+                    <div style="width:65%">&nbsp;</div>
+                    <div style="width:35%;padding-left:10pt;border-left:0.5pt solid #999">
                       <div style="margin-bottom:8pt">Name:</div><div style="margin-bottom:8pt">Signature:</div><div>Date:</div>
-                    </td>
-                  </tr></table>
+                    </div>
+                  </div>
                 </td>
               </tr>
             </table>

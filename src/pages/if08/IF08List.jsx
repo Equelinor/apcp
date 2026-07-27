@@ -626,10 +626,6 @@ export default function IF08List() {
                 </select>
               </div>
             </div>
-            <div className="form-group" style={{ marginBottom: 14 }}>
-              <label className="form-label">Response</label>
-              <textarea className="form-textarea" value={form.response} onChange={e => set('response', e.target.value)} rows={3} placeholder="Consultant / Engineer response…" />
-            </div>
             <div className="form-grid form-grid-3" style={{ gap: 14, marginBottom: 14 }}>
               <div className="form-group">
                 <label className="form-label">Additional Cost Involved</label>
@@ -651,6 +647,10 @@ export default function IF08List() {
                 <label className="form-label">Google Drive Link</label>
                 <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
               </div>
+            </div>
+            <div className="form-group" style={{ marginBottom: 14 }}>
+              <label className="form-label">Response</label>
+              <textarea className="form-textarea" value={form.response} onChange={e => set('response', e.target.value)} rows={3} placeholder="Consultant / Engineer response…" />
             </div>
           </div>
         </div>

@@ -635,9 +635,9 @@ ${p}`}class Ne extends Error{constructor({message:t,code:r,cause:s,name:i}){var 
                 </td>
                 <td style="${s}width:34%;vertical-align:top;padding:0">
                   <div style="height:68pt;overflow:hidden;padding:4pt 7pt;line-height:1.15">
-                    <div style="margin-bottom:8pt"><b>Prime Contractor</b> — ${e.requested_by||""}</div>
-                    <div style="margin-bottom:8pt"><b>Signature:</b> &nbsp; ${e.signatureImg?Ko(e,90):'<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
-                    <div><b>Sub-con</b> — ${e.contractor_sub||""} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
+                    <div><b>Prime Contractor</b> — ${e.requested_by||""}</div>
+                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt"><b>Signature:</b> &nbsp; ${e.signatureImg?Ko(e,90):'<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
+                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt"><b>Sub-con</b> — ${e.contractor_sub||""} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
                   </div>
                 </td>
                 <td style="${s}width:50%;vertical-align:top;padding:0">

@@ -285,6 +285,7 @@ const BLANK = {
   required_response_date: '', response_date: '', response: '',
   impact: 'TBD', impact_description: '',
   cost_impact_yn: '', time_impact_yn: '',
+  cost_impact_yn_sub: '', time_impact_yn_sub: '',
   status: 'Draft', drive_link: '', remarks: '',
   discipline: '', contractor_sub: '', reason_for_overdue: '',
   submission_history: [],
@@ -574,8 +575,11 @@ export default function IF08List() {
               <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010 — auto-fills below" />
             </div>
             <div className="form-group">
-              <label className="form-label">Contractor / Sub-Contractor</label>
-              <input className="form-input" value={form.contractor_sub} onChange={e => set('contractor_sub', e.target.value)} placeholder="e.g. Axion, or the sub-contractor raising this" />
+              <label className="form-label">Sub-Contractor</label>
+              <select className="form-select" value={form.contractor_sub} onChange={e => set('contractor_sub', e.target.value)}>
+                <option value="">— Select —</option>
+                {(activeProject.subcontractors || []).map((sc, i) => <option key={i} value={sc.name}>{sc.name}</option>)}
+              </select>
             </div>
             <div className="form-group">
               <label className="form-label">Requested By</label>
@@ -610,9 +614,9 @@ export default function IF08List() {
             </div>
           </div>
 
-          <div className="form-grid form-grid-2" style={{ gap: 14, marginBottom: 14 }}>
+          <div className="form-grid form-grid-2" style={{ gap: 14, marginBottom: 6 }}>
             <div className="form-group">
-              <label className="form-label">Additional Cost Involved</label>
+              <label className="form-label">Additional Cost Involved (Prime Contractor)</label>
               <select className="form-select" value={form.cost_impact_yn} onChange={e => set('cost_impact_yn', e.target.value)}>
                 <option value="">— Pending —</option>
                 <option value="Y">Yes</option>
@@ -620,8 +624,26 @@ export default function IF08List() {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Additional Time Involved</label>
+              <label className="form-label">Additional Time Involved (Prime Contractor)</label>
               <select className="form-select" value={form.time_impact_yn} onChange={e => set('time_impact_yn', e.target.value)}>
+                <option value="">— Pending —</option>
+                <option value="Y">Yes</option>
+                <option value="N">No</option>
+              </select>
+            </div>
+          </div>
+          <div className="form-grid form-grid-2" style={{ gap: 14, marginBottom: 14 }}>
+            <div className="form-group">
+              <label className="form-label">Additional Cost Involved (Sub-con)</label>
+              <select className="form-select" value={form.cost_impact_yn_sub} onChange={e => set('cost_impact_yn_sub', e.target.value)}>
+                <option value="">— Pending —</option>
+                <option value="Y">Yes</option>
+                <option value="N">No</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Additional Time Involved (Sub-con)</label>
+              <select className="form-select" value={form.time_impact_yn_sub} onChange={e => set('time_impact_yn_sub', e.target.value)}>
                 <option value="">— Pending —</option>
                 <option value="Y">Yes</option>
                 <option value="N">No</option>

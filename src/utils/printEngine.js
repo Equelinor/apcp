@@ -446,7 +446,7 @@ export const buildIF08 = (f) => {
                 <td style="${td}vertical-align:top"><b>Client<br>Comments</b></td>
                 <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap;min-height:50pt">
                   <table style="width:100%;border-collapse:collapse"><tr>
-                    <td style="border:none;padding:0;vertical-align:top;width:65%">${f.client_comments || ''}</td>
+                    <td style="border:none;padding:0;vertical-align:top;width:65%">&nbsp;</td>
                     <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">Name:<br><br>Signature:<br><br>Date:</td>
                   </tr></table>
                 </td>

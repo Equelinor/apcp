@@ -4,6 +4,7 @@ import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genRfiNumber } from '../../config/docTypes'
 import { useActivityFill } from '../../hooks/useActivityFill'
+import { employeeService } from '../../services/employeeService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
@@ -283,7 +284,7 @@ const BLANK = {
   requested_by: '', addressed_to: '',
   required_response_date: '', response_date: '', response: '',
   impact: 'TBD', impact_description: '',
-  cost_impact_yn: '', time_impact_yn: '', client_comments: '',
+  cost_impact_yn: '', time_impact_yn: '',
   status: 'Draft', drive_link: '', remarks: '',
   discipline: '', contractor_sub: '', reason_for_overdue: '',
   submission_history: [],
@@ -308,6 +309,9 @@ export default function IF08List() {
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterPriority, setFilterPriority] = useState('')
+  const [employees, setEmployees] = useState([])
+
+  useEffect(() => { employeeService.dropdown().then(setEmployees) }, [])
 
   const { activityData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
 
@@ -566,7 +570,10 @@ export default function IF08List() {
             </div>
             <div className="form-group">
               <label className="form-label">Requested By</label>
-              <input className="form-input" value={form.requested_by} onChange={e => set('requested_by', e.target.value)} />
+              <select className="form-select" value={form.requested_by} onChange={e => set('requested_by', e.target.value)}>
+                <option value="">— Select —</option>
+                {employees.map(e => <option key={e.id} value={e.full_name}>{e.full_name} — {e.designation}</option>)}
+              </select>
             </div>
             <div className="form-group">
               <label className="form-label">Addressed To</label>
@@ -644,10 +651,6 @@ export default function IF08List() {
                 <label className="form-label">Google Drive Link</label>
                 <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
               </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Client Comments</label>
-              <textarea className="form-textarea" value={form.client_comments} onChange={e => set('client_comments', e.target.value)} rows={2} placeholder="Client's own comments, separate from the consultant's response…" />
             </div>
           </div>
         </div>

@@ -356,7 +356,7 @@ export const buildIF08 = (f) => {
         <tr><td style="padding:0;border:none">${buildHeader(f, 'AA-IF-08', 'REQUEST FOR INFORMATION')}</td></tr>
         <tr>
           <td style="padding:0">
-            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt">
+            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-top:-10pt">
               <tr>
                 <td style="border-right:1pt solid #999;padding:5pt 7pt;width:28%"><b>RFI No.</b> &nbsp; ${f.rfi_number || ''}</td>
                 <td style="border-right:1pt solid #999;padding:5pt 7pt;width:36%">Submitted date: &nbsp; <b>${fmtDate(f.date)}</b></td>
@@ -388,8 +388,8 @@ export const buildIF08 = (f) => {
             <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt"><tr><td style="padding:4pt 7pt">Sub-contractor: &nbsp; ${f.contractor_sub || '-'}</td></tr></table>
             <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-bottom:6pt">
               <tr>
-                <td style="border-right:1pt solid #999;padding:5pt 7pt;width:50%;vertical-align:top">To:<br><b>${f.consultant || ''}</b></td>
-                <td style="padding:5pt 7pt;vertical-align:top">Attn:<br><b>${f.addressed_to || ''}</b></td>
+                <td style="border-right:1pt solid #999;padding:5pt 7pt;width:50%;vertical-align:top">To: &nbsp;<b>${f.consultant || ''}</b></td>
+                <td style="padding:5pt 7pt;vertical-align:top">Attn: &nbsp;<b>${f.addressed_to || ''}</b></td>
               </tr>
             </table>
           </td>
@@ -403,12 +403,14 @@ export const buildIF08 = (f) => {
           // on this approach).
           const paras = (f.description || '').split(/\n\n+/).filter(Boolean)
           const rows = paras.length ? paras : ['']
-          return rows.map((p, i) => `
+          return `
+            <tr><td style="border:none;padding:8pt 7pt 4pt;font-weight:700">Description:</td></tr>
+            ${rows.map((p, i) => `
             <tr>
               <td style="border-left:1pt solid #000;border-right:1pt solid #000;${i === 0 ? 'border-top:1pt solid #000;' : ''}${i === rows.length - 1 ? 'border-bottom:1pt solid #000;' : ''}padding:${i === 0 ? '8pt' : '2pt'} 7pt ${i === rows.length - 1 ? '8pt' : '2pt'};vertical-align:top;white-space:pre-wrap;line-height:1.6">
-                ${i === 0 ? '<div style="font-weight:700;margin-bottom:6pt">Request:</div>' : ''}${p}
+                ${p}
               </td>
-            </tr>`).join('')
+            </tr>`).join('')}`
         })()}
         <tr>
           <td style="padding:0">
@@ -435,7 +437,7 @@ export const buildIF08 = (f) => {
               </tr>
               <tr>
                 <td style="${td}vertical-align:top"><b>Consultant<br>Comments</b></td>
-                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap;min-height:50pt">
+                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap">
                   <table style="width:100%;border-collapse:collapse"><tr>
                     <td style="border:none;padding:0;vertical-align:top;width:65%">${f.response || ''}</td>
                     <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">Name:<br><br>Signature:<br><br>Date:</td>
@@ -444,7 +446,7 @@ export const buildIF08 = (f) => {
               </tr>
               <tr>
                 <td style="${td}vertical-align:top"><b>Client<br>Comments</b></td>
-                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap;min-height:50pt">
+                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap">
                   <table style="width:100%;border-collapse:collapse"><tr>
                     <td style="border:none;padding:0;vertical-align:top;width:65%">&nbsp;</td>
                     <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">Name:<br><br>Signature:<br><br>Date:</td>

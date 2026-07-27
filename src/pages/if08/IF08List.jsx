@@ -369,16 +369,25 @@ export default function IF08List() {
     return (nums.length ? Math.max(...nums) : 0) + 1
   }
 
+  // Empty string isn't valid for a date column — Postgres rejects it outright
+  const DATE_FIELDS = ['date', 'required_response_date', 'response_date']
+  function nullifyEmptyDates(data) {
+    const out = { ...data }
+    for (const f of DATE_FIELDS) if (out[f] === '') out[f] = null
+    return out
+  }
+
   async function save() {
     if (!form.subject) { toast('Subject required', 'err'); return }
+    const payload = nullifyEmptyDates(form)
     if (editItem) {
-      const { error } = await supabase.from('if08').update(form).eq('id', editItem.id)
+      const { error } = await supabase.from('if08').update(payload).eq('id', editItem.id)
       if (error) { toast('Save failed — ' + error.message, 'err'); return }
-      setItems(prev => prev.map(d => d.id === editItem.id ? { ...d, ...form } : d))
+      setItems(prev => prev.map(d => d.id === editItem.id ? { ...d, ...payload } : d))
       toast('RFI updated ✓', 'ok')
     } else {
       const rfi_number = genRfiNumber(activeProject.project_number, nextRfiSeq())
-      const item = { ...form, rfi_number, project_code: activeProject.project_code }
+      const item = { ...payload, rfi_number, project_code: activeProject.project_code }
       const { data, error } = await supabase.from('if08').insert(item).select().single()
       if (error) { toast('Save failed — ' + error.message, 'err'); return }
       setItems(prev => [data, ...prev])
@@ -601,6 +610,25 @@ export default function IF08List() {
             </div>
           </div>
 
+          <div className="form-grid form-grid-2" style={{ gap: 14, marginBottom: 14 }}>
+            <div className="form-group">
+              <label className="form-label">Additional Cost Involved</label>
+              <select className="form-select" value={form.cost_impact_yn} onChange={e => set('cost_impact_yn', e.target.value)}>
+                <option value="">— Pending —</option>
+                <option value="Y">Yes</option>
+                <option value="N">No</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Additional Time Involved</label>
+              <select className="form-select" value={form.time_impact_yn} onChange={e => set('time_impact_yn', e.target.value)}>
+                <option value="">— Pending —</option>
+                <option value="Y">Yes</option>
+                <option value="N">No</option>
+              </select>
+            </div>
+          </div>
+
           <div className="form-group" style={{ marginBottom: 14 }}>
             <label className="form-label">Description / Query</label>
             <textarea className="form-textarea" value={form.description} onChange={e => set('description', e.target.value)} rows={3} placeholder="Detailed description of the query…" />
@@ -626,27 +654,9 @@ export default function IF08List() {
                 </select>
               </div>
             </div>
-            <div className="form-grid form-grid-3" style={{ gap: 14, marginBottom: 14 }}>
-              <div className="form-group">
-                <label className="form-label">Additional Cost Involved</label>
-                <select className="form-select" value={form.cost_impact_yn} onChange={e => set('cost_impact_yn', e.target.value)}>
-                  <option value="">— Pending —</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Additional Time Involved</label>
-                <select className="form-select" value={form.time_impact_yn} onChange={e => set('time_impact_yn', e.target.value)}>
-                  <option value="">— Pending —</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Google Drive Link</label>
-                <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
-              </div>
+            <div className="form-group" style={{ marginBottom: 14 }}>
+              <label className="form-label">Google Drive Link</label>
+              <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
             </div>
             <div className="form-group" style={{ marginBottom: 14 }}>
               <label className="form-label">Response</label>

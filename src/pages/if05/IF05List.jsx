@@ -391,6 +391,18 @@ export default function IF05List() {
   // approval workflow can still progress without Admin involvement.
   const isLocked = !!(editItem && editItem.status !== 'Draft' && profile?.role !== 'Admin')
 
+  // ── KPI summary — same categories as the Export Register PDF's own summary ──
+  const withMacStatus = items.map(d => computeMacApprovalStatus(d))
+  const kpi = {
+    total: withMacStatus.length,
+    ur:    withMacStatus.filter(s => s === 'Under Review').length,
+    a:     withMacStatus.filter(s => s === 'Approved').length,
+    b:     withMacStatus.filter(s => s === 'Approved with Comments').length,
+    c:     withMacStatus.filter(s => s === 'Revised and Resubmit').length,
+    d:     withMacStatus.filter(s => s === 'Rejected').length,
+    draft: withMacStatus.filter(s => s === 'Draft').length,
+  }
+
   const handlePrint = async (d) => {
     const signatureImg = await getSignatureForName(d.prepared_by)
     printForm(buildIF05({ ...mergeProjectLogos(d, activeProject), signatureImg }), `Export for Transmittal — ${d.if05_number}`)
@@ -409,6 +421,24 @@ export default function IF05List() {
           </button>
           <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New MAC</button>
         </div>
+      </div>
+
+      {/* KPI strip — same categories as the Export Register PDF's own summary */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, marginBottom: 20 }}>
+        {[
+          { label: 'Total',                       value: kpi.total, bg: 'var(--bg-surface)', color: 'var(--text-primary)' },
+          { label: 'Under Review',                value: kpi.ur,    bg: '#DBEAFE', color: '#1E40AF' },
+          { label: 'Approved (A)',                value: kpi.a,     bg: '#D1FAE5', color: '#065F46' },
+          { label: 'Approved w/ Comments (B)',    value: kpi.b,     bg: '#FEF3C7', color: '#92400E' },
+          { label: 'Revised & Resubmit (C)',      value: kpi.c,     bg: '#FFEDD5', color: '#9A3412' },
+          { label: 'Rejected (D)',                value: kpi.d,     bg: '#FEE2E2', color: '#991B1B' },
+          { label: 'Draft',                       value: kpi.draft, bg: '#F1F5F9', color: '#64748B' },
+        ].map(k => (
+          <div key={k.label} style={{ background: k.bg, border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: k.color, opacity: .75, marginBottom: 4 }}>{k.label}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: k.color }}>{k.value}</div>
+          </div>
+        ))}
       </div>
 
       <div className="filter-bar" style={{ marginBottom: 12 }}>

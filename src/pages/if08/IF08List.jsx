@@ -408,6 +408,16 @@ export default function IF08List() {
 
   const openRFIs = items.filter(d => ['Submitted', 'Under Review'].includes(d.status)).length
 
+  // ── KPI summary — same coarser buckets as the register (Overdue folds into
+  // Under Review here; it's still its own status/badge in the table itself) ──
+  const withStatus = items.map(d => ({ ...d, _status: computeRfiStatus(d) }))
+  const kpi = {
+    submitted: withStatus.filter(i => i.date).length,
+    replied:   withStatus.filter(i => i._status === 'Replied On-Time' || i._status === 'Replied Late').length,
+    ur:        withStatus.filter(i => i._status === 'Under Review' || i._status === 'Overdue').length,
+    x:         withStatus.filter(i => i._status === 'Cancelled').length,
+  }
+
   const handlePrint = (d) => {
     printForm(buildIF08(mergeProjectLogos(d, activeProject)), 'IF08 — Request For Information')
   }
@@ -425,6 +435,21 @@ export default function IF08List() {
           </button>
           <button className="btn btn-primary" onClick={openNew}><Plus size={14} /> New RFI</button>
         </div>
+      </div>
+
+      {/* KPI strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
+        {[
+          { label: 'Submitted',    value: kpi.submitted, bg: 'var(--bg-surface)', color: 'var(--text-primary)' },
+          { label: 'Replied',      value: kpi.replied,   bg: '#D1FAE5', color: '#065F46' },
+          { label: 'Under Review', value: kpi.ur,        bg: '#DBEAFE', color: '#1E40AF' },
+          { label: 'Cancelled',    value: kpi.x,          bg: '#F1F5F9', color: '#64748B' },
+        ].map(k => (
+          <div key={k.label} style={{ background: k.bg, border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: k.color, opacity: .75, marginBottom: 4 }}>{k.label}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: k.color }}>{k.value}</div>
+          </div>
+        ))}
       </div>
 
       {openRFIs > 0 && (

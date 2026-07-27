@@ -618,7 +618,7 @@ ${p}`}class Ne extends Error{constructor({message:t,code:r,cause:s,name:i}){var 
             </table>
           </td>
         </tr>
-        ${(()=>{const i=(e.description||"").split(/\n\n+/).filter(Boolean),a=i.length?i:[""],o=a.length===1?"height:170pt;":"";return`
+        ${(()=>{const i=(e.description||"").split(/\n\n+/).filter(Boolean),a=i.length?i:[""],o=a.length===1?"height:123pt;":"";return`
             <tr><td style="border:none;padding:3pt 7pt 4pt;font-weight:700">Description:</td></tr>
             ${a.map((l,c)=>`
             <tr>
@@ -630,35 +630,30 @@ ${p}`}class Ne extends Error{constructor({message:t,code:r,cause:s,name:i}){var 
           <td style="padding:0">
             <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-top:6pt">
               <tr>
-                <td colspan="3" style="${s}vertical-align:top;padding:5pt 7pt">Reply required by: &nbsp; <b>${gt(e.required_response_date)}</b></td>
+                <td colspan="2" style="${s}width:50%;vertical-align:top;padding:0">
+                  <div style="height:56pt;overflow:hidden;padding:5pt 7pt">Reply required by: &nbsp; <b>${gt(e.required_response_date)}</b></div>
+                </td>
+                <td style="${s}width:50%;vertical-align:top;padding:0">
+                  <div style="height:56pt;overflow:hidden;padding:5pt 7pt">
+                    <b>Cost and time involvement</b>
+                    <div style="border-top:0.5pt solid #999;margin-top:3pt;padding-top:3pt">Prime Contractor — Cost <b>${e.cost_impact_yn==="Y"?"Y":e.cost_impact_yn==="N"?"N":"Y/N"}</b> &nbsp; Time <b>${e.time_impact_yn==="Y"?"Y":e.time_impact_yn==="N"?"N":"Y/N"}</b></div>
+                    <div style="border-top:0.5pt solid #999;margin-top:3pt;padding-top:3pt">Sub-con — Cost <b>${e.cost_impact_yn_sub==="Y"?"Y":e.cost_impact_yn_sub==="N"?"N":"Y/N"}</b> &nbsp; Time <b>${e.time_impact_yn_sub==="Y"?"Y":e.time_impact_yn_sub==="N"?"N":"Y/N"}</b></div>
+                  </div>
+                </td>
               </tr>
               <tr>
-                <td colspan="2" style="${s}vertical-align:top;padding:0">
-                  <div style="height:56pt;overflow:hidden;padding:5pt 7pt">
+                <td colspan="3" style="${s}vertical-align:top;padding:0">
+                  <div style="height:65pt;overflow:hidden;padding:5pt 7pt">
                     <div><b>Prime Contractor:</b> &nbsp; AICC</div>
                     <div style="margin-top:4pt;padding-top:4pt"><b>Signature:</b> &nbsp; ${e.signatureImg?Ko(e,90):'<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
                   </div>
                 </td>
-                <td style="${s}width:50%;vertical-align:top;padding:0">
-                  <div style="height:56pt;overflow:hidden;padding:5pt 7pt">
-                    <b>Cost and time involvement</b>
-                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt">Additional cost involved &nbsp; <b>${e.cost_impact_yn==="Y"?"Y":e.cost_impact_yn==="N"?"N":"Y / N"}</b></div>
-                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt">Additional time involved &nbsp; <b>${e.time_impact_yn==="Y"?"Y":e.time_impact_yn==="N"?"N":"Y / N"}</b></div>
-                  </div>
-                </td>
               </tr>
               <tr>
-                <td colspan="2" style="${s}vertical-align:top;padding:0">
-                  <div style="height:56pt;overflow:hidden;padding:5pt 7pt">
+                <td colspan="3" style="${s}vertical-align:top;padding:0">
+                  <div style="height:65pt;overflow:hidden;padding:5pt 7pt">
                     <div><b>Sub-con:</b> &nbsp; ${e.contractor_sub||""}</div>
                     <div style="margin-top:4pt;padding-top:4pt"><b>Signature:</b> &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
-                  </div>
-                </td>
-                <td style="${s}width:50%;vertical-align:top;padding:0">
-                  <div style="height:56pt;overflow:hidden;padding:5pt 7pt">
-                    <b>Cost and time involvement</b>
-                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt">Additional cost involved &nbsp; <b>${e.cost_impact_yn_sub==="Y"?"Y":e.cost_impact_yn_sub==="N"?"N":"Y / N"}</b></div>
-                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt">Additional time involved &nbsp; <b>${e.time_impact_yn_sub==="Y"?"Y":e.time_impact_yn_sub==="N"?"N":"Y / N"}</b></div>
                   </div>
                 </td>
               </tr>

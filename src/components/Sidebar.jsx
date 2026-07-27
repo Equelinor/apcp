@@ -107,7 +107,6 @@ const NAV = [
       { to: '/ir',           label: 'Inspection Requests',   icon: ClipboardCheck },
       { to: '/ir-register',  label: 'IR Register',           icon: FileSearch     },
       { to: '/rfi',          label: 'RFIs',                  icon: MessageSquare  },
-      { to: '/rfi-register', label: 'RFI Register',          icon: FileSearch     },
       { to: '/mir',          label: 'Material Inspection',   icon: Package,        soon: true },
       { to: '/alt-material', label: 'Alt. Material Request', icon: Layers,         soon: true },
       { to: '/ncr',          label: 'NCR',                   icon: Shield,         soon: true },

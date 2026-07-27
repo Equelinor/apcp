@@ -21,7 +21,6 @@ import SupplierRegister from './pages/suppliers/SupplierRegister'
 import ProjectRegister from './pages/projects/ProjectRegister'
 import DARList from './pages/dar/DARList'
 import BOQRegister from './pages/boq/BOQRegister'
-import RFIRegister from './pages/rfi/RFIRegister'
 import SDRegister from './pages/sd/SDRegister'
 import IRRegister from './pages/ir/IRRegister'
 import RolesPermissions from './pages/admin/RolesPermissions'
@@ -52,7 +51,6 @@ export default function App() {
         <Route path="mockup" element={<IF06List />} />
         <Route path="submittals" element={<IF07List />} />
         <Route path="rfi" element={<IF08List />} />
-        <Route path="rfi-register" element={<RFIRegister />} />
         <Route path="ir" element={<IF09List />} />
         <Route path="ir-register" element={<IRRegister />} />
         <Route path="subcontractor" element={<IF12List />} />

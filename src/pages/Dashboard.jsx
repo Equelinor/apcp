@@ -9,7 +9,7 @@ import {
   CheckCircle, XCircle, Zap, ClipboardCheck, MessageSquare, FolderOpen, HardHat
 } from 'lucide-react'
 import { computeMacApprovalStatus, MAC_APPROVAL_STATUS } from './if05/IF05List'
-import { computeRfiStatus, RFI_STATUS } from './rfi/RFIRegister'
+import { computeRfiStatus, RFI_STATUS } from './if08/IF08List'
 import { computeSdStatus, SD_STATUS, isSdOverdue } from './sd/SDRegister'
 import { computeIrStatus, IR_STATUS, isIrOverdue } from './ir/IRRegister'
 
@@ -135,7 +135,7 @@ export default function Dashboard() {
       flaggedLabel: 'Rejected / Resubmit',
     },
     {
-      label: 'RFI', route: '/rfi-register', icon: MessageSquare,
+      label: 'RFI', route: '/rfi', icon: MessageSquare,
       total: rfiWithStatus.length,
       pending: rfiWithStatus.filter(s => s === 'Under Review').length,
       flagged: rfiWithStatus.filter(s => s === 'Overdue').length,

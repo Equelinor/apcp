@@ -408,7 +408,7 @@ export const buildIF08 = (f) => {
           // instead of looking cramped around one short line of text. A longer,
           // multi-paragraph query still just grows/flows across pages normally —
           // this only pads the common short-query case.
-          const minH = rows.length === 1 ? 'min-height:90pt;' : ''
+          const minH = rows.length === 1 ? 'height:240pt;' : ''
           return `
             <tr><td style="border:none;padding:3pt 7pt 4pt;font-weight:700">Description:</td></tr>
             ${rows.map((p, i) => `

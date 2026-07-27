@@ -426,10 +426,10 @@ export const buildIF08 = (f) => {
                   <div style="height:68pt;overflow:hidden;padding:5pt 7pt">Reply required by<br><b>${fmtDate(f.required_response_date)}</b></div>
                 </td>
                 <td style="${td}width:34%;vertical-align:top;padding:0">
-                  <div style="height:68pt;overflow:hidden;padding:4pt 7pt;line-height:1.15">
+                  <div style="height:68pt;overflow:hidden;padding:5pt 7pt">
                     <div><b>Prime Contractor</b> — ${f.requested_by || ''}</div>
-                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt"><b>Signature:</b> &nbsp; ${f.signatureImg ? signatureLine(f, 90) : '<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
-                    <div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:4pt"><b>Sub-con</b> — ${f.contractor_sub || ''} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
+                    <div style="margin-top:4pt;padding-top:4pt"><b>Signature:</b> &nbsp; ${f.signatureImg ? signatureLine(f, 90) : '<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
+                    <div style="margin-top:4pt;padding-top:4pt"><b>Sub-con</b> — ${f.contractor_sub || ''} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
                   </div>
                 </td>
                 <td style="${td}width:50%;vertical-align:top;padding:0">

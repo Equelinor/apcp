@@ -427,8 +427,8 @@ export const buildIF08 = (f) => {
                 </td>
                 <td style="${td}width:34%;vertical-align:top;padding:0">
                   <div style="height:68pt;overflow:hidden;padding:4pt 7pt;line-height:1.15">
-                    <div style="margin-bottom:1pt"><b>Prime Contractor</b> — ${f.requested_by || ''}</div>
-                    <div style="margin-bottom:1pt">Signature: &nbsp; ${f.signatureImg ? signatureLine(f, 90) : '<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
+                    <div style="margin-bottom:5pt"><b>Prime Contractor</b> — ${f.requested_by || ''}</div>
+                    <div style="margin-bottom:5pt">Signature: &nbsp; ${f.signatureImg ? signatureLine(f, 90) : '<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
                     <div><b>Sub-Contractor</b> — ${f.contractor_sub || ''} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
                   </div>
                 </td>

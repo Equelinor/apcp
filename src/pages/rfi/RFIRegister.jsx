@@ -27,6 +27,17 @@ export function computeRfiStatus(d) {
   return 'Replied On-Time'
 }
 
+// Delay in Days — days overdue only (blank/null until the required response date
+// has actually passed). For a still-open RFI this counts up from today; for one
+// replied late it's the fixed gap between the reply and the due date.
+export function computeDelayDays(d) {
+  if (d.status === 'Cancelled' || !d.required_response_date) return null
+  const dueDate = new Date(d.required_response_date)
+  const endDate = d.response_date ? new Date(d.response_date) : new Date()
+  const days = Math.floor((endDate - dueDate) / 86400000)
+  return days > 0 ? days : null
+}
+
 function StatusBadge({ status }) {
   const s = RFI_STATUS[status] || RFI_STATUS['Under Review']
   return (
@@ -51,13 +62,13 @@ function exportPDF(items, project) {
   const genDate = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
 
   const withStatus = items.map(d => ({ ...d, _status: computeRfiStatus(d) }))
+  // Summary buckets are intentionally coarser than the real per-record status:
+  // Overdue folds into Under Review here (it still shows as its own status/badge
+  // in the table's Sta. column, just not as its own summary line).
   const counts = {
-    total:     withStatus.length,
     submitted: withStatus.filter(i => i.date).length,
-    ur:        withStatus.filter(i => i._status === 'Under Review').length,
-    ot:        withStatus.filter(i => i._status === 'Replied On-Time').length,
-    l:         withStatus.filter(i => i._status === 'Replied Late').length,
-    od:        withStatus.filter(i => i._status === 'Overdue').length,
+    replied:   withStatus.filter(i => i._status === 'Replied On-Time' || i._status === 'Replied Late').length,
+    ur:        withStatus.filter(i => i._status === 'Under Review' || i._status === 'Overdue').length,
     x:         withStatus.filter(i => i._status === 'Cancelled').length,
   }
 
@@ -103,6 +114,7 @@ function exportPDF(items, project) {
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.date ? fmtDate(d.date) : ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.response_date ? fmtDate(d.response_date) : ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:8pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center;${computeDelayDays(d) ? 'color:#991B1B;font-weight:700' : 'color:#bbb'}">${computeDelayDays(d) ?? '—'}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;font-family:monospace;font-weight:700;color:#1E40AF">${d.mrf_number || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${d.reason_for_overdue || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${d.remarks || ''}</td>
@@ -134,12 +146,9 @@ function exportPDF(items, project) {
   ).join('')
 
   const summaryRows = [
-    ['Total RFIs', counts.total, ''],
     ['Submitted', counts.submitted, ''],
+    ['Replied', counts.replied, '#065F46'],
     ['Under Review', counts.ur, '#1E40AF'],
-    ['Replied On-Time', counts.ot, '#065F46'],
-    ['Replied Late', counts.l, '#9A3412'],
-    ['Overdue', counts.od, '#991B1B'],
     ['Cancelled', counts.x, '#64748B'],
   ].map(([l,v,c]) =>
     `<tr>
@@ -226,6 +235,7 @@ function exportPDF(items, project) {
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Sub.</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Ret.</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:2.5%">Sta.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:4%">Delay in Days</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:5.5%">MRF Ref.</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:8%">Reason for Overdue</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Remarks</th>
@@ -234,7 +244,7 @@ function exportPDF(items, project) {
     <tr>${revSubCols}</tr>
   </thead>
   <tbody>
-    ${tableRows || '<tr><td colspan="26" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No RFI records for this project</td></tr>'}
+    ${tableRows || '<tr><td colspan="27" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No RFI records for this project</td></tr>'}
   </tbody>
 </table>
 
@@ -297,13 +307,14 @@ export default function RFIRegister() {
   const disciplines = [...new Set(items.map(d => d.discipline).filter(Boolean))]
 
   // ── KPI counts ─────────────────────────────────────────
+  // Summary is intentionally coarser than the real per-record status: Overdue
+  // folds into Under Review here (it still shows as its own status/badge in the
+  // table's Status column, just not as its own summary tile).
   const kpi = {
-    total: withStatus.length,
-    ur:    withStatus.filter(i => i._status === 'Under Review').length,
-    ot:    withStatus.filter(i => i._status === 'Replied On-Time').length,
-    l:     withStatus.filter(i => i._status === 'Replied Late').length,
-    od:    withStatus.filter(i => i._status === 'Overdue').length,
-    x:     withStatus.filter(i => i._status === 'Cancelled').length,
+    submitted: withStatus.filter(i => i.date).length,
+    replied:   withStatus.filter(i => i._status === 'Replied On-Time' || i._status === 'Replied Late').length,
+    ur:        withStatus.filter(i => i._status === 'Under Review' || i._status === 'Overdue').length,
+    x:         withStatus.filter(i => i._status === 'Cancelled').length,
   }
 
   if (!activeProject) return (
@@ -328,14 +339,12 @@ export default function RFIRegister() {
       </div>
 
       {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
         {[
-          { label: 'Total',            value: kpi.total, bg: 'var(--bg-surface)', color: 'var(--text-primary)' },
-          { label: 'Under Review',     value: kpi.ur,    bg: '#DBEAFE', color: '#1E40AF' },
-          { label: 'Replied On-Time',  value: kpi.ot,    bg: '#D1FAE5', color: '#065F46' },
-          { label: 'Replied Late',     value: kpi.l,     bg: '#FFEDD5', color: '#9A3412' },
-          { label: 'Overdue',          value: kpi.od,    bg: '#FEE2E2', color: '#991B1B' },
-          { label: 'Cancelled',        value: kpi.x,     bg: '#F1F5F9', color: '#64748B' },
+          { label: 'Submitted',    value: kpi.submitted, bg: 'var(--bg-surface)', color: 'var(--text-primary)' },
+          { label: 'Replied',      value: kpi.replied,   bg: '#D1FAE5', color: '#065F46' },
+          { label: 'Under Review', value: kpi.ur,        bg: '#DBEAFE', color: '#1E40AF' },
+          { label: 'Cancelled',    value: kpi.x,          bg: '#F1F5F9', color: '#64748B' },
         ].map(k => (
           <div key={k.label} style={{ background: k.bg, border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
             <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: k.color, opacity: .75, marginBottom: 4 }}>{k.label}</div>
@@ -379,7 +388,7 @@ export default function RFIRegister() {
             <thead>
               {/* Revision group header */}
               <tr>
-                <th colSpan={11} style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--border)' }}></th>
+                <th colSpan={12} style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--border)' }}></th>
                 {[1,2,3,4,5].map(n => (
                   <th key={n} colSpan={3} style={{ background: '#1e293b', color: '#fff', fontSize: 10, fontWeight: 700, textAlign: 'center', padding: '4px 0', borderLeft: '2px solid var(--border)' }}>
                     CRFI REV. {n}
@@ -396,6 +405,7 @@ export default function RFIRegister() {
                 <th style={{ minWidth: 90 }}>Submitted</th>
                 <th style={{ minWidth: 90 }}>Responded</th>
                 <th style={{ minWidth: 72 }}>Status</th>
+                <th style={{ minWidth: 90 }}>Delay in Days</th>
                 <th style={{ minWidth: 100 }}>MRF Ref.</th>
                 <th style={{ minWidth: 140 }}>Reason for Overdue</th>
                 <th style={{ minWidth: 120 }}>Remarks</th>
@@ -421,6 +431,7 @@ export default function RFIRegister() {
                     <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.date || '—'}</td>
                     <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
                     <td><StatusBadge status={d._status} /></td>
+                    <td style={{ fontSize: 12, fontWeight: computeDelayDays(d) ? 700 : 400, color: computeDelayDays(d) ? 'var(--status-rejected-text)' : 'var(--text-muted)', textAlign: 'center' }}>{computeDelayDays(d) ?? '—'}</td>
                     <td style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: d.mrf_number ? 700 : 400, color: d.mrf_number ? '#1E40AF' : 'var(--text-muted)' }}>{d.mrf_number || '—'}</td>
                     <td style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.reason_for_overdue || '—'}</td>
                     <td style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.remarks || '—'}</td>

@@ -107,3 +107,12 @@ export function genRfiNumber(projectNumber, sequence) {
   const projNum = parts[parts.length - 1] || ''
   return `AI-${projNum}-RFI-${String(sequence).padStart(3, '0')}`
 }
+
+// ─── REVISED RFI NUMBER — not a new sequence, just a display suffix.
+// A revision round's own rev_no (e.g. "R1", already stored per-round in
+// if08.submission_history) is appended straight onto the RFI's existing
+// genRfiNumber() output: AI-0632-RFI-001 + R1 -> AI-0632-RFI-001R1.
+export function formatRevisedRfiNumber(rfiNumber, revNo) {
+  if (!rfiNumber || !revNo) return rfiNumber || ''
+  return `${rfiNumber}${revNo}`
+}

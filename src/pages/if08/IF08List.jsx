@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
-import { genRfiNumber } from '../../config/docTypes'
+import { genRfiNumber, formatRevisedRfiNumber } from '../../config/docTypes'
 import { useActivityFill } from '../../hooks/useActivityFill'
 import { employeeService } from '../../services/employeeService'
 import Badge from '../../components/Badge'
@@ -678,7 +678,7 @@ export default function IF08List() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                   <thead>
                     <tr>
-                      {['Rev.', 'Submitted Date', 'Return Date', 'Status', ''].map(h => (
+                      {['Rev.', 'Revised RFI No.', 'Submitted Date', 'Return Date', 'Status', ''].map(h => (
                         <th key={h} style={{ textAlign: 'left', padding: '6px 10px', background: 'var(--bg-base)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>{h}</th>
                       ))}
                     </tr>
@@ -689,6 +689,9 @@ export default function IF08List() {
                         <td style={{ padding: '6px 10px' }}>
                           <input className="form-input" value={r.rev_no} onChange={e => setRev(i, 'rev_no', e.target.value)}
                             style={{ width: 64, fontFamily: 'var(--font-mono)', fontWeight: 700 }} placeholder="R1" />
+                        </td>
+                        <td style={{ padding: '6px 10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                          {formatRevisedRfiNumber(form.rfi_number, r.rev_no)}
                         </td>
                         <td style={{ padding: '6px 10px' }}>
                           <input className="form-input" type="date" value={r.submitted_date}

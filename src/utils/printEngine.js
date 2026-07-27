@@ -326,57 +326,137 @@ export const buildIF07 = (f) => {
 
 // ─────────────────────────────────────────────────────────
 // IF08 — Request For Information
+// Structured as ONE table (thead = header/logo + RFI info rows, tbody = the
+// query text + reply/signature section) so that on a long query spanning
+// multiple pages, Chrome's print engine repeats the thead on every page
+// (display:table-header-group) while the reply/signature block — being
+// ordinary tbody content placed right after the query — naturally renders
+// only once, wherever the query text actually ends. No CSS can make an
+// arbitrary block "repeat per page" other than this table thead/tbody trick,
+// which is the same mechanism the Register PDF exports already rely on.
 // ─────────────────────────────────────────────────────────
+const IF08_DISC_MAP = {
+  'Architectural': 'arch', 'Structural': 'str', 'Civil': 'civil',
+  'Mechanical': 'mech', 'Electrical': 'elect', 'Plumbing': 'plumb',
+}
 export const buildIF08 = (f) => {
-  const disc = f.disciplines || {}
+  const discKey = IF08_DISC_MAP[f.discipline] || (f.discipline ? 'other' : '')
   const discRow = [
-    `${chk(disc['d-arch'])} ARCH.`, `${chk(disc['d-str'])} STR`, `${chk(disc['d-civil'])} CIVIL`,
-    `${chk(disc['d-mech'])} MECH`, `${chk(disc['d-elect'])} ELECT.`, `${chk(disc['d-plumb'])} PLUMBING`, `${chk(disc['d-other'])} OTHERS`
-  ].join('&nbsp;&nbsp;&nbsp;')
+    [chk(discKey === 'arch'), 'ARCH.'], [chk(discKey === 'str'), 'STR'], [chk(discKey === 'civil'), 'CIVIL'],
+    [chk(discKey === 'mech'), 'MECH'], [chk(discKey === 'elect'), 'ELECT.'], [chk(discKey === 'plumb'), 'PLUMBING'],
+    [chk(discKey === 'other'), 'OTHERS' + (discKey === 'other' ? ` (${f.discipline})` : '')],
+  ].map(([box, label]) => `${box} ${label}`).join('&nbsp;&nbsp;&nbsp;')
+
+  const td = 'border:1pt solid #999;padding:5pt 7pt;font-size:8pt;'
+
   return wrapper(`
-    ${buildHeader(f, 'AA-IF-08', 'REQUEST FOR INFORMATION')}
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt">
-      <tr>
-        <td style="border-right:1pt solid #999;padding:5pt 7pt;width:28%"><b>RFI No.</b> &nbsp; ${f.rfiNo || ''}</td>
-        <td style="border-right:1pt solid #999;padding:5pt 7pt;width:36%">Submitted date: &nbsp; <b>${fmtDate(f.subDate)}</b></td>
-        <td style="padding:5pt 7pt">Returned date: &nbsp; <b>${fmtDate(f.retDate)}</b></td>
-      </tr>
+    <style>@media print { thead { display: table-header-group !important } }</style>
+    <table style="width:100%;border-collapse:collapse;font-size:8pt">
+      <thead>
+        <tr><td style="padding:0;border:none">${buildHeader(f, 'AA-IF-08', 'REQUEST FOR INFORMATION')}</td></tr>
+        <tr>
+          <td style="padding:0">
+            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt">
+              <tr>
+                <td style="border-right:1pt solid #999;padding:5pt 7pt;width:28%"><b>RFI No.</b> &nbsp; ${f.rfi_number || ''}</td>
+                <td style="border-right:1pt solid #999;padding:5pt 7pt;width:36%">Submitted date: &nbsp; <b>${fmtDate(f.date)}</b></td>
+                <td style="padding:5pt 7pt">Reply required by: &nbsp; <b>${fmtDate(f.required_response_date)}</b></td>
+              </tr>
+            </table>
+            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt"><tr><td style="padding:5pt 7pt">Project Name: &nbsp; <b>${f.projName || ''}</b></td></tr></table>
+            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-bottom:6pt">
+              <tr>
+                <td style="border-right:1pt solid #999;padding:5pt 7pt;width:22%;vertical-align:top">Related drawings / specification</td>
+                <td style="border-right:1pt solid #999;padding:5pt 7pt;width:38%;vertical-align:top">Drawings<br><b>${f.drawing_ref || ''}</b></td>
+                <td style="padding:5pt 7pt;vertical-align:top">Specification Ref.<br><b>${f.spec_ref || ''}</b></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Prime Contractor/Discipline/Sub-contractor/To-Attn deliberately live
+             in tbody, not thead — a thead this much taller (7+ stacked rows)
+             stops Chrome's print engine from repeating it on subsequent pages
+             at all (empirically verified); keeping thead to just the essential
+             per-page identifying info (RFI No/Project/Drawings) is what
+             actually gets it to repeat, and these still render once, up top. -->
+        <tr>
+          <td style="padding:0">
+            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt"><tr><td style="padding:4pt 7pt">Prime Contractor: &nbsp; ${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr></table>
+            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt"><tr><td style="padding:5pt 7pt;font-weight:700">DISCIPLINE &nbsp;&nbsp; ${discRow}</td></tr></table>
+            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt"><tr><td style="padding:4pt 7pt">Sub-contractor: &nbsp; ${f.contractor_sub || '-'}</td></tr></table>
+            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-bottom:6pt">
+              <tr>
+                <td style="border-right:1pt solid #999;padding:5pt 7pt;width:50%;vertical-align:top">To:<br><b>${f.consultant || ''}</b></td>
+                <td style="padding:5pt 7pt;vertical-align:top">Attn:<br><b>${f.addressed_to || ''}</b></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        ${(() => {
+          // Split into one <tr> per paragraph rather than a single big cell —
+          // Chrome's print engine only repeats a table's thead on every page
+          // when it has to distribute separate ROWS across the page break; a
+          // lone oversized <td> just gets silently clipped wherever the page
+          // boundary falls, with no repeated header (verified before landing
+          // on this approach).
+          const paras = (f.description || '').split(/\n\n+/).filter(Boolean)
+          const rows = paras.length ? paras : ['']
+          return rows.map((p, i) => `
+            <tr>
+              <td style="border-left:1pt solid #000;border-right:1pt solid #000;${i === 0 ? 'border-top:1pt solid #000;' : ''}${i === rows.length - 1 ? 'border-bottom:1pt solid #000;' : ''}padding:${i === 0 ? '8pt' : '2pt'} 7pt ${i === rows.length - 1 ? '8pt' : '2pt'};vertical-align:top;white-space:pre-wrap;line-height:1.6">
+                ${i === 0 ? '<div style="font-weight:700;margin-bottom:6pt">Request:</div>' : ''}${p}
+              </td>
+            </tr>`).join('')
+        })()}
+        <tr>
+          <td style="padding:0">
+            <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-top:6pt">
+              <tr>
+                <td rowspan="2" style="${td}width:16%;vertical-align:top">Reply required by<br><b>${fmtDate(f.required_response_date)}</b></td>
+                <td style="${td}width:34%;vertical-align:top">
+                  <b>Prime Contractor</b><br>${f.requested_by || ''}
+                  <div style="height:26pt;display:flex;align-items:flex-end">${signatureLine(f, 110)}</div>
+                  Signature
+                </td>
+                <td rowspan="2" style="${td}width:50%;vertical-align:top">
+                  <b>Cost and time involvement</b>
+                  <div style="border-top:0.5pt solid #999;margin-top:5pt;padding-top:5pt">Additional cost involved &nbsp; <b>${f.cost_impact_yn === 'Y' ? 'Y' : f.cost_impact_yn === 'N' ? 'N' : 'Y / N'}</b></div>
+                  <div style="border-top:0.5pt solid #999;margin-top:5pt;padding-top:5pt">Additional time involved &nbsp; <b>${f.time_impact_yn === 'Y' ? 'Y' : f.time_impact_yn === 'N' ? 'N' : 'Y / N'}</b></div>
+                </td>
+              </tr>
+              <tr>
+                <td style="${td}vertical-align:top">
+                  <b>Sub-Contractor</b><br>${f.contractor_sub || ''}
+                  <div style="border-bottom:0.5pt solid #000;height:22pt"></div>
+                  Signature
+                </td>
+              </tr>
+              <tr>
+                <td style="${td}vertical-align:top"><b>Consultant<br>Comments</b></td>
+                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap;min-height:50pt">
+                  <table style="width:100%;border-collapse:collapse"><tr>
+                    <td style="border:none;padding:0;vertical-align:top;width:65%">${f.response || ''}</td>
+                    <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">Name:<br><br>Signature:<br><br>Date:</td>
+                  </tr></table>
+                </td>
+              </tr>
+              <tr>
+                <td style="${td}vertical-align:top"><b>Client<br>Comments</b></td>
+                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap;min-height:50pt">
+                  <table style="width:100%;border-collapse:collapse"><tr>
+                    <td style="border:none;padding:0;vertical-align:top;width:65%">${f.client_comments || ''}</td>
+                    <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">Name:<br><br>Signature:<br><br>Date:</td>
+                  </tr></table>
+                </td>
+              </tr>
+            </table>
+            ${generated(f, f.rfi_number)}
+          </td>
+        </tr>
+      </tbody>
     </table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt"><tr><td style="padding:5pt 7pt">Project Name: &nbsp; <b>${f.projName || ''}</b></td></tr></table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt">
-      <tr>
-        <td style="border-right:1pt solid #999;padding:5pt 7pt;width:22%;vertical-align:top">Related drawings / specification</td>
-        <td style="border-right:1pt solid #999;padding:5pt 7pt;width:38%;vertical-align:top">Drawings<br><b>${f.drawings || ''}</b></td>
-        <td style="padding:5pt 7pt;vertical-align:top">Specification Ref.<br><b>${f.spec || ''}${f.refDwg ? ' / ' + f.refDwg : ''}</b></td>
-      </tr>
-    </table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt"><tr><td style="padding:4pt 7pt">Prime Contractor: &nbsp; ${f.prime || ''}</td></tr></table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt"><tr><td style="padding:5pt 7pt;font-weight:700">DISCIPLINE &nbsp;&nbsp; ${discRow}</td></tr></table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt"><tr><td style="padding:4pt 7pt">Sub-contractor: &nbsp; ${f.subcon || '-'}</td></tr></table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt">
-      <tr>
-        <td style="border-right:1pt solid #999;padding:5pt 7pt;width:50%;vertical-align:top">To:<br><b>${f.to || ''}</b><br><div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:2pt">—————————————————————————————</div></td>
-        <td style="padding:5pt 7pt;vertical-align:top">Attn:<br><b>${f.attn || ''}</b><br><div style="border-top:0.5pt solid #999;margin-top:4pt;padding-top:2pt">————————————————————</div></td>
-      </tr>
-    </table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt">
-      <tr><td style="padding:5pt 7pt;vertical-align:top;min-height:80pt"><div style="font-weight:600;margin-bottom:6pt">Request:</div><div style="white-space:pre-wrap;line-height:1.6;min-height:70pt">${f.request || ''}</div></td></tr>
-    </table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt">
-      <tr>
-        <td style="border-right:1pt solid #999;padding:5pt 7pt;width:50%;vertical-align:top">Reply by: <b>${fmtDate(f.replyBy)}</b><br><br>Signed by:<br><div style="border-top:0.5pt solid #000;margin-top:18pt;width:85%"></div></td>
-        <td style="padding:5pt 7pt;vertical-align:top">
-          <div style="margin-bottom:6pt">Cost Implication: &nbsp; ${chk(f.costYes)} Yes &nbsp;&nbsp; ${chk(f.costNo)} No</div>
-          <div style="margin-bottom:6pt">Time Implication: &nbsp; ${chk(f.timeYes)} Yes &nbsp;&nbsp; ${chk(f.timeNo)} No</div>
-          <div>Remarks:<br><div style="border-bottom:0.5pt solid #ccc;height:16pt"></div></div>
-        </td>
-      </tr>
-    </table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt">
-      <tr><td colspan="2" style="border-bottom:0.5pt solid #999;padding:5pt 8pt"><b>Consultant's Reply:</b></td></tr>
-      <tr><td style="padding:5pt 8pt;min-height:60pt;white-space:pre-wrap">${f.reply || ''}&nbsp;</td><td style="border-left:0.5pt solid #999;padding:5pt 8pt;width:35%;vertical-align:top">Date:<br>Name:<br>Signature:</td></tr>
-    </table>
-    ${generated(f, f.docNumber)}
   `)
 }
 

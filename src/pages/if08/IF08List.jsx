@@ -3,13 +3,13 @@ import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genRfiNumber } from '../../config/docTypes'
-import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
+import { useActivityFill } from '../../hooks/useActivityFill'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
 import { Plus, ExternalLink, Pencil , Printer, Trash2} from 'lucide-react'
 import { today } from '../../utils/delay'
-import { buildIF08, printForm, mergeProjectLogos } from '../../utils/printEngine'
+import { buildIF08, printForm, mergeProjectLogos, getSignatureForName } from '../../utils/printEngine'
 import { AXION_LOGO } from '../../utils/axionLogo'
 
 const RFI_STATUSES = ['Draft', 'Submitted', 'Under Review', 'Answered', 'Closed', 'Cancelled']
@@ -283,6 +283,7 @@ const BLANK = {
   requested_by: '', addressed_to: '',
   required_response_date: '', response_date: '', response: '',
   impact: 'TBD', impact_description: '',
+  cost_impact_yn: '', time_impact_yn: '', client_comments: '',
   status: 'Draft', drive_link: '', remarks: '',
   discipline: '', contractor_sub: '', reason_for_overdue: '',
   submission_history: [],
@@ -297,7 +298,6 @@ export default function IF08List() {
   const { activeProject } = useProject()
   const { profile } = useAuth()
   const { toasts, toast } = useToast()
-  const mrfList = useMRFList(activeProject.project_code)
 
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -309,26 +309,13 @@ export default function IF08List() {
   const [filterStatus, setFilterStatus] = useState('')
   const [filterPriority, setFilterPriority] = useState('')
 
-  const { activityData, mrfData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
+  const { activityData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
 
   useEffect(() => {
     if (activityData && !editItem) {
       setForm(f => ({ ...f, activity_name: activityData.activity_name || f.activity_name, wbs_code: activityData.wbs_code || f.wbs_code }))
     }
   }, [activityData])
-
-  useEffect(() => {
-    if (mrfData && !editItem) {
-      setForm(f => ({
-        ...f,
-        activity_id: f.activity_id || mrfData.activity_id || '',
-        activity_name: f.activity_name || mrfData.activity_name || '',
-        wbs_code: f.wbs_code || mrfData.wbs_code || '',
-        drawing_ref: f.drawing_ref || mrfData.ifc_drawing || '',
-        spec_ref: f.spec_ref || mrfData.code_ref || '',
-      }))
-    }
-  }, [mrfData])
 
   useEffect(() => { loadData() }, [activeProject])
 
@@ -418,8 +405,12 @@ export default function IF08List() {
     x:         withStatus.filter(i => i._status === 'Cancelled').length,
   }
 
-  const handlePrint = (d) => {
-    printForm(buildIF08(mergeProjectLogos(d, activeProject)), 'IF08 — Request For Information')
+  // Prime Contractor signature (Axion's own requester) is digitally looked up like
+  // MAC/IF04's preparer line — the Consultant/Client reply sections deliberately
+  // stay signature-free, those belong to them, not Axion staff.
+  const handlePrint = async (d) => {
+    const signatureImg = await getSignatureForName(d.requested_by)
+    printForm(buildIF08({ ...mergeProjectLogos(d, activeProject), signatureImg }), `Export for Transmittal — ${d.rfi_number}`)
   }
 
   return (
@@ -542,23 +533,6 @@ export default function IF08List() {
         {/* ── Tab: RFI Details ── */}
         {formTab === 'details' && (
         <div>
-          <div style={{ background: 'var(--bg-base)', borderRadius: 'var(--radius)', padding: '12px 14px', marginBottom: 16 }}>
-            <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Links (optional)</div>
-            <div className="form-grid form-grid-2" style={{ gap: 10 }}>
-              <div className="form-group">
-                <label className="form-label">Activity ID</label>
-                <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010 — auto-fills below" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Linked MRF</label>
-                <select className="form-select" value={form.mrf_number} onChange={e => set('mrf_number', e.target.value)}>
-                  <option value="">— None —</option>
-                  {mrfList.map(m => <option key={m.mrf_number} value={m.mrf_number}>{m.mrf_number} — {m.material_desc?.slice(0, 35)}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
-
           <div className="form-group" style={{ marginBottom: 14 }}>
             <label className="form-label required">Subject</label>
             <input className="form-input" value={form.subject} onChange={e => set('subject', e.target.value)} placeholder="Brief subject of the RFI" />
@@ -581,6 +555,10 @@ export default function IF08List() {
                 <option value="">— Select —</option>
                 {RFI_DISCIPLINES.map(d => <option key={d}>{d}</option>)}
               </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Activity ID</label>
+              <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010 — auto-fills below" />
             </div>
             <div className="form-group">
               <label className="form-label">Contractor / Sub-Contractor</label>
@@ -645,13 +623,31 @@ export default function IF08List() {
               <label className="form-label">Response</label>
               <textarea className="form-textarea" value={form.response} onChange={e => set('response', e.target.value)} rows={3} placeholder="Consultant / Engineer response…" />
             </div>
-            <div className="form-group" style={{ marginBottom: 14 }}>
-              <label className="form-label">Reason for Overdue</label>
-              <input className="form-input" value={form.reason_for_overdue} onChange={e => set('reason_for_overdue', e.target.value)} placeholder="Filled in only if this RFI ran past its required response date" />
+            <div className="form-grid form-grid-3" style={{ gap: 14, marginBottom: 14 }}>
+              <div className="form-group">
+                <label className="form-label">Additional Cost Involved</label>
+                <select className="form-select" value={form.cost_impact_yn} onChange={e => set('cost_impact_yn', e.target.value)}>
+                  <option value="">— Pending —</option>
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Additional Time Involved</label>
+                <select className="form-select" value={form.time_impact_yn} onChange={e => set('time_impact_yn', e.target.value)}>
+                  <option value="">— Pending —</option>
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Google Drive Link</label>
+                <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
+              </div>
             </div>
             <div className="form-group">
-              <label className="form-label">Google Drive Link</label>
-              <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
+              <label className="form-label">Client Comments</label>
+              <textarea className="form-textarea" value={form.client_comments} onChange={e => set('client_comments', e.target.value)} rows={2} placeholder="Client's own comments, separate from the consultant's response…" />
             </div>
           </div>
         </div>

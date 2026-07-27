@@ -416,40 +416,36 @@ export const buildIF08 = (f) => {
           <td style="padding:0">
             <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-top:6pt">
               <tr>
-                <td rowspan="2" style="${td}width:16%;vertical-align:top">Reply required by<br><b>${fmtDate(f.required_response_date)}</b></td>
+                <td style="${td}width:16%;vertical-align:top">Reply required by<br><b>${fmtDate(f.required_response_date)}</b></td>
                 <td style="${td}width:34%;vertical-align:top">
-                  <b>Prime Contractor</b><br>${f.requested_by || ''}
-                  <div style="height:26pt;display:flex;align-items:flex-end">${signatureLine(f, 110)}</div>
-                  Signature
+                  <div style="margin-bottom:4pt"><b>Prime Contractor</b> — ${f.requested_by || ''} &nbsp; ${signatureLine(f, 90)}</div>
+                  <div><b>Sub-Contractor</b> — ${f.contractor_sub || ''} &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
                 </td>
-                <td rowspan="2" style="${td}width:50%;vertical-align:top">
+                <td style="${td}width:50%;vertical-align:top">
                   <b>Cost and time involvement</b>
                   <div style="border-top:0.5pt solid #999;margin-top:5pt;padding-top:5pt">Additional cost involved &nbsp; <b>${f.cost_impact_yn === 'Y' ? 'Y' : f.cost_impact_yn === 'N' ? 'N' : 'Y / N'}</b></div>
                   <div style="border-top:0.5pt solid #999;margin-top:5pt;padding-top:5pt">Additional time involved &nbsp; <b>${f.time_impact_yn === 'Y' ? 'Y' : f.time_impact_yn === 'N' ? 'N' : 'Y / N'}</b></div>
                 </td>
               </tr>
               <tr>
-                <td style="${td}vertical-align:top">
-                  <b>Sub-Contractor</b><br>${f.contractor_sub || ''}
-                  <div style="border-bottom:0.5pt solid #000;height:22pt"></div>
-                  Signature
-                </td>
-              </tr>
-              <tr>
                 <td style="${td}vertical-align:top"><b>Consultant<br>Comments</b></td>
-                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap">
-                  <table style="width:100%;border-collapse:collapse"><tr>
+                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap;height:34pt;max-height:34pt;overflow:hidden">
+                  <table style="width:100%;height:100%;border-collapse:collapse"><tr>
                     <td style="border:none;padding:0;vertical-align:top;width:65%">${f.response || ''}</td>
-                    <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">Name:<br><br>Signature:<br><br>Date:</td>
+                    <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">
+                      <div style="margin-bottom:8pt">Name:</div><div style="margin-bottom:8pt">Signature:</div><div>Date:</div>
+                    </td>
                   </tr></table>
                 </td>
               </tr>
               <tr>
                 <td style="${td}vertical-align:top"><b>Client<br>Comments</b></td>
-                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap">
-                  <table style="width:100%;border-collapse:collapse"><tr>
+                <td colspan="2" style="${td}vertical-align:top;white-space:pre-wrap;height:34pt;max-height:34pt;overflow:hidden">
+                  <table style="width:100%;height:100%;border-collapse:collapse"><tr>
                     <td style="border:none;padding:0;vertical-align:top;width:65%">&nbsp;</td>
-                    <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">Name:<br><br>Signature:<br><br>Date:</td>
+                    <td style="border:none;padding:0 0 0 10pt;vertical-align:top;width:35%;border-left:0.5pt solid #999">
+                      <div style="margin-bottom:8pt">Name:</div><div style="margin-bottom:8pt">Signature:</div><div>Date:</div>
+                    </td>
                   </tr></table>
                 </td>
               </tr>
@@ -459,7 +455,7 @@ export const buildIF08 = (f) => {
         </tr>
       </tbody>
     </table>
-  `)
+  `, '190mm', '6mm 0')
 }
 
 // ─────────────────────────────────────────────────────────

@@ -38,8 +38,25 @@ export function computeDelayDays(d) {
   return days > 0 ? days : null
 }
 
+// Display badge/legend is intentionally coarser than the real 5-value status
+// (see computeRfiStatus) — Overdue is now surfaced via its own "Overdue" days
+// column instead of a separate badge, and Replied On-Time/Late collapse into
+// one "Replied" badge (the Overdue column still shows the actual lateness for
+// a late reply). Matches the narrowed Submitted/Replied/Under Review/Cancelled
+// summary so the legend never lists a code that doesn't appear anywhere else.
+const RFI_DISPLAY = {
+  'Under Review': { code: 'UR', label: 'Under Review',        bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
+  'Replied':      { code: 'R',  label: 'Replied',              bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
+  'Cancelled':    { code: 'X',  label: 'Cancelled/Withdrawn', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
+}
+function rfiDisplayBucket(status) {
+  if (status === 'Cancelled') return 'Cancelled'
+  if (status === 'Replied On-Time' || status === 'Replied Late') return 'Replied'
+  return 'Under Review'
+}
+
 function StatusBadge({ status }) {
-  const s = RFI_STATUS[status] || RFI_STATUS['Under Review']
+  const s = RFI_DISPLAY[rfiDisplayBucket(status)]
   return (
     <span style={{
       display: 'inline-block', padding: '2px 8px', borderRadius: 4,
@@ -88,7 +105,7 @@ function exportPDF(items, project) {
 
   const tableRows = withStatus.map((d, i) => {
     const hist = Array.isArray(d.submission_history) ? d.submission_history : []
-    const s = RFI_STATUS[d._status] || RFI_STATUS['Under Review']
+    const s = RFI_DISPLAY[rfiDisplayBucket(d._status)]
     const bg = i % 2 === 0 ? '#fff' : '#f9fafb'
 
     const revCells = [1,2,3,4,5].map(n => {
@@ -115,8 +132,6 @@ function exportPDF(items, project) {
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.response_date ? fmtDate(d.response_date) : ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:8pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center;${computeDelayDays(d) ? 'color:#991B1B;font-weight:700' : 'color:#bbb'}">${computeDelayDays(d) ?? '—'}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;font-family:monospace;font-weight:700;color:#1E40AF">${d.mrf_number || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${d.reason_for_overdue || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${d.remarks || ''}</td>
       ${revCells}
     </tr>`
@@ -128,15 +143,13 @@ function exportPDF(items, project) {
 
   const revSubCols = [1,2,3,4,5].map(() =>
     `<th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;border-left:1.5pt solid #888">Sub.</th>
-     <th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Ret.</th>
+     <th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Rep.</th>
      <th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Sta.</th>`
   ).join('')
 
   const legendItems = [
     ['UR','Under Review','#DBEAFE','#1E40AF'],
-    ['OT','Replied On-Time','#D1FAE5','#065F46'],
-    ['L','Replied Late','#FFEDD5','#9A3412'],
-    ['OD','Overdue','#FEE2E2','#991B1B'],
+    ['R','Replied','#D1FAE5','#065F46'],
     ['X','Cancelled/Withdrawn','#F1F5F9','#64748B'],
   ].map(([code,label,bg,color]) =>
     `<span style="display:inline-flex;align-items:center;gap:5pt;margin-right:12pt">
@@ -233,18 +246,16 @@ function exportPDF(items, project) {
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Discipline</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:8%">Contractor / Sub-Contractor</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Sub.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Ret.</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Rep.</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:2.5%">Sta.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:4%">Delay in Days</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:5.5%">MRF Ref.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:8%">Reason for Overdue</th>
+      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:4%">Overdue</th>
       <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Remarks</th>
       ${revHeaderCols}
     </tr>
     <tr>${revSubCols}</tr>
   </thead>
   <tbody>
-    ${tableRows || '<tr><td colspan="27" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No RFI records for this project</td></tr>'}
+    ${tableRows || '<tr><td colspan="25" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No RFI records for this project</td></tr>'}
   </tbody>
 </table>
 
@@ -388,7 +399,7 @@ export default function RFIRegister() {
             <thead>
               {/* Revision group header */}
               <tr>
-                <th colSpan={12} style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--border)' }}></th>
+                <th colSpan={10} style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--border)' }}></th>
                 {[1,2,3,4,5].map(n => (
                   <th key={n} colSpan={3} style={{ background: '#1e293b', color: '#fff', fontSize: 10, fontWeight: 700, textAlign: 'center', padding: '4px 0', borderLeft: '2px solid var(--border)' }}>
                     CRFI REV. {n}
@@ -405,14 +416,12 @@ export default function RFIRegister() {
                 <th style={{ minWidth: 90 }}>Submitted</th>
                 <th style={{ minWidth: 90 }}>Responded</th>
                 <th style={{ minWidth: 72 }}>Status</th>
-                <th style={{ minWidth: 90 }}>Delay in Days</th>
-                <th style={{ minWidth: 100 }}>MRF Ref.</th>
-                <th style={{ minWidth: 140 }}>Reason for Overdue</th>
+                <th style={{ minWidth: 90 }}>Overdue</th>
                 <th style={{ minWidth: 120 }}>Remarks</th>
                 {[1,2,3,4,5].map(n => (
                   <>
-                    <th key={`r${n}s`} style={{ minWidth: 78, fontSize: 10, borderLeft: '2px solid var(--border)', background: '#f8fafc' }}>Sub.</th>
-                    <th key={`r${n}r`} style={{ minWidth: 78, fontSize: 10, background: '#f8fafc' }}>Ret.</th>
+                    <th key={`r${n}s`} style={{ minWidth: 100, fontSize: 10, borderLeft: '2px solid var(--border)', background: '#f8fafc' }}>Sub.</th>
+                    <th key={`r${n}r`} style={{ minWidth: 100, fontSize: 10, background: '#f8fafc' }}>Rep.</th>
                     <th key={`r${n}c`} style={{ minWidth: 48, fontSize: 10, background: '#f8fafc' }}>Sta.</th>
                   </>
                 ))}
@@ -432,8 +441,6 @@ export default function RFIRegister() {
                     <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
                     <td><StatusBadge status={d._status} /></td>
                     <td style={{ fontSize: 12, fontWeight: computeDelayDays(d) ? 700 : 400, color: computeDelayDays(d) ? 'var(--status-rejected-text)' : 'var(--text-muted)', textAlign: 'center' }}>{computeDelayDays(d) ?? '—'}</td>
-                    <td style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: d.mrf_number ? 700 : 400, color: d.mrf_number ? '#1E40AF' : 'var(--text-muted)' }}>{d.mrf_number || '—'}</td>
-                    <td style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.reason_for_overdue || '—'}</td>
                     <td style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.remarks || '—'}</td>
                     {[1,2,3,4,5].map(n => {
                       const r = hist.find(h => String(h.rev_no) === `R${n}`) || {}

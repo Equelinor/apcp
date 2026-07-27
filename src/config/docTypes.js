@@ -96,3 +96,14 @@ export function genMrfNumber(projectNumber, sequence) {
   const year = new Date().getFullYear()
   return `AICC/MRF/${projNum}-${year}-${sequence}`
 }
+
+// ─── RFI (IF08) NUMBER — deliberate exception, same shape as genMacNumber:
+// AI-<project number>-RFI-XXX (e.g. AI-0632-RFI-000). "AI" is the fixed
+// company code, <project number> is the trailing segment of the project's own
+// project_number, no year. RFI-only, added 2026-07-27 — other doc types are
+// unaffected and still use genDocNumber above.
+export function genRfiNumber(projectNumber, sequence) {
+  const parts = String(projectNumber || '').split('-')
+  const projNum = parts[parts.length - 1] || ''
+  return `AI-${projNum}-RFI-${String(sequence).padStart(3, '0')}`
+}

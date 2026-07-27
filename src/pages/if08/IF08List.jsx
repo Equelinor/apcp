@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
-import { genDocNumber } from '../../config/docTypes'
+import { genRfiNumber } from '../../config/docTypes'
 import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
@@ -110,18 +110,29 @@ export default function IF08List() {
     setForm(p => ({ ...p, submission_history: (p.submission_history || []).filter((_, idx) => idx !== i) }))
   }
 
+  // Next sequence from the highest existing trailing number, not a row count —
+  // counting rows breaks the moment a number is ever edited/removed/skipped.
+  function nextRfiSeq() {
+    const nums = items.map(d => {
+      const match = String(d.rfi_number || '').match(/-(\d+)$/)
+      return match ? parseInt(match[1], 10) : 0
+    })
+    return (nums.length ? Math.max(...nums) : 0) + 1
+  }
+
   async function save() {
     if (!form.subject) { toast('Subject required', 'err'); return }
     if (editItem) {
-      await supabase.from('if08').update(form).eq('id', editItem.id)
+      const { error } = await supabase.from('if08').update(form).eq('id', editItem.id)
+      if (error) { toast('Save failed — ' + error.message, 'err'); return }
       setItems(prev => prev.map(d => d.id === editItem.id ? { ...d, ...form } : d))
       toast('RFI updated ✓', 'ok')
     } else {
-      const seq = items.filter(d => d.project_code === activeProject.project_code).length + 1
-      const rfi_number = genDocNumber('IF08', activeProject.project_code, seq)
+      const rfi_number = genRfiNumber(activeProject.project_number, nextRfiSeq())
       const item = { ...form, rfi_number, project_code: activeProject.project_code }
-      const { data } = await supabase.from('if08').insert(item).select().single()
-      setItems(prev => [data || { ...item, id: Date.now() }, ...prev])
+      const { data, error } = await supabase.from('if08').insert(item).select().single()
+      if (error) { toast('Save failed — ' + error.message, 'err'); return }
+      setItems(prev => [data, ...prev])
       toast(`RFI raised: ${rfi_number}`, 'ok')
     }
     setShowForm(false)

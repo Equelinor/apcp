@@ -423,30 +423,32 @@ export const buildIF08 = (f) => {
             <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-top:6pt">
               <tr>
                 <td colspan="2" style="${td}width:50%;vertical-align:top;padding:0">
-                  <div style="height:60pt;overflow:hidden;padding:4pt 7pt">Reply required by: &nbsp; <b>${fmtDate(f.required_response_date)}</b></div>
+                  <div style="height:24pt;overflow:hidden;padding:4pt 7pt">Reply required by: &nbsp; <b>${fmtDate(f.required_response_date)}</b></div>
                 </td>
                 <td style="${td}width:50%;vertical-align:top;padding:0">
-                  <div style="height:60pt;overflow:hidden;padding:4pt 7pt">
-                    <b>Cost and time involvement</b>
-                    <div style="border-top:0.5pt solid #999;margin-top:3pt;padding-top:3pt">Prime Contractor — Cost ${chk(f.cost_impact_yn === 'Y')}Y ${chk(f.cost_impact_yn === 'N')}N &nbsp; Time ${chk(f.time_impact_yn === 'Y')}Y ${chk(f.time_impact_yn === 'N')}N</div>
-                    <div style="border-top:0.5pt solid #999;margin-top:3pt;padding-top:3pt">Sub-con — Cost ${chk(f.cost_impact_yn_sub === 'Y')}Y ${chk(f.cost_impact_yn_sub === 'N')}N &nbsp; Time ${chk(f.time_impact_yn_sub === 'Y')}Y ${chk(f.time_impact_yn_sub === 'N')}N</div>
-                  </div>
+                  <div style="height:24pt;overflow:hidden;padding:4pt 7pt"><b>Cost and time involvement</b></div>
                 </td>
               </tr>
               <tr>
-                <td colspan="3" style="${td}vertical-align:top;padding:0">
+                <td colspan="2" style="${td}vertical-align:top;padding:0">
                   <div style="height:65pt;overflow:hidden;padding:5pt 7pt">
                     <div><b>Prime Contractor:</b> &nbsp; AICC</div>
                     <div style="margin-top:4pt;padding-top:4pt"><b>Signature:</b> &nbsp; ${f.signatureImg ? signatureLine(f, 90) : '<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
                   </div>
                 </td>
+                <td style="${td}vertical-align:top;padding:0">
+                  <div style="height:65pt;overflow:hidden;padding:5pt 7pt">Prime Contractor — Cost ${chk(f.cost_impact_yn === 'Y')}Y ${chk(f.cost_impact_yn === 'N')}N &nbsp; Time ${chk(f.time_impact_yn === 'Y')}Y ${chk(f.time_impact_yn === 'N')}N</div>
+                </td>
               </tr>
               <tr>
-                <td colspan="3" style="${td}vertical-align:top;padding:0">
+                <td colspan="2" style="${td}vertical-align:top;padding:0">
                   <div style="height:65pt;overflow:hidden;padding:5pt 7pt">
                     <div><b>Sub-con:</b> &nbsp; ${f.contractor_sub || ''}</div>
                     <div style="margin-top:4pt;padding-top:4pt"><b>Signature:</b> &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
                   </div>
+                </td>
+                <td style="${td}vertical-align:top;padding:0">
+                  <div style="height:65pt;overflow:hidden;padding:5pt 7pt">Sub-con — Cost ${chk(f.cost_impact_yn_sub === 'Y')}Y ${chk(f.cost_impact_yn_sub === 'N')}N &nbsp; Time ${chk(f.time_impact_yn_sub === 'Y')}Y ${chk(f.time_impact_yn_sub === 'N')}N</div>
                 </td>
               </tr>
               <tr>

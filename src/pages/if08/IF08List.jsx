@@ -108,49 +108,41 @@ function exportRfiRegisterPDF(items, project) {
       </div>`
   }
 
+  // Each RFI has a single `response` field — which party it's attributed to
+  // is recorded separately (replied_by, set alongside the response). Existing
+  // records from before that field existed default to Consultant, matching
+  // this form's historical assumption (its placeholder always read "Consultant
+  // / Engineer response…"). Both-parties-replied is a known gap, deferred.
+  const commentCells = (d) => {
+    const repliedBy = d.replied_by || (d.response ? 'Consultant' : '')
+    const consultantComment = repliedBy === 'Consultant' && d.response ? `Consultant: ${d.response}` : '-'
+    const clientComment = repliedBy === 'Client' && d.response ? `Client: ${d.response}` : '-'
+    return { consultantComment, clientComment }
+  }
+
+  const wrapTd = 'border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;white-space:normal;word-wrap:break-word;vertical-align:top'
+
   const tableRows = withStatus.map((d, i) => {
-    const hist = Array.isArray(d.submission_history) ? d.submission_history : []
     const s = RFI_DISPLAY[rfiDisplayBucket(d._status)]
     const bg = i % 2 === 0 ? '#fff' : '#f9fafb'
-
-    const revCells = [1,2,3,4,5].map(n => {
-      const r = hist.find(h => String(h.rev_no) === `R${n}`) || {}
-      const rs = r.status ? Object.entries(RFI_STATUS).find(([k]) =>
-        RFI_STATUS[k].code === r.status
-      ) : null
-      const rStyle = rs
-        ? `background:${rs[1].bg};color:${rs[1].text};font-weight:700`
-        : 'color:#bbb'
-      return `
-        <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center;border-left:1.5pt solid #bbb">${r.submitted_date ? fmtDate(r.submitted_date) : ''}</td>
-        <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${r.return_date ? fmtDate(r.return_date) : ''}</td>
-        <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center;${rStyle}">${r.status || ''}</td>`
-    }).join('')
+    const { consultantComment, clientComment } = commentCells(d)
 
     return `<tr style="background:${bg}">
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center">${i+1}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;font-family:monospace;font-weight:700">${d.rfi_number || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${d.subject || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${d.discipline || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${d.contractor_sub || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.date ? fmtDate(d.date) : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.response_date ? fmtDate(d.response_date) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;font-family:monospace;font-weight:700">${d.rfi_number || '-'}</td>
+      <td style="${wrapTd}">${d.discipline || '-'}</td>
+      <td style="${wrapTd}">${d.contractor_sub || '-'}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.date ? fmtDate(d.date) : '-'}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.response_date ? fmtDate(d.response_date) : '-'}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:8pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center;${computeDelayDays(d) ? 'color:#991B1B;font-weight:700' : 'color:#bbb'}">${computeDelayDays(d) ?? '—'}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${d.remarks || ''}</td>
-      ${revCells}
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center;${computeDelayDays(d) ? 'color:#991B1B;font-weight:700' : 'color:#bbb'}">${computeDelayDays(d) ?? '-'}</td>
+      <td style="${wrapTd}">${d.subject || '-'}</td>
+      <td style="${wrapTd}">${d.description || '-'}</td>
+      <td style="${wrapTd}">${consultantComment}</td>
+      <td style="${wrapTd}">${clientComment}</td>
+      <td style="${wrapTd};color:#555">${d.remarks || '-'}</td>
     </tr>`
   }).join('')
-
-  const revHeaderCols = [1,2,3,4,5].map(n =>
-    `<th colspan="3" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#374151;color:#fff;text-align:center">CRFI REV. ${n}</th>`
-  ).join('')
-
-  const revSubCols = [1,2,3,4,5].map(() =>
-    `<th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center;border-left:1.5pt solid #888">Sub.</th>
-     <th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Rep.</th>
-     <th style="border:0.4pt solid #ccc;padding:2pt;font-size:6.5pt;font-weight:700;background:#4b5563;color:#e5e7eb;text-align:center">Sta.</th>`
-  ).join('')
 
   const legendItems = [
     ['UR','Under Review','#DBEAFE','#1E40AF'],
@@ -245,22 +237,23 @@ function exportRfiRegisterPDF(items, project) {
 <table>
   <thead>
     <tr>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:1.2%">Sr.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6.5%">RFI Ref. No</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:13%">RFI Subject</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Discipline</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:8%">Contractor / Sub-Contractor</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Sub.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:3.5%">Rep.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:2.5%">Sta.</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:4%">Overdue</th>
-      <th rowspan="2" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">Remarks</th>
-      ${revHeaderCols}
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;text-align:center;width:2%">Sl.</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:6%">RFI No.</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:5%">Discipline</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:8%">Contractor / Sub-Contractor</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:5%">Submitted on</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:5%">Replied on</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:4%">Status</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:4%">Delay in Days</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:11%">RFI Subject</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:18%">Description</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:12%">Consultant Comments</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:12%">Client Comments</th>
+      <th style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#111827;color:#fff;width:8%">Remarks</th>
     </tr>
-    <tr>${revSubCols}</tr>
   </thead>
   <tbody>
-    ${tableRows || '<tr><td colspan="25" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No RFI records for this project</td></tr>'}
+    ${tableRows || '<tr><td colspan="13" style="text-align:center;padding:14pt;color:#aaa;font-size:8pt">No RFI records for this project</td></tr>'}
   </tbody>
 </table>
 
@@ -282,7 +275,7 @@ const BLANK = {
   activity_id: '', activity_name: '', wbs_code: '',
   mrf_number: '', drawing_ref: '', spec_ref: '',
   requested_by: '', addressed_to: '',
-  required_response_date: '', response_date: '', response: '',
+  required_response_date: '', response_date: '', response: '', replied_by: '',
   impact: 'TBD', impact_description: '',
   cost_impact_yn: '', time_impact_yn: '',
   cost_impact_yn_sub: '', time_impact_yn_sub: '',
@@ -679,6 +672,14 @@ export default function IF08List() {
             <div className="form-group" style={{ marginBottom: 14 }}>
               <label className="form-label">Google Drive Link</label>
               <input className="form-input" value={form.drive_link} onChange={e => set('drive_link', e.target.value)} placeholder="https://drive.google.com/…" />
+            </div>
+            <div className="form-group" style={{ marginBottom: 14 }}>
+              <label className="form-label">Replied By</label>
+              <select className="form-select" value={form.replied_by} onChange={e => set('replied_by', e.target.value)}>
+                <option value="">— Select —</option>
+                <option value="Consultant">Consultant</option>
+                <option value="Client">Client</option>
+              </select>
             </div>
             <div className="form-group" style={{ marginBottom: 14 }}>
               <label className="form-label">Response</label>

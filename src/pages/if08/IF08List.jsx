@@ -120,7 +120,11 @@ function exportRfiRegisterPDF(items, project) {
     return { consultantComment, clientComment }
   }
 
-  const wrapTd = 'border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;white-space:normal;word-wrap:break-word;vertical-align:top'
+  const wrapTd = 'border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;white-space:normal;word-wrap:break-word;vertical-align:middle'
+  // Short categorical fields (Discipline, Contractor) read better centered;
+  // genuine paragraph content (Subject/Description/Comments/Remarks) stays
+  // left-aligned per user preference — only vertical centering applies there.
+  const wrapTdCenter = wrapTd + ';text-align:center'
 
   const tableRows = withStatus.map((d, i) => {
     const s = RFI_DISPLAY[rfiDisplayBucket(d._status)]
@@ -128,14 +132,14 @@ function exportRfiRegisterPDF(items, project) {
     const { consultantComment, clientComment } = commentCells(d)
 
     return `<tr style="background:${bg}">
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center">${i+1}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;font-family:monospace;font-weight:700">${d.rfi_number || '-'}</td>
-      <td style="${wrapTd}">${d.discipline || '-'}</td>
-      <td style="${wrapTd}">${d.contractor_sub || '-'}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.date ? fmtDate(d.date) : '-'}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.response_date ? fmtDate(d.response_date) : '-'}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:8pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center;${computeDelayDays(d) ? 'color:#991B1B;font-weight:700' : 'color:#bbb'}">${computeDelayDays(d) ?? '-'}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center;vertical-align:middle">${i+1}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt;font-family:monospace;font-weight:700;text-align:center;vertical-align:middle">${d.rfi_number || '-'}</td>
+      <td style="${wrapTdCenter}">${d.discipline || '-'}</td>
+      <td style="${wrapTdCenter}">${d.contractor_sub || '-'}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center;vertical-align:middle">${d.date ? fmtDate(d.date) : '-'}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center;vertical-align:middle">${d.response_date ? fmtDate(d.response_date) : '-'}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:8pt;font-weight:700;text-align:center;vertical-align:middle;background:${s.bg};color:${s.text}">${s.code}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;text-align:center;vertical-align:middle;${computeDelayDays(d) ? 'color:#991B1B;font-weight:700' : 'color:#bbb'}">${computeDelayDays(d) ?? '-'}</td>
       <td style="${wrapTd}">${d.subject || '-'}</td>
       <td style="${wrapTd}">${d.description || '-'}</td>
       <td style="${wrapTd}">${consultantComment}</td>

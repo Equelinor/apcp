@@ -431,24 +431,24 @@ export const buildIF08 = (f) => {
               </tr>
               <tr>
                 <td colspan="2" style="${td}vertical-align:top;padding:0">
-                  <div style="height:65pt;overflow:hidden;padding:5pt 7pt">
+                  <div style="height:80pt;overflow:hidden;padding:5pt 7pt">
                     <div><b>Prime Contractor:</b> &nbsp; AICC</div>
                     <div style="margin-top:4pt;padding-top:4pt"><b>Signature:</b> &nbsp; ${f.signatureImg ? signatureLine(f, 90) : '<span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span>'}</div>
                   </div>
                 </td>
                 <td style="${td}vertical-align:top;padding:0">
-                  <div style="height:65pt;overflow:hidden;padding:5pt 7pt">Prime Contractor — Cost ${chk(f.cost_impact_yn === 'Y')}Y ${chk(f.cost_impact_yn === 'N')}N &nbsp; Time ${chk(f.time_impact_yn === 'Y')}Y ${chk(f.time_impact_yn === 'N')}N</div>
+                  <div style="height:80pt;overflow:hidden;padding:5pt 7pt">Prime Contractor — Cost ${chk(f.cost_impact_yn === 'Y')}Y ${chk(f.cost_impact_yn === 'N')}N &nbsp; Time ${chk(f.time_impact_yn === 'Y')}Y ${chk(f.time_impact_yn === 'N')}N</div>
                 </td>
               </tr>
               <tr>
                 <td colspan="2" style="${td}vertical-align:top;padding:0">
-                  <div style="height:65pt;overflow:hidden;padding:5pt 7pt">
+                  <div style="height:80pt;overflow:hidden;padding:5pt 7pt">
                     <div><b>Sub-con:</b> &nbsp; ${f.contractor_sub || ''}</div>
                     <div style="margin-top:4pt;padding-top:4pt"><b>Signature:</b> &nbsp; <span style="border-bottom:0.5pt solid #000;display:inline-block;width:80pt">&nbsp;</span></div>
                   </div>
                 </td>
                 <td style="${td}vertical-align:top;padding:0">
-                  <div style="height:65pt;overflow:hidden;padding:5pt 7pt">Sub-con — Cost ${chk(f.cost_impact_yn_sub === 'Y')}Y ${chk(f.cost_impact_yn_sub === 'N')}N &nbsp; Time ${chk(f.time_impact_yn_sub === 'Y')}Y ${chk(f.time_impact_yn_sub === 'N')}N</div>
+                  <div style="height:80pt;overflow:hidden;padding:5pt 7pt">Sub-con — Cost ${chk(f.cost_impact_yn_sub === 'Y')}Y ${chk(f.cost_impact_yn_sub === 'N')}N &nbsp; Time ${chk(f.time_impact_yn_sub === 'Y')}Y ${chk(f.time_impact_yn_sub === 'N')}N</div>
                 </td>
               </tr>
               <tr>

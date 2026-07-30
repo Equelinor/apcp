@@ -418,7 +418,7 @@ export const buildIF08 = (f) => {
               </td>
             </tr>`).join('')}`
         })()}
-        <tr>
+        <tr style="page-break-inside:avoid;break-inside:avoid">
           <td style="padding:0">
             <table style="width:100%;border-collapse:collapse;border:1pt solid #000;border-top:none;font-size:8pt;margin-top:6pt">
               <tr>

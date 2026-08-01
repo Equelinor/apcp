@@ -482,8 +482,6 @@ export default function IF08List() {
                 <th>RFI No.</th>
                 <th>Subject</th>
                 <th>Priority</th>
-                <th>Activity</th>
-                <th>MRF</th>
                 <th>Raised By</th>
                 <th>Required By</th>
                 <th>Response Date</th>
@@ -499,22 +497,20 @@ export default function IF08List() {
                 const overdue = d.required_response_date && !d.response_date && new Date(d.required_response_date) < new Date()
                 return (
                   <tr key={d.id} style={{ background: overdue ? '#FFF5F5' : undefined }}>
-                    <td><span className="doc-number">{d.rfi_number}</span></td>
+                    <td><span className="doc-number" style={{ fontSize: 11 }}>{d.rfi_number}</span></td>
                     <td style={{ fontSize: 12, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={d.subject}>{d.subject}</td>
                     <td><Badge status={d.priority} /></td>
-                    <td>{d.activity_id ? <span className="doc-number">{d.activity_id}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
-                    <td>{d.mrf_number ? <span className="doc-number">{d.mrf_number}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                     <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.requested_by}</td>
-                    <td style={{ fontSize: 12, color: overdue ? 'var(--status-rejected-text)' : 'var(--text-muted)', fontWeight: overdue ? 700 : 400 }}>{d.required_response_date || '—'}{overdue ? ' ⚠️' : ''}</td>
-                    <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
+                    <td style={{ fontSize: 11, color: overdue ? 'var(--status-rejected-text)' : 'var(--text-muted)', fontWeight: overdue ? 700 : 400, whiteSpace: 'nowrap' }}>{d.required_response_date || '—'}{overdue ? ' ⚠️' : ''}</td>
+                    <td style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{d.response_date || '—'}</td>
                     <td style={{ fontSize: 11 }}>{d.impact || '—'}</td>
                     <td>{(() => {
                       const st = computeRfiStatus(d)
                       const s = RFI_DISPLAY[rfiDisplayBucket(st)]
                       return <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: s.bg, color: s.text, border: `1px solid ${s.border}` }}>{s.code}</span>
                     })()}</td>
-                    <td style={{ fontSize: 12, fontWeight: computeDelayDays(d) ? 700 : 400, color: computeDelayDays(d) ? 'var(--status-rejected-text)' : 'var(--text-muted)', textAlign: 'center' }}>{computeDelayDays(d) ?? '—'}</td>
-                    <td>{d.drive_link ? <a href={d.drive_link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12 }}>Open <ExternalLink size={10} style={{ verticalAlign: 'middle' }} /></a> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
+                    <td style={{ fontSize: 11, fontWeight: computeDelayDays(d) ? 700 : 400, color: computeDelayDays(d) ? 'var(--status-rejected-text)' : 'var(--text-muted)', textAlign: 'center' }}>{computeDelayDays(d) ?? '—'}</td>
+                    <td>{d.drive_link ? <a href={d.drive_link} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ fontSize: 11, padding: '3px 8px' }}><ExternalLink size={11} /></a> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                     <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button>
                     <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Print PDF" onClick={() => handlePrint(d)}><Printer size={12} /></button></td>
                   </tr>

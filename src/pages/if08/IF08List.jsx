@@ -490,6 +490,7 @@ export default function IF08List() {
                 <th>Impact</th>
                 <th>Status</th>
                 <th>Overdue</th>
+                <th>Drive Link</th>
                 <th></th>
               </tr>
             </thead>
@@ -513,6 +514,7 @@ export default function IF08List() {
                       return <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: s.bg, color: s.text, border: `1px solid ${s.border}` }}>{s.code}</span>
                     })()}</td>
                     <td style={{ fontSize: 12, fontWeight: computeDelayDays(d) ? 700 : 400, color: computeDelayDays(d) ? 'var(--status-rejected-text)' : 'var(--text-muted)', textAlign: 'center' }}>{computeDelayDays(d) ?? '—'}</td>
+                    <td>{d.drive_link ? <a href={d.drive_link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12 }}>Open <ExternalLink size={10} style={{ verticalAlign: 'middle' }} /></a> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                     <td><button className="btn btn-ghost" style={{ padding: '3px 6px' }} onClick={() => openEdit(d)}><Pencil size={12} /></button>
                     <button className="btn btn-ghost" style={{ padding: '3px 6px' }} title="Print PDF" onClick={() => handlePrint(d)}><Printer size={12} /></button></td>
                   </tr>

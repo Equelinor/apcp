@@ -25,22 +25,25 @@ export const OVERDUE_DAYS = 7
 // ── Status system — same A/B/C/D/UR convention as the MAC page, derived from
 // IF04's existing response_code / status fields (not a new stored field) ──
 export const SD_STATUS = {
-  'Pending':                { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
   'Under Review':           { code: 'UR',  bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
   'Approved':               { code: 'A',   bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
   'Approved with Comments': { code: 'B',   bg: '#FEF3C7', text: '#92400E', border: '#FDE68A' },
   'Revised and Resubmit':   { code: 'C',   bg: '#FFEDD5', text: '#9A3412', border: '#FED7AA' },
   'Rejected':               { code: 'D',   bg: '#FEE2E2', text: '#991B1B', border: '#FCA5A5' },
+  'Draft':                  { code: 'DFT', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
 }
 const SD_STATUS_KEYS = Object.keys(SD_STATUS)
 
+// Same labeling as MAC's computeMacApprovalStatus — "Draft" is the real
+// derived status (not translated to a separate "Pending" concept), included
+// in Total and its own Register Summary/Legend row, matching MAC exactly.
 export function computeSdStatus(d) {
   const code = (d.response_code || '').charAt(0)
   if (code === 'A') return 'Approved'
   if (code === 'B') return 'Approved with Comments'
   if (code === 'C') return 'Revised and Resubmit'
   if (code === 'D') return 'Rejected'
-  if (d.status === 'Draft') return 'Pending'
+  if (d.status === 'Draft') return 'Draft'
   return 'Under Review'
 }
 
@@ -98,13 +101,13 @@ function exportSdRegisterPDF(items, project) {
 
   const withStatus = items.map(d => ({ ...d, _status: computeSdStatus(d), _overdue: isSdOverdue(d) }))
   const counts = {
-    total:     withStatus.filter(i => i._status !== 'Pending').length,
+    total:     withStatus.length,
     ur:        withStatus.filter(i => i._status === 'Under Review').length,
     a:         withStatus.filter(i => i._status === 'Approved').length,
     b:         withStatus.filter(i => i._status === 'Approved with Comments').length,
     c:         withStatus.filter(i => i._status === 'Revised and Resubmit').length,
     d:         withStatus.filter(i => i._status === 'Rejected').length,
-    pending:   withStatus.filter(i => i._status === 'Pending').length,
+    draft:     withStatus.filter(i => i._status === 'Draft').length,
   }
 
   const logoCell = (logoSrc, name, role) => {
@@ -123,7 +126,7 @@ function exportSdRegisterPDF(items, project) {
 
   const tableRows = withStatus.map((d, i) => {
     const hist = Array.isArray(d.submission_history) ? d.submission_history : []
-    const s = SD_STATUS[d._status] || SD_STATUS['Pending']
+    const s = SD_STATUS[d._status] || SD_STATUS['Draft']
     const bg = i % 2 === 0 ? '#fff' : '#f9fafb'
 
     const revCells = [1,2,3,4,5].map(n => {
@@ -173,6 +176,7 @@ function exportSdRegisterPDF(items, project) {
     ['C','Revised and Resubmit','#FFEDD5','#9A3412'],
     ['D','Rejected','#FEE2E2','#991B1B'],
     ['UR','Under Review','#DBEAFE','#1E40AF'],
+    ['DFT','Draft','#F1F5F9','#64748B'],
   ].map(([code,label,bg,color]) =>
     `<span style="display:inline-flex;align-items:center;gap:5pt;margin-right:12pt">
       <span style="display:inline-block;padding:2pt 6pt;background:${bg};color:${color};font-size:8pt;font-weight:700;border-radius:2pt">${code}</span>
@@ -187,6 +191,7 @@ function exportSdRegisterPDF(items, project) {
     ['Approved with Comments (B)', counts.b, '#92400E'],
     ['Revised & Resubmit (C)', counts.c, '#9A3412'],
     ['Rejected (D)', counts.d, '#991B1B'],
+    ['Draft', counts.draft, '#64748B'],
   ].map(([l,v,c]) =>
     `<tr>
       <td style="font-size:8pt;padding:2pt 0;color:#444">${l}</td>
@@ -248,7 +253,6 @@ function exportSdRegisterPDF(items, project) {
         <tr><td style="font-size:8pt;font-weight:700;color:#555;padding:2pt 0">Contract No.</td><td style="font-size:8pt;padding:2pt 0">${project?.contract_number || '—'}</td></tr>
         <tr><td style="font-size:8pt;font-weight:700;color:#555;padding:2pt 0">Updated</td><td style="font-size:8pt;padding:2pt 0"><b>${genDate}</b></td></tr>
       </table>
-      ${counts.pending ? `<div style="margin-top:8pt;font-size:7pt;color:#888;font-style:italic">${counts.pending} submittal${counts.pending === 1 ? '' : 's'} still in Draft — not included above</div>` : ''}
     </td>
     <td style="width:35%;vertical-align:top;padding:6pt 10pt;border-right:0.5pt solid #ddd">
       <div style="font-size:7.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4pt;letter-spacing:.08em">Register Summary</div>
@@ -446,13 +450,13 @@ export default function IF04List() {
   // ── KPI summary — same categories as the Export Register PDF's own summary ──
   const withSdStatus = items.map(d => computeSdStatus(d))
   const kpi = {
-    total:   withSdStatus.filter(s => s !== 'Pending').length,
+    total:   withSdStatus.length,
     ur:      withSdStatus.filter(s => s === 'Under Review').length,
     a:       withSdStatus.filter(s => s === 'Approved').length,
     b:       withSdStatus.filter(s => s === 'Approved with Comments').length,
     c:       withSdStatus.filter(s => s === 'Revised and Resubmit').length,
     d:       withSdStatus.filter(s => s === 'Rejected').length,
-    pending: withSdStatus.filter(s => s === 'Pending').length,
+    draft:   withSdStatus.filter(s => s === 'Draft').length,
     overdue: items.filter(d => isSdOverdue(d)).length,
   }
 
@@ -481,12 +485,10 @@ export default function IF04List() {
         </div>
       </div>
 
-      {/* KPI strip — same categories as the Export Register PDF's own summary.
-          Draft/Pending submittals are deliberately excluded from Total and
-          every other tracked figure here — they haven't actually been
-          submitted to anyone yet, so they're surfaced as a plain note below
-          instead of a counted register category. */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, marginBottom: kpi.pending ? 8 : 20 }}>
+      {/* KPI strip — same categories as the Export Register PDF's own summary,
+          same labeling as MAC: Draft is its own tracked category (included in
+          Total), not excluded/footnoted. */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 10, marginBottom: 20 }}>
         {[
           { label: 'Total',           value: kpi.total,   bg: 'var(--bg-surface)', color: 'var(--text-primary)' },
           { label: 'Under Review',    value: kpi.ur,      bg: '#DBEAFE', color: '#1E40AF' },
@@ -494,6 +496,7 @@ export default function IF04List() {
           { label: 'w/ Comments (B)', value: kpi.b,       bg: '#FEF3C7', color: '#92400E' },
           { label: 'Resubmit (C)',    value: kpi.c,       bg: '#FFEDD5', color: '#9A3412' },
           { label: 'Rejected (D)',    value: kpi.d,       bg: '#FEE2E2', color: '#991B1B' },
+          { label: 'Draft',           value: kpi.draft,   bg: '#F1F5F9', color: '#64748B' },
           { label: `Overdue (>${OVERDUE_DAYS}d)`, value: kpi.overdue, bg: '#FEE2E2', color: '#991B1B' },
         ].map(k => (
           <div key={k.label} style={{ background: k.bg, border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
@@ -502,11 +505,6 @@ export default function IF04List() {
           </div>
         ))}
       </div>
-      {kpi.pending > 0 && (
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 20 }}>
-          {kpi.pending} submittal{kpi.pending === 1 ? '' : 's'} still in Draft — not included above
-        </div>
-      )}
 
       <div className="filter-bar" style={{ marginBottom: 12 }}>
         <input placeholder="Search number, drawing, activity…" value={search} onChange={e => setSearch(e.target.value)} />

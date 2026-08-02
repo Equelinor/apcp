@@ -144,7 +144,7 @@ export default function Dashboard() {
     {
       label: 'Shop Drawings', route: '/shop-drawings', icon: FolderOpen,
       total: sdWithStatus.length,
-      pending: sdWithStatus.filter(s => s.status === 'Under Review' || s.status === 'Pending').length,
+      pending: sdWithStatus.filter(s => s.status === 'Under Review' || s.status === 'Draft').length,
       flagged: sdWithStatus.filter(s => s.overdue).length,
       flaggedLabel: 'Overdue',
     },

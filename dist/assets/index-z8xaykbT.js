@@ -499,8 +499,8 @@ ${y}`}class Ne extends Error{constructor({message:t,code:r,cause:s,name:i}){var 
     </table>
     <table style="width:100%;border-collapse:collapse;margin-bottom:14pt">
       <tr>
-        <td style="width:50%;padding:4pt 0;font-size:8pt"><u><b>Project Engineer:</b></u> ${e.prepared_by||""}</td>
-        <td style="width:50%;padding:4pt 0;font-size:8pt;text-align:right"><u><b>Signature:</b></u> ${Oi(e)}</td>
+        <td style="width:50%;padding:4pt 0;font-size:8pt;vertical-align:top"><u><b>Project Engineer:</b></u> ${e.prepared_by||""}</td>
+        <td style="width:50%;padding:4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${Oi(e)}</td>
       </tr>
     </table>
     <div style="margin-bottom:14pt">

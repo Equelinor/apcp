@@ -128,7 +128,7 @@ function exportMacRegisterPDF(items, project) {
   }).join('')
 
   const revHeaderCols = [1,2,3,4,5].map(n =>
-    `<th colspan="3" style="border:0.5pt solid #aaa;padding:4pt;font-size:8.5pt;font-weight:700;background:#374151;color:#fff;text-align:center">REV. ${n}</th>`
+    `<th colspan="3" style="border:0.5pt solid #aaa;padding:4pt;font-size:8.5pt;font-weight:700;background:#374151;color:#fff;text-align:center">Rev.${String(n).padStart(2,'0')}</th>`
   ).join('')
 
   const revSubCols = [1,2,3,4,5].map(() =>

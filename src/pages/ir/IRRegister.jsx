@@ -123,7 +123,7 @@ function exportPDF(items, project) {
   }).join('')
 
   const revHeaderCols = [1,2,3,4,5].map(n =>
-    `<th colspan="3" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#374151;color:#fff;text-align:center">REV. ${n}</th>`
+    `<th colspan="3" style="border:0.5pt solid #aaa;padding:3pt;font-size:7pt;font-weight:700;background:#374151;color:#fff;text-align:center">Rev.${String(n).padStart(2,'0')}</th>`
   ).join('')
 
   const revSubCols = [1,2,3,4,5].map(() =>
@@ -401,7 +401,7 @@ export default function IRRegister() {
                 <th colSpan={9} style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--border)' }}></th>
                 {[1,2,3,4,5].map(n => (
                   <th key={n} colSpan={3} style={{ background: '#1e293b', color: '#fff', fontSize: 10, fontWeight: 700, textAlign: 'center', padding: '4px 0', borderLeft: '2px solid var(--border)' }}>
-                    REV. {n}
+                    Rev.{String(n).padStart(2,'0')}
                   </th>
                 ))}
               </tr>

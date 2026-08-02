@@ -238,6 +238,7 @@ export const buildIF05 = (f) => {
       <tr><td style="border-right:1pt solid #000;padding:5pt 8pt">Remarks:</td><td style="padding:5pt 8pt">Signature:</td></tr>
     </table>
     ${generated(f, f.if05_number)}
+    ${f.priorDate ? `<div style="margin-top:4pt;font-size:6pt;color:#888;text-align:center">Prior revision date: ${fmtDate(f.priorDate)}</div>` : ''}
   `)
 }
 

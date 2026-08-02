@@ -45,13 +45,17 @@ export function computeMacApprovalStatus(d) {
   return 'Under Review'
 }
 
+export function getLatestMacRevision(d) {
+  const hist = Array.isArray(d.submission_history) ? d.submission_history : []
+  return hist.length ? hist[hist.length - 1] : null
+}
+
 // The MAC list's "IF05 No." column shows the latest revision's number (e.g.
 // AI-0632-MAC-024-R1) once a revision round exists, instead of the base
 // number — the record's number is understood to be whatever its current/
 // latest round is, matching the same idea as RFI's formatRevisedRfiNumber.
 export function displayMacNumber(d) {
-  const hist = Array.isArray(d.submission_history) ? d.submission_history : []
-  const latest = hist[hist.length - 1]
+  const latest = getLatestMacRevision(d)
   return latest?.rev_no ? formatRevisedMacNumber(d.if05_number, latest.rev_no) : (d.if05_number || '')
 }
 
@@ -416,7 +420,10 @@ export default function IF05List() {
   const handlePrint = async (d) => {
     const signatureImg = await getSignatureForName(d.prepared_by)
     const printNumber = displayMacNumber(d)
-    printForm(buildIF05({ ...mergeProjectLogos(d, activeProject), signatureImg, if05_number: printNumber }), `Export for Transmittal — ${printNumber}`)
+    const latestRev = getLatestMacRevision(d)
+    const printDate = latestRev?.submitted_date || d.date
+    const priorDate = latestRev ? d.date : ''
+    printForm(buildIF05({ ...mergeProjectLogos(d, activeProject), signatureImg, if05_number: printNumber, date: printDate, priorDate }), `Export for Transmittal — ${printNumber}`)
   }
 
   return (

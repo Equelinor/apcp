@@ -76,11 +76,12 @@ const fmtRegDate = d => {
 }
 
 // Register export's "Rev." column — DRAWING_REVISIONS values like "Rev 00" are
-// shown compactly as "R00", matching the Rev.01/Rev.02 standard already applied
-// to the revision-round headers. Non-numeric revisions (IFC/As Built) pass through as-is.
+// shown compactly as "R0" (no zero-padding), matching MAC's own revision_no
+// convention exactly (default 'R0', placeholder "R0, R1, R2…"). Non-numeric
+// revisions (IFC/As Built) pass through as-is.
 const fmtDrawingRev = rev => {
   const m = String(rev || '').match(/^Rev\s*(\d+)$/i)
-  return m ? `R${m[1].padStart(2, '0')}` : (rev || '')
+  return m ? `R${parseInt(m[1], 10)}` : (rev || '')
 }
 
 // Short-form labels for the on-screen list's Discipline column — covers

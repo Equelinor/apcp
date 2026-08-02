@@ -119,10 +119,10 @@ export const buildIF04 = (f) => {
       <td style="border:0.5pt solid #999;padding:9pt 5pt;font-size:7.5pt;text-align:center">&nbsp;</td>
       <td style="border:0.5pt solid #999;padding:9pt 5pt;font-size:7.5pt;text-align:center">&nbsp;</td>
     </tr>`
-  // Real drawing rows plus enough blank rows underneath to fill the page to A4 —
-  // this form only ever carries 0-1 real drawings (a single record's own
-  // drawing_number/title/rev), so without padding the table was a near-empty
-  // header with a lot of dead white space below it.
+  // Real drawing rows (a submittal can carry several drawings together now,
+  // not just 0-1) plus enough blank rows underneath to fill the page to A4 —
+  // padding targets a minimum of 5 total rows shown, shrinking as real rows
+  // fill more of that space, so a multi-drawing submittal doesn't overflow.
   const dwgDataRows = (f.drawings || []).map(d =>
     `<tr>
       <td style="border:0.5pt solid #999;padding:3pt 5pt;font-size:7.5pt">${d.no || ''}</td>
@@ -130,7 +130,7 @@ export const buildIF04 = (f) => {
       <td style="border:0.5pt solid #999;padding:3pt 5pt;font-size:7.5pt;text-align:center">${d.rev || ''}</td>
     </tr>`
   ).join('')
-  const blankRowCount = 4
+  const blankRowCount = Math.max(0, 5 - (f.drawings || []).length)
   const dwgRows = dwgDataRows + blankRow.repeat(blankRowCount)
 
   return wrapper(`

@@ -319,6 +319,11 @@ const BLANK = {
   remarks: '', consultant_remarks: '', drive_link: '', status: 'Draft',
   prepared_by: '', copies: 1,
   contractor_sub: '', reason_for_overdue: '', submission_history: [],
+  // Drawing Number/Title/Revision above cover the first (and often only)
+  // drawing in this submittal; additional_drawings holds any further ones
+  // submitted together under the same SD No. — each printed as its own row
+  // in the transmittal's Drawing Nos./Title/Rev. table.
+  additional_drawings: [],
 }
 
 const SEED = [
@@ -403,11 +408,30 @@ export default function IF04List() {
   }
   function openEdit(item) {
     setEditItem(item)
-    setForm({ ...item, submission_history: Array.isArray(item.submission_history) ? item.submission_history : [] })
+    setForm({
+      ...item,
+      submission_history: Array.isArray(item.submission_history) ? item.submission_history : [],
+      additional_drawings: Array.isArray(item.additional_drawings) ? item.additional_drawings : [],
+    })
     setFormTab('details')
     setShowForm(true)
   }
   function set(f, v) { setForm(p => ({ ...p, [f]: v })) }
+
+  // ── Additional drawings (drawings 2+ submitted together under the same SD No.) ──
+  function addDrawing() {
+    setForm(p => ({ ...p, additional_drawings: [...(p.additional_drawings || []), { drawing_number: '', drawing_title: '', revision: 'Rev 00' }] }))
+  }
+  function setDrawing(i, field, val) {
+    setForm(p => {
+      const list = [...(p.additional_drawings || [])]
+      list[i] = { ...list[i], [field]: val }
+      return { ...p, additional_drawings: list }
+    })
+  }
+  function removeDrawing(i) {
+    setForm(p => ({ ...p, additional_drawings: (p.additional_drawings || []).filter((_, idx) => idx !== i) }))
+  }
 
   // ── Revision history helpers (SD resubmission rounds — feeds Shop Drawing Register) ──
   function addRev() {
@@ -451,7 +475,8 @@ export default function IF04List() {
     if (filterStatus && d.status !== filterStatus) return false
     if (search) {
       const q = search.toLowerCase()
-      return [d.if04_number, d.drawing_number, d.drawing_title, d.activity_id, d.mrf_number].some(v => (v || '').toLowerCase().includes(q))
+      const extraDwgValues = (Array.isArray(d.additional_drawings) ? d.additional_drawings : []).flatMap(x => [x.drawing_number, x.drawing_title])
+      return [d.if04_number, d.drawing_number, d.drawing_title, d.activity_id, d.mrf_number, ...extraDwgValues].some(v => (v || '').toLowerCase().includes(q))
     }
     return true
   })
@@ -475,7 +500,10 @@ export default function IF04List() {
     const latestRev = getLatestSdRevision(d)
     const printDate = latestRev?.submitted_date || d.date
     const priorDate = latestRev ? d.date : ''
-    const drawings = (d.drawing_number || d.drawing_title) ? [{ no: d.drawing_number, title: d.drawing_title, rev: d.revision }] : []
+    const drawings = [
+      ...((d.drawing_number || d.drawing_title) ? [{ no: d.drawing_number, title: d.drawing_title, rev: d.revision }] : []),
+      ...((Array.isArray(d.additional_drawings) ? d.additional_drawings : []).map(x => ({ no: x.drawing_number, title: x.drawing_title, rev: x.revision }))),
+    ]
     printForm(buildIF04({ ...mergeProjectLogos(d, activeProject), signatureImg, if04_number: printNumber, date: printDate, priorDate, drawings }), `Export for Transmittal — ${printNumber}`)
   }
 
@@ -545,7 +573,12 @@ export default function IF04List() {
               {filtered.map(d => (
                 <tr key={d.id}>
                   <td><span className="doc-number">{displaySdNumber(d)}</span></td>
-                  <td><span className="doc-number">{d.drawing_number || '—'}</span></td>
+                  <td>
+                    <span className="doc-number">{d.drawing_number || '—'}</span>
+                    {Array.isArray(d.additional_drawings) && d.additional_drawings.length > 0 && (
+                      <span style={{ marginLeft: 5, fontSize: 10, color: 'var(--text-muted)' }}>+{d.additional_drawings.length} more</span>
+                    )}
+                  </td>
                   <td style={{ fontSize: 12, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.drawing_title}</td>
                   <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{abbrDiscipline(d.discipline)}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.submitted_date || '—'}</td>
@@ -639,6 +672,46 @@ export default function IF04List() {
               <label className="form-label">WBS Code</label>
               <input className="form-input" value={form.wbs_code} onChange={e => set('wbs_code', e.target.value)} />
             </div>
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <label className="form-label" style={{ marginBottom: 0 }}>
+                Additional Drawings <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(optional — for submittals covering more than one drawing)</span>
+              </label>
+              <button className="btn btn-secondary" style={{ fontSize: 12 }} onClick={addDrawing}><Plus size={12} /> Add Drawing</button>
+            </div>
+            {(form.additional_drawings || []).length > 0 && (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <thead>
+                  <tr>
+                    {['Drawing Number', 'Drawing Title', 'Revision', ''].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '6px 10px', background: 'var(--bg-base)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {form.additional_drawings.map((dr, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '6px 10px' }}>
+                        <input className="form-input" value={dr.drawing_number} onChange={e => setDrawing(i, 'drawing_number', e.target.value)} placeholder="SD-STR-002" />
+                      </td>
+                      <td style={{ padding: '6px 10px' }}>
+                        <input className="form-input" value={dr.drawing_title} onChange={e => setDrawing(i, 'drawing_title', e.target.value)} />
+                      </td>
+                      <td style={{ padding: '6px 10px' }}>
+                        <select className="form-select" value={dr.revision} onChange={e => setDrawing(i, 'revision', e.target.value)} style={{ width: 100 }}>
+                          {DRAWING_REVISIONS.map(r => <option key={r}>{r}</option>)}
+                        </select>
+                      </td>
+                      <td style={{ padding: '6px 10px' }}>
+                        <button className="btn btn-ghost" style={{ padding: '3px 6px', color: 'var(--status-rejected-text)' }} onClick={() => removeDrawing(i)}><Trash2 size={12} /></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
 
           <div className="form-grid form-grid-3" style={{ gap: 14, marginBottom: 14 }}>

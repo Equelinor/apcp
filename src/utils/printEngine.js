@@ -159,7 +159,7 @@ export const buildIF04 = (f) => {
     <table style="width:100%;border-collapse:collapse;margin-bottom:14pt">
       <tr>
         <td style="width:50%;padding:4pt 0;font-size:8pt;vertical-align:top"><u><b>Project Engineer:</b></u> ${f.prepared_by || ''}</td>
-        <td style="width:50%;padding:4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f)}</td>
+        <td style="width:50%;padding:4pt 20pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f)}</td>
       </tr>
     </table>
     <div style="margin-bottom:14pt">

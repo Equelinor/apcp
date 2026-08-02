@@ -405,7 +405,7 @@ export default function IF04List() {
   async function save() {
     if (!form.if04_number?.trim()) { toast('SD No. required', 'err'); return }
     if (!form.drawing_title && !form.drawing_number) { toast('Drawing number or title required', 'err'); return }
-    const payload = { ...form, if04_number: form.if04_number.trim() }
+    const payload = { ...form, if04_number: form.if04_number.trim(), date: form.date || null, submitted_date: form.submitted_date || null, response_date: form.response_date || null }
     if (editItem) {
       const { error } = await supabase.from('if04').update(payload).eq('id', editItem.id)
       if (error) { toast('Save failed — ' + (error.code === '23505' ? 'that SD No. is already used on this project' : error.message), 'err'); return }

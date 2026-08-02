@@ -449,7 +449,8 @@ export default function IF04List() {
     const latestRev = getLatestSdRevision(d)
     const printDate = latestRev?.submitted_date || d.date
     const priorDate = latestRev ? d.date : ''
-    printForm(buildIF04({ ...mergeProjectLogos(d, activeProject), signatureImg, if04_number: printNumber, date: printDate, priorDate }), `Export for Transmittal — ${printNumber}`)
+    const drawings = (d.drawing_number || d.drawing_title) ? [{ no: d.drawing_number, title: d.drawing_title, rev: d.revision }] : []
+    printForm(buildIF04({ ...mergeProjectLogos(d, activeProject), signatureImg, if04_number: printNumber, date: printDate, priorDate, drawings }), `Export for Transmittal — ${printNumber}`)
   }
 
   return (
@@ -508,9 +509,6 @@ export default function IF04List() {
                 <th>Rev</th>
                 <th>Submitted</th>
                 <th>Response</th>
-                <th>Code</th>
-                <th>Activity</th>
-                <th>MRF</th>
                 <th>Status</th>
                 <th>Drive</th>
                 <th></th>
@@ -526,9 +524,6 @@ export default function IF04List() {
                   <td><span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600, color: 'var(--brand-accent)' }}>{d.revision}</span></td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.submitted_date || '—'}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
-                  <td style={{ fontSize: 11 }}>{d.response_code ? d.response_code.split(' — ')[0] : '—'}</td>
-                  <td style={{ fontSize: 11 }}>{d.activity_id ? <span className="doc-number">{d.activity_id}</span> : '—'}</td>
-                  <td>{d.mrf_number ? <span className="doc-number">{d.mrf_number}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                   <td><Badge status={d.status} /></td>
                   <td>{d.drive_link ? <a href={d.drive_link} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ fontSize: 11, padding: '3px 8px' }}><ExternalLink size={11} /></a> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                   <td>

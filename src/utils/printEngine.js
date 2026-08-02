@@ -114,13 +114,24 @@ const generated = (f, ref) =>
 // IF04 — Shop Drawing Submittal
 // ─────────────────────────────────────────────────────────
 export const buildIF04 = (f) => {
-  const dwgRows = (f.drawings || []).map(d =>
+  const blankRow = `<tr>
+      <td style="border:0.5pt solid #999;padding:9pt 5pt;font-size:7.5pt">&nbsp;</td>
+      <td style="border:0.5pt solid #999;padding:9pt 5pt;font-size:7.5pt;text-align:center">&nbsp;</td>
+      <td style="border:0.5pt solid #999;padding:9pt 5pt;font-size:7.5pt;text-align:center">&nbsp;</td>
+    </tr>`
+  // Real drawing rows plus enough blank rows underneath to fill the page to A4 —
+  // this form only ever carries 0-1 real drawings (a single record's own
+  // drawing_number/title/rev), so without padding the table was a near-empty
+  // header with a lot of dead white space below it.
+  const dwgDataRows = (f.drawings || []).map(d =>
     `<tr>
       <td style="border:0.5pt solid #999;padding:3pt 5pt;font-size:7.5pt">${d.no || ''}</td>
       <td style="border:0.5pt solid #999;padding:3pt 5pt;font-size:7.5pt;font-weight:700;text-align:center">${d.title || ''}</td>
       <td style="border:0.5pt solid #999;padding:3pt 5pt;font-size:7.5pt;text-align:center">${d.rev || ''}</td>
     </tr>`
   ).join('')
+  const blankRowCount = 4
+  const dwgRows = dwgDataRows + blankRow.repeat(blankRowCount)
 
   return wrapper(`
     ${buildHeader(f, 'AA-IF-04', 'SHOP DRAWING SUBMITTAL FORM')}

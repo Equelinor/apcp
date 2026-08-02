@@ -83,8 +83,7 @@ function exportSdRegisterPDF(items, project) {
 
   const withStatus = items.map(d => ({ ...d, _status: computeSdStatus(d), _overdue: isSdOverdue(d) }))
   const counts = {
-    total:     withStatus.length,
-    submitted: withStatus.filter(i => i.submitted_date).length,
+    total:     withStatus.filter(i => i._status !== 'Pending').length,
     ur:        withStatus.filter(i => i._status === 'Under Review').length,
     a:         withStatus.filter(i => i._status === 'Approved').length,
     b:         withStatus.filter(i => i._status === 'Approved with Comments').length,
@@ -168,13 +167,11 @@ function exportSdRegisterPDF(items, project) {
 
   const summaryRows = [
     ['Total Submittals', counts.total, ''],
-    ['Submitted', counts.submitted, ''],
     ['Under Review', counts.ur, '#1E40AF'],
     ['Approved (A)', counts.a, '#065F46'],
     ['Approved with Comments (B)', counts.b, '#92400E'],
     ['Revised & Resubmit (C)', counts.c, '#9A3412'],
     ['Rejected (D)', counts.d, '#991B1B'],
-    ['Pending', counts.pending, '#64748B'],
   ].map(([l,v,c]) =>
     `<tr>
       <td style="font-size:8pt;padding:2pt 0;color:#444">${l}</td>
@@ -236,6 +233,7 @@ function exportSdRegisterPDF(items, project) {
         <tr><td style="font-size:8pt;font-weight:700;color:#555;padding:2pt 0">Contract No.</td><td style="font-size:8pt;padding:2pt 0">${project?.contract_number || '—'}</td></tr>
         <tr><td style="font-size:8pt;font-weight:700;color:#555;padding:2pt 0">Updated</td><td style="font-size:8pt;padding:2pt 0"><b>${genDate}</b></td></tr>
       </table>
+      ${counts.pending ? `<div style="margin-top:8pt;font-size:7pt;color:#888;font-style:italic">${counts.pending} submittal${counts.pending === 1 ? '' : 's'} still in Draft — not included above</div>` : ''}
     </td>
     <td style="width:35%;vertical-align:top;padding:6pt 10pt;border-right:0.5pt solid #ddd">
       <div style="font-size:7.5pt;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4pt;letter-spacing:.08em">Register Summary</div>
@@ -433,7 +431,7 @@ export default function IF04List() {
   // ── KPI summary — same categories as the Export Register PDF's own summary ──
   const withSdStatus = items.map(d => computeSdStatus(d))
   const kpi = {
-    total:   withSdStatus.length,
+    total:   withSdStatus.filter(s => s !== 'Pending').length,
     ur:      withSdStatus.filter(s => s === 'Under Review').length,
     a:       withSdStatus.filter(s => s === 'Approved').length,
     b:       withSdStatus.filter(s => s === 'Approved with Comments').length,
@@ -468,8 +466,12 @@ export default function IF04List() {
         </div>
       </div>
 
-      {/* KPI strip — same categories as the Export Register PDF's own summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 10, marginBottom: 20 }}>
+      {/* KPI strip — same categories as the Export Register PDF's own summary.
+          Draft/Pending submittals are deliberately excluded from Total and
+          every other tracked figure here — they haven't actually been
+          submitted to anyone yet, so they're surfaced as a plain note below
+          instead of a counted register category. */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, marginBottom: kpi.pending ? 8 : 20 }}>
         {[
           { label: 'Total',           value: kpi.total,   bg: 'var(--bg-surface)', color: 'var(--text-primary)' },
           { label: 'Under Review',    value: kpi.ur,      bg: '#DBEAFE', color: '#1E40AF' },
@@ -477,7 +479,6 @@ export default function IF04List() {
           { label: 'w/ Comments (B)', value: kpi.b,       bg: '#FEF3C7', color: '#92400E' },
           { label: 'Resubmit (C)',    value: kpi.c,       bg: '#FFEDD5', color: '#9A3412' },
           { label: 'Rejected (D)',    value: kpi.d,       bg: '#FEE2E2', color: '#991B1B' },
-          { label: 'Pending',         value: kpi.pending, bg: '#F1F5F9', color: '#64748B' },
           { label: `Overdue (>${OVERDUE_DAYS}d)`, value: kpi.overdue, bg: '#FEE2E2', color: '#991B1B' },
         ].map(k => (
           <div key={k.label} style={{ background: k.bg, border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
@@ -486,6 +487,11 @@ export default function IF04List() {
           </div>
         ))}
       </div>
+      {kpi.pending > 0 && (
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 20 }}>
+          {kpi.pending} submittal{kpi.pending === 1 ? '' : 's'} still in Draft — not included above
+        </div>
+      )}
 
       <div className="filter-bar" style={{ marginBottom: 12 }}>
         <input placeholder="Search number, drawing, activity…" value={search} onChange={e => setSearch(e.target.value)} />

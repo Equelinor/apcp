@@ -415,7 +415,8 @@ export default function IF05List() {
 
   const handlePrint = async (d) => {
     const signatureImg = await getSignatureForName(d.prepared_by)
-    printForm(buildIF05({ ...mergeProjectLogos(d, activeProject), signatureImg }), `Export for Transmittal — ${d.if05_number}`)
+    const printNumber = displayMacNumber(d)
+    printForm(buildIF05({ ...mergeProjectLogos(d, activeProject), signatureImg, if05_number: printNumber }), `Export for Transmittal — ${printNumber}`)
   }
 
   return (

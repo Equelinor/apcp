@@ -63,7 +63,6 @@ const NAV = [
       { to: '/mac',               label: 'Material Approval (MAC)', icon: ClipboardCheck },
       { to: '/drawing-register',  label: 'Drawing Register',      icon: BookOpen       },
       { to: '/shop-drawings',     label: 'Shop Drawings',         icon: FolderOpen     },
-      { to: '/sd-register',       label: 'Shop Drawing Register', icon: FileSearch     },
       { to: '/submittals',        label: 'Technical Submittals',  icon: FileSearch     },
       { to: '/mockup',            label: 'Sample Submittals',       icon: Layers         },
       { to: '/document-register', label: 'Document Register',     icon: Library        },

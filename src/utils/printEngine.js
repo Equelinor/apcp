@@ -124,12 +124,17 @@ export const buildIF04 = (f) => {
 
   return wrapper(`
     ${buildHeader(f, 'AA-IF-04', 'SHOP DRAWING SUBMITTAL FORM')}
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:8pt;font-size:8pt">
+      <tr>
+        <td style="border-right:1pt solid #000;padding:5pt 8pt;width:60%"><b>SD No.:</b> &nbsp; ${f.if04_number || ''}</td>
+        <td style="padding:5pt 8pt"><b>Date:</b> &nbsp; ${fmtDate(f.date)}</td>
+      </tr>
+    </table>
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:14pt;font-size:8pt">
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;width:22%;font-weight:700;background:#f9f9f9">Project</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.projName || ''}</td></tr>
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Contractor</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr>
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Client</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.client || ''}</td></tr>
       <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Shop Drawing No.</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.sdFrom || ''}${f.sdTo ? ' to ' + f.sdTo : ''}</td></tr>
-      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Date</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${fmtDate(f.date)}</td></tr>
     </table>
     <p style="font-size:8pt;margin-bottom:10pt;padding-left:4pt">We request approval of the following shop drawings for implementation in the above works.</p>
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:16pt;font-size:8pt">
@@ -168,7 +173,10 @@ export const buildIF04 = (f) => {
       <div style="border-bottom:0.5pt solid #ccc;height:16pt"></div>
     </div>
     <div><div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:4pt">Client's Signature:</div><div style="border-bottom:0.5pt solid #ccc;height:16pt"></div></div>
-    ${generated(f, f.docNumber)}
+    ${f.priorDate
+      ? `<div style="margin-top:10pt;font-size:6pt;color:#888;text-align:center">Generated electronically by APCP</div>
+         <div style="font-size:6pt;color:#888;text-align:center">Prior revision date: ${fmtDate(f.priorDate)}</div>`
+      : generated(f, f.if04_number)}
   `)
 }
 

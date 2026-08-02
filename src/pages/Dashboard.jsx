@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { computeMacApprovalStatus, MAC_APPROVAL_STATUS } from './if05/IF05List'
 import { computeRfiStatus, RFI_STATUS } from './if08/IF08List'
-import { computeSdStatus, SD_STATUS, isSdOverdue } from './sd/SDRegister'
+import { computeSdStatus, SD_STATUS, isSdOverdue } from './if04/IF04List'
 import { computeIrStatus, IR_STATUS, isIrOverdue } from './ir/IRRegister'
 
 // ─── Seed data used when Supabase has no rows yet ───────────────
@@ -142,7 +142,7 @@ export default function Dashboard() {
       flaggedLabel: 'Overdue',
     },
     {
-      label: 'Shop Drawings', route: '/sd-register', icon: FolderOpen,
+      label: 'Shop Drawings', route: '/shop-drawings', icon: FolderOpen,
       total: sdWithStatus.length,
       pending: sdWithStatus.filter(s => s.status === 'Under Review' || s.status === 'Pending').length,
       flagged: sdWithStatus.filter(s => s.overdue).length,

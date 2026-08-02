@@ -21,7 +21,6 @@ import SupplierRegister from './pages/suppliers/SupplierRegister'
 import ProjectRegister from './pages/projects/ProjectRegister'
 import DARList from './pages/dar/DARList'
 import BOQRegister from './pages/boq/BOQRegister'
-import SDRegister from './pages/sd/SDRegister'
 import IRRegister from './pages/ir/IRRegister'
 import RolesPermissions from './pages/admin/RolesPermissions'
 
@@ -46,7 +45,6 @@ export default function App() {
         <Route path="drawing-register" element={<DrawingRegister />} />
         <Route path="document-register" element={<DocumentRegister />} />
         <Route path="shop-drawings" element={<IF04List />} />
-        <Route path="sd-register" element={<SDRegister />} />
         <Route path="mac" element={<IF05List />} />
         <Route path="mockup" element={<IF06List />} />
         <Route path="submittals" element={<IF07List />} />

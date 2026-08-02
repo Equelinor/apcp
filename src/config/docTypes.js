@@ -126,3 +126,25 @@ export function formatRevisedMacNumber(macNumber, revNo) {
   if (!macNumber || !revNo) return macNumber || ''
   return `${macNumber}-${revNo}`
 }
+
+// ─── SHOP DRAWING (IF04) NUMBER — same shape as genMacNumber, "SD" instead
+// of "MAC": AI-<project number>-SD-XXX (e.g. AI-0632-SD-001). Replaces the
+// generic genDocNumber('IF04', ...) format for new records going forward —
+// existing shop drawings already numbered under the old IF04-PROJCODE-YEAR-SEQ
+// format keep their historical numbers unchanged. Deliberate user choice
+// (2026-08-02), following the same explicit-exception pattern as MAC/RFI/MRF.
+export function genSdNumber(projectNumber, sequence) {
+  const parts = String(projectNumber || '').split('-')
+  const projNum = parts[parts.length - 1] || ''
+  return `AI-${projNum}-SD-${String(sequence).padStart(3, '0')}`
+}
+
+// ─── REVISED SD NUMBER — same idea as formatRevisedMacNumber. The base
+// if04_number can itself already carry a manual letter suffix (e.g.
+// "AI-0632-SD-001a", mirroring how MAC numbers are sometimes hand-suffixed)
+// — this only ever appends the revision round's rev_no on top of whatever
+// that already is: AI-0632-SD-001a + R1 -> AI-0632-SD-001a-R1.
+export function formatRevisedSdNumber(sdNumber, revNo) {
+  if (!sdNumber || !revNo) return sdNumber || ''
+  return `${sdNumber}-${revNo}`
+}

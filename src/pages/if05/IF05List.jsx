@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
-import { genMacNumber, RESPONSE_CODES } from '../../config/docTypes'
+import { genMacNumber, formatRevisedMacNumber, RESPONSE_CODES } from '../../config/docTypes'
 import { supplierService } from '../../services/supplierService'
 import { employeeService } from '../../services/employeeService'
 import Modal from '../../components/Modal'
@@ -43,6 +43,16 @@ export function computeMacApprovalStatus(d) {
   // submitted MAC still show as not-yet-submitted.
   if (!d.submitted_date) return 'Draft'
   return 'Under Review'
+}
+
+// The MAC list's "IF05 No." column shows the latest revision's number (e.g.
+// AI-0632-MAC-024-R1) once a revision round exists, instead of the base
+// number — the record's number is understood to be whatever its current/
+// latest round is, matching the same idea as RFI's formatRevisedRfiNumber.
+export function displayMacNumber(d) {
+  const hist = Array.isArray(d.submission_history) ? d.submission_history : []
+  const latest = hist[hist.length - 1]
+  return latest?.rev_no ? formatRevisedMacNumber(d.if05_number, latest.rev_no) : (d.if05_number || '')
 }
 
 const REG_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
@@ -465,7 +475,7 @@ export default function IF05List() {
             <tbody>
               {filtered.map(d => (
                 <tr key={d.id}>
-                  <td><span className="doc-number" style={{ fontSize: 11 }}>{d.if05_number}</span></td>
+                  <td><span className="doc-number" style={{ fontSize: 11 }}>{displayMacNumber(d)}</span></td>
                   <td style={{ fontSize: 12, maxWidth: 340, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.material_desc}</td>
                   <td style={{ fontSize: 12 }}>{d.brand || '—'}</td>
                   <td style={{ fontSize: 12 }}>{d.supplier_name || '—'}</td>
@@ -679,7 +689,7 @@ export default function IF05List() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                   <thead>
                     <tr>
-                      {['Rev.', 'Submitted Date', 'Return Date', 'Status', ''].map(h => (
+                      {['Rev.', 'Revised MAC No.', 'Submitted Date', 'Return Date', 'Status', ''].map(h => (
                         <th key={h} style={{ textAlign: 'left', padding: '6px 10px', background: 'var(--bg-base)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>{h}</th>
                       ))}
                     </tr>
@@ -690,6 +700,9 @@ export default function IF05List() {
                         <td style={{ padding: '6px 10px' }}>
                           <input className="form-input" value={r.rev_no} disabled={isLocked} onChange={e => setRev(i, 'rev_no', e.target.value)}
                             style={{ width: 64, fontFamily: 'var(--font-mono)', fontWeight: 700 }} placeholder="R1" />
+                        </td>
+                        <td style={{ padding: '6px 10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                          {formatRevisedMacNumber(form.if05_number, r.rev_no)}
                         </td>
                         <td style={{ padding: '6px 10px' }}>
                           <input className="form-input" type="date" value={r.submitted_date} disabled={isLocked}

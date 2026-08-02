@@ -116,3 +116,13 @@ export function formatRevisedRfiNumber(rfiNumber, revNo) {
   if (!rfiNumber || !revNo) return rfiNumber || ''
   return `${rfiNumber}${revNo}`
 }
+
+// ─── REVISED MAC NUMBER — same idea as formatRevisedRfiNumber above, not a
+// new sequence, just a display suffix appended to the MAC's existing
+// genMacNumber() output. MAC's own convention is hyphenated (AI-0632-MAC-024
+// + R1 -> AI-0632-MAC-024-R1), unlike RFI's un-hyphenated R1 suffix — this
+// was an explicit user choice (2026-08-01), not an inconsistency to fix.
+export function formatRevisedMacNumber(macNumber, revNo) {
+  if (!macNumber || !revNo) return macNumber || ''
+  return `${macNumber}-${revNo}`
+}

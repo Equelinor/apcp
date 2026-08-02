@@ -12,12 +12,12 @@ export const OVERDUE_DAYS = 7
 // IF09's existing result / status fields (not a new stored field). Mirrors the
 // Passed→Approved / Failed→Rejected mapping already used for IF09's own badge display.
 export const IR_STATUS = {
-  'Pending':                { code: 'PND', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
   'Under Review':           { code: 'UR',  bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
   'Approved':               { code: 'A',   bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
   'Approved with Comments': { code: 'B',   bg: '#FEF3C7', text: '#92400E', border: '#FDE68A' },
   'Revised and Resubmit':   { code: 'C',   bg: '#FFEDD5', text: '#9A3412', border: '#FED7AA' },
   'Rejected':               { code: 'D',   bg: '#FEE2E2', text: '#991B1B', border: '#FCA5A5' },
+  'Draft':                  { code: 'DFT', bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' },
 }
 const IR_STATUS_KEYS = Object.keys(IR_STATUS)
 
@@ -25,7 +25,7 @@ export function computeIrStatus(d) {
   if (d.result === 'Passed') return 'Approved'
   if (d.result === 'Conditional Pass') return 'Approved with Comments'
   if (d.result === 'Failed') return 'Rejected'
-  if (d.status === 'Draft') return 'Pending'
+  if (d.status === 'Draft') return 'Draft'
   return 'Under Review'
 }
 
@@ -38,7 +38,7 @@ export function isIrOverdue(d) {
 }
 
 function StatusBadge({ status }) {
-  const s = IR_STATUS[status] || IR_STATUS['Pending']
+  const s = IR_STATUS[status] || IR_STATUS['Draft']
   return (
     <span style={{
       display: 'inline-block', padding: '2px 8px', borderRadius: 4,
@@ -69,7 +69,7 @@ function exportPDF(items, project) {
     b:         withStatus.filter(i => i._status === 'Approved with Comments').length,
     c:         withStatus.filter(i => i._status === 'Revised and Resubmit').length,
     d:         withStatus.filter(i => i._status === 'Rejected').length,
-    pending:   withStatus.filter(i => i._status === 'Pending').length,
+    draft:     withStatus.filter(i => i._status === 'Draft').length,
     overdue:   withStatus.filter(i => i._overdue).length,
   }
 
@@ -89,7 +89,7 @@ function exportPDF(items, project) {
 
   const tableRows = withStatus.map((d, i) => {
     const hist = Array.isArray(d.submission_history) ? d.submission_history : []
-    const s = IR_STATUS[d._status] || IR_STATUS['Pending']
+    const s = IR_STATUS[d._status] || IR_STATUS['Draft']
     const bg = i % 2 === 0 ? '#fff' : '#f9fafb'
 
     const revCells = [1,2,3,4,5].map(n => {
@@ -138,6 +138,7 @@ function exportPDF(items, project) {
     ['C','Revised and Resubmit','#FFEDD5','#9A3412'],
     ['D','Rejected','#FEE2E2','#991B1B'],
     ['UR','Under Review','#DBEAFE','#1E40AF'],
+    ['DFT','Draft','#F1F5F9','#64748B'],
   ].map(([code,label,bg,color]) =>
     `<span style="display:inline-flex;align-items:center;gap:5pt;margin-right:12pt">
       <span style="display:inline-block;padding:2pt 6pt;background:${bg};color:${color};font-size:8pt;font-weight:700;border-radius:2pt">${code}</span>
@@ -153,7 +154,7 @@ function exportPDF(items, project) {
     ['Approved with Comments (B)', counts.b, '#92400E'],
     ['Revised & Resubmit (C)', counts.c, '#9A3412'],
     ['Rejected (D)', counts.d, '#991B1B'],
-    ['Pending', counts.pending, '#64748B'],
+    ['Draft', counts.draft, '#64748B'],
   ].map(([l,v,c]) =>
     `<tr>
       <td style="font-size:8pt;padding:2pt 0;color:#444">${l}</td>
@@ -319,7 +320,7 @@ export default function IRRegister() {
     b:       withStatus.filter(i => i._status === 'Approved with Comments').length,
     c:       withStatus.filter(i => i._status === 'Revised and Resubmit').length,
     d:       withStatus.filter(i => i._status === 'Rejected').length,
-    pending: withStatus.filter(i => i._status === 'Pending').length,
+    draft:   withStatus.filter(i => i._status === 'Draft').length,
     overdue: withStatus.filter(i => i._overdue).length,
   }
 
@@ -353,7 +354,7 @@ export default function IRRegister() {
           { label: 'w/ Comments (B)', value: kpi.b,     bg: '#FEF3C7', color: '#92400E' },
           { label: 'Resubmit (C)', value: kpi.c,        bg: '#FFEDD5', color: '#9A3412' },
           { label: 'Rejected (D)', value: kpi.d,        bg: '#FEE2E2', color: '#991B1B' },
-          { label: 'Pending',      value: kpi.pending,  bg: '#F1F5F9', color: '#64748B' },
+          { label: 'Draft',        value: kpi.draft,    bg: '#F1F5F9', color: '#64748B' },
           { label: `Overdue (>${OVERDUE_DAYS}d)`, value: kpi.overdue, bg: '#FEE2E2', color: '#991B1B' },
         ].map(k => (
           <div key={k.label} style={{ background: k.bg, border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '10px 14px' }}>

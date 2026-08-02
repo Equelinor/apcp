@@ -151,7 +151,7 @@ export default function Dashboard() {
     {
       label: 'Inspections', route: '/ir-register', icon: ClipboardCheck,
       total: irWithStatus.length,
-      pending: irWithStatus.filter(s => s.status === 'Under Review' || s.status === 'Pending').length,
+      pending: irWithStatus.filter(s => s.status === 'Under Review' || s.status === 'Draft').length,
       flagged: irWithStatus.filter(s => s.overdue || s.status === 'Rejected').length,
       flaggedLabel: 'Failed / Overdue',
     },

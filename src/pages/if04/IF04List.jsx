@@ -75,6 +75,14 @@ const fmtRegDate = d => {
   return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getFullYear()).slice(2)}`
 }
 
+// Register export's "Rev." column — DRAWING_REVISIONS values like "Rev 00" are
+// shown compactly as "R00", matching the Rev.01/Rev.02 standard already applied
+// to the revision-round headers. Non-numeric revisions (IFC/As Built) pass through as-is.
+const fmtDrawingRev = rev => {
+  const m = String(rev || '').match(/^Rev\s*(\d+)$/i)
+  return m ? `R${m[1].padStart(2, '0')}` : (rev || '')
+}
+
 // Short-form labels for the on-screen list's Discipline column — covers
 // DEFAULT_DISCIPLINES; anything else (a project's own custom discipline list)
 // just falls back to showing the value as typed rather than guessing an abbreviation.
@@ -151,7 +159,7 @@ function exportSdRegisterPDF(items, project) {
       <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7.5pt">${d.contractor_sub || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.submitted_date ? fmtRegDate(d.submitted_date) : ''}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7pt;text-align:center">${d.response_date ? fmtRegDate(d.response_date) : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;font-weight:700;text-align:center">${d.revision || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:7.5pt;font-weight:700;text-align:center">${fmtDrawingRev(d.revision)}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 3pt;font-size:8pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
       <td style="border:0.4pt solid #ccc;padding:2.5pt 4pt;font-size:7pt;color:#555">${d.remarks || ''}</td>
       ${revCells}

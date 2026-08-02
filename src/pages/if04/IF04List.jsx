@@ -72,6 +72,21 @@ const fmtRegDate = d => {
   return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getFullYear()).slice(2)}`
 }
 
+// Short-form labels for the on-screen list's Discipline column — covers
+// DEFAULT_DISCIPLINES; anything else (a project's own custom discipline list)
+// just falls back to showing the value as typed rather than guessing an abbreviation.
+const DISCIPLINE_ABBR = {
+  'Civil / Structural': 'Civil/Struct.',
+  'Architectural': 'Arch.',
+  'Mechanical': 'Mech.',
+  'Electrical': 'Elec.',
+  'Plumbing': 'Plumb.',
+  'Finishing': 'Finish.',
+  'Geotechnical': 'Geotech.',
+  'Infrastructure': 'Infra.',
+}
+const abbrDiscipline = d => DISCIPLINE_ABBR[d] || d || ''
+
 // ── Bulk Shop Drawing Register PDF export (A3 landscape, all submittals on
 // one sheet) — same layout convention as the MAC/RFI register exports.
 // The "Under Review — Overdue" KPI box and "Reason for Overdue" column from
@@ -512,7 +527,6 @@ export default function IF04List() {
                 <th>Drawing No.</th>
                 <th>Title</th>
                 <th>Discipline</th>
-                <th>Rev</th>
                 <th>Submitted</th>
                 <th>Response</th>
                 <th>Status</th>
@@ -526,8 +540,7 @@ export default function IF04List() {
                   <td><span className="doc-number">{displaySdNumber(d)}</span></td>
                   <td><span className="doc-number">{d.drawing_number || '—'}</span></td>
                   <td style={{ fontSize: 12, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.drawing_title}</td>
-                  <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.discipline}</td>
-                  <td><span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600, color: 'var(--brand-accent)' }}>{d.revision}</span></td>
+                  <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{abbrDiscipline(d.discipline)}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.submitted_date || '—'}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.response_date || '—'}</td>
                   <td><Badge status={d.status} /></td>

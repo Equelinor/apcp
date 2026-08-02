@@ -3,7 +3,7 @@ import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genSdNumber, formatRevisedSdNumber, getDisciplines, SUBMITTAL_STATUSES, RESPONSE_CODES, DRAWING_REVISIONS } from '../../config/docTypes'
-import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
+import { useActivityFill } from '../../hooks/useActivityFill'
 import { employeeService } from '../../services/employeeService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
@@ -303,7 +303,6 @@ export default function IF04List() {
   const { activeProject } = useProject()
   const { profile } = useAuth()
   const { toasts, toast } = useToast()
-  const mrfList = useMRFList(activeProject.project_code)
   const disciplines = getDisciplines(activeProject.project_code)
 
   const [items, setItems] = useState([])
@@ -567,24 +566,6 @@ export default function IF04List() {
             <label className="form-label required">SD No. <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(auto-suggested, editable — e.g. append a/b/c for split submissions)</span></label>
             <input className="form-input" value={form.if04_number} onChange={e => set('if04_number', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }} />
           </div>
-          {/* Links */}
-          <div style={{ background: 'var(--bg-base)', borderRadius: 'var(--radius)', padding: '12px 14px', marginBottom: 16, fontSize: 12 }}>
-            <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Links — auto-fills fields below</div>
-            <div className="form-grid form-grid-2" style={{ gap: 10 }}>
-              <div className="form-group">
-                <label className="form-label">Activity ID</label>
-                <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010 — auto-fills activity name, WBS" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Linked MRF (optional)</label>
-                <select className="form-select" value={form.mrf_number} onChange={e => set('mrf_number', e.target.value)}>
-                  <option value="">— None —</option>
-                  {mrfList.map(m => <option key={m.mrf_number} value={m.mrf_number}>{m.mrf_number} — {m.material_desc?.slice(0, 40)}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
-
           <div className="form-grid form-grid-3" style={{ gap: 14, marginBottom: 14 }}>
             <div className="form-group">
               <label className="form-label">Date</label>
@@ -680,10 +661,6 @@ export default function IF04List() {
               <label className="form-label">Consultant Remarks</label>
               <textarea className="form-textarea" value={form.consultant_remarks} onChange={e => set('consultant_remarks', e.target.value)} rows={2} />
             </div>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Reason for Overdue</label>
-            <input className="form-input" value={form.reason_for_overdue} onChange={e => set('reason_for_overdue', e.target.value)} placeholder="Filled in only if this submittal ran past its review window" />
           </div>
         </div>
         )}

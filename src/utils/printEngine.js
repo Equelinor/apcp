@@ -301,10 +301,13 @@ export const buildIF06 = (f) => {
 }
 
 // ─────────────────────────────────────────────────────────
-// IF07 — Document Submittal Form (DSF) — rebuilt to MAC parity 2026-08-05.
-// Single-item certificate (one document per submittal), matching buildIF05's
-// shape rather than the drawing-table layout SD uses — a document submittal
-// isn't inherently tabular the way a set of shop drawings is.
+// IF07 — Document Submittal Form. Single-item certificate (one document per
+// submittal), matching buildIF05's shape rather than a drawing-table layout —
+// a document submittal isn't inherently tabular the way a set of shop
+// drawings is. (This shape briefly lived here as the "DSF" module 2026-08-05
+// before that work moved to Document Register — see buildDSF below — but the
+// shape itself was a genuine fix over the old broken drawing-table copy, so
+// IF07 kept it rather than reverting to the earlier broken version.)
 // ─────────────────────────────────────────────────────────
 export const buildIF07 = (f) => {
   const td = 'border:0.5pt solid #999;padding:4pt 6pt;font-size:8pt;'
@@ -371,6 +374,82 @@ export const buildIF07 = (f) => {
       ? `<div style="margin-top:10pt;font-size:6pt;color:#888;text-align:center">Generated electronically by APCP</div>
          <div style="font-size:6pt;color:#888;text-align:center">Prior revision date: ${fmtDate(f.priorDate)}</div>`
       : generated(f, f.if07_number)}
+  `)
+}
+
+// ─────────────────────────────────────────────────────────
+// Document Register — Document Submittal Form (DSF) certificate. Rebuilt to
+// MAC parity 2026-08-05 (numbering, response-code workflow, revision rounds,
+// register export) — same single-item shape as buildIF07 above, adapted to
+// the documents table's own field names (doc_number, category) plus a
+// Discipline line that IF07 never had.
+// ─────────────────────────────────────────────────────────
+export const buildDSF = (f) => {
+  const td = 'border:0.5pt solid #999;padding:4pt 6pt;font-size:8pt;'
+  const tdl = td + 'font-weight:700;background:#f9f9f9;width:22%;'
+  return wrapper(`
+    ${buildHeader(f, 'AA-DR-01', 'DOCUMENT SUBMITTAL FORM')}
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:8pt;font-size:8pt">
+      <tr>
+        <td style="border-right:1pt solid #000;padding:5pt 8pt;width:60%"><b>DSF No.:</b> &nbsp; ${f.doc_number || ''}</td>
+        <td style="padding:5pt 8pt"><b>Date:</b> &nbsp; ${fmtDate(f.date)}</td>
+      </tr>
+    </table>
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
+      <tr><td style="${tdl}">Project:</td><td style="${td}font-weight:700">${f.projName || ''}</td></tr>
+      <tr><td style="${tdl}">Client:</td><td style="${td}font-weight:700">${f.client || ''}</td></tr>
+      <tr><td style="${tdl}">Contractor:</td><td style="${td}font-weight:700">${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr>
+      <tr><td style="${tdl}">Consultant:</td><td style="${td}font-weight:700">${f.consultant || ''}</td></tr>
+    </table>
+    <p style="font-size:8pt;margin-bottom:10pt;padding-left:4pt">We submit the following document for your review and approval.</p>
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
+      <thead><tr style="background:#f0f0f0">
+        <th style="border:0.5pt solid #999;padding:5pt 6pt;text-align:center;width:6%">Item No.</th>
+        <th style="border:0.5pt solid #999;padding:5pt 6pt;text-align:left;width:32%">Item Description</th>
+        <th style="border:0.5pt solid #999;padding:5pt 6pt;text-align:left">Details</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="border:0.5pt solid #999;padding:2.5pt 6pt;text-align:center;background:#fafafa">1</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt;background:#fafafa">Document Title</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt">${f.title || ''}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:2.5pt 6pt;text-align:center;background:#fafafa">2</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt;background:#fafafa">Category</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt">${f.category || ''}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:2.5pt 6pt;text-align:center;background:#fafafa">3</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt;background:#fafafa">Discipline</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt">${f.discipline || ''}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:2.5pt 6pt;text-align:center;background:#fafafa">4</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt;background:#fafafa">Reference Number</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt">${f.ref_number || ''}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:2.5pt 6pt;text-align:center;background:#fafafa">5</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt;background:#fafafa">Activity</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt">${[f.activity_id, f.activity_name].filter(Boolean).join(' — ')}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:2.5pt 6pt;text-align:center;background:#fafafa">6</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt;background:#fafafa">Addressed To</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt">${f.addressed_to || ''}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:2.5pt 6pt;text-align:center;background:#fafafa">7</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt;background:#fafafa">Copies</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt">${f.copies || ''}</td></tr>
+      </tbody>
+    </table>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:14pt">
+      <tr>
+        <td style="width:50%;padding:4pt 0;font-size:8pt;vertical-align:top"><u><b>Prepared By:</b></u> ${f.prepared_by || ''}</td>
+        <td style="width:50%;padding:4pt 20pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f)}</td>
+      </tr>
+    </table>
+    <div style="margin-bottom:14pt">
+      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:10pt">Consultant's Comments</div>
+      <table style="width:100%;border-collapse:collapse;font-size:8pt">
+        <tr>
+          <td style="width:50%;padding:4pt 0;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
+            <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and Re-submit, work may proceed subject to incorporation of comments indicated</span></div>
+          </td>
+          <td style="width:50%;padding:4pt 0 4pt 20pt;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
+            <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and resubmit, work not to proceed</span></div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div style="margin-bottom:24pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
+    <div style="margin-bottom:10pt">
+      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:6pt">Client's Comments:</div>
+      <div style="border-bottom:1pt solid #000;height:18pt;margin-bottom:4pt"></div>
+      <div style="border-bottom:0.5pt solid #ccc;height:16pt"></div>
+    </div>
+    <div><div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:4pt">Client's Signature:</div><div style="border-bottom:0.5pt solid #ccc;height:16pt"></div></div>
+    ${f.priorDate
+      ? `<div style="margin-top:10pt;font-size:6pt;color:#888;text-align:center">Generated electronically by APCP</div>
+         <div style="font-size:6pt;color:#888;text-align:center">Prior revision date: ${fmtDate(f.priorDate)}</div>`
+      : generated(f, f.doc_number)}
   `)
 }
 

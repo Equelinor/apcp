@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { genDocNumber, getDisciplines, RESPONSE_CODES } from '../../config/docTypes'
-import { useActivityFill } from '../../hooks/useActivityFill'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
@@ -39,12 +38,6 @@ export default function IF12List() {
   const [form, setForm] = useState(BLANK)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
-
-  const { activityData } = useActivityFill(activeProject.project_code, form.activity_id, null)
-
-  useEffect(() => {
-    if (activityData && !editItem) setForm(f => ({ ...f, activity_name: activityData.activity_name || f.activity_name, wbs_code: activityData.wbs_code || f.wbs_code }))
-  }, [activityData])
 
   useEffect(() => { loadData() }, [activeProject])
 

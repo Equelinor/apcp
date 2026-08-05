@@ -3,7 +3,6 @@ import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genRfiNumber, formatRevisedRfiNumber } from '../../config/docTypes'
-import { useActivityFill } from '../../hooks/useActivityFill'
 import { employeeService } from '../../services/employeeService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
@@ -277,7 +276,7 @@ function exportRfiRegisterPDF(items, project) {
 const BLANK = {
   date: today(), subject: '', description: '', priority: 'Medium',
   activity_id: '', activity_name: '', wbs_code: '',
-  mrf_number: '', drawing_ref: '', spec_ref: '',
+  drawing_ref: '', spec_ref: '',
   requested_by: '', addressed_to: '',
   required_response_date: '', response_date: '', response: '', replied_by: '',
   impact: 'TBD', impact_description: '',
@@ -289,8 +288,8 @@ const BLANK = {
 }
 
 const SEED = [
-  { id: 1, rfi_number: 'IF08-ANT-2025-00001', date: '2025-01-20', project_code: 'ANT', subject: 'Clarification on Rebar Lap Length at Foundation', description: 'Please clarify lap length requirements for 16mm TMT rebar at pile cap junction as per structural drawings IFC-STR-001.', priority: 'High', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', wbs_code: '1.1.2', mrf_number: 'MRF-ANT-2025-00001', drawing_ref: 'IFC-STR-001', spec_ref: 'Section 03 20 00', requested_by: 'Ahmed Al-Rashid', addressed_to: 'Structural Engineer', required_response_date: '2025-01-25', response_date: '2025-01-24', response: 'Lap length shall be 45d as per BS 8110. See attached sketch.', impact: 'No Impact', impact_description: '', status: 'Answered', drive_link: '', remarks: '' },
-  { id: 2, rfi_number: 'IF08-MRS-2025-00001', date: '2025-01-28', project_code: 'MRS', subject: 'Waterproofing Membrane Overlap at Column Base', description: 'Clarification required on waterproofing membrane overlap detail at column base junction. No detail on IFC drawings.', priority: 'Critical', activity_id: 'B2030', activity_name: 'Basement Waterproofing L3', wbs_code: '2.1.3', mrf_number: 'MRF-MRS-2025-00001', drawing_ref: 'IFC-WP-001', spec_ref: '', requested_by: 'Khalid Mansoor', addressed_to: 'Architect', required_response_date: '2025-02-01', response_date: '', response: '', impact: 'TBD', impact_description: 'Work on hold pending clarification', status: 'Submitted', drive_link: '', remarks: '' },
+  { id: 1, rfi_number: 'IF08-ANT-2025-00001', date: '2025-01-20', project_code: 'ANT', subject: 'Clarification on Rebar Lap Length at Foundation', description: 'Please clarify lap length requirements for 16mm TMT rebar at pile cap junction as per structural drawings IFC-STR-001.', priority: 'High', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', wbs_code: '1.1.2', drawing_ref: 'IFC-STR-001', spec_ref: 'Section 03 20 00', requested_by: 'Ahmed Al-Rashid', addressed_to: 'Structural Engineer', required_response_date: '2025-01-25', response_date: '2025-01-24', response: 'Lap length shall be 45d as per BS 8110. See attached sketch.', impact: 'No Impact', impact_description: '', status: 'Answered', drive_link: '', remarks: '' },
+  { id: 2, rfi_number: 'IF08-MRS-2025-00001', date: '2025-01-28', project_code: 'MRS', subject: 'Waterproofing Membrane Overlap at Column Base', description: 'Clarification required on waterproofing membrane overlap detail at column base junction. No detail on IFC drawings.', priority: 'Critical', activity_id: 'B2030', activity_name: 'Basement Waterproofing L3', wbs_code: '2.1.3', drawing_ref: 'IFC-WP-001', spec_ref: '', requested_by: 'Khalid Mansoor', addressed_to: 'Architect', required_response_date: '2025-02-01', response_date: '', response: '', impact: 'TBD', impact_description: 'Work on hold pending clarification', status: 'Submitted', drive_link: '', remarks: '' },
 ]
 
 export default function IF08List() {
@@ -310,14 +309,6 @@ export default function IF08List() {
   const [employees, setEmployees] = useState([])
 
   useEffect(() => { employeeService.dropdown().then(setEmployees) }, [])
-
-  const { activityData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
-
-  useEffect(() => {
-    if (activityData && !editItem) {
-      setForm(f => ({ ...f, activity_name: activityData.activity_name || f.activity_name, wbs_code: activityData.wbs_code || f.wbs_code }))
-    }
-  }, [activityData])
 
   useEffect(() => { loadData() }, [activeProject])
 
@@ -399,7 +390,7 @@ export default function IF08List() {
     if (filterPriority && d.priority !== filterPriority) return false
     if (search) {
       const q = search.toLowerCase()
-      return [d.rfi_number, d.subject, d.activity_id, d.mrf_number, d.requested_by].some(v => (v || '').toLowerCase().includes(q))
+      return [d.rfi_number, d.subject, d.activity_id, d.requested_by].some(v => (v || '').toLowerCase().includes(q))
     }
     return true
   })

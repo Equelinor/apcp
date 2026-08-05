@@ -3,7 +3,6 @@ import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
 import { genSdNumber, formatRevisedSdNumber, getDisciplines, SUBMITTAL_STATUSES, RESPONSE_CODES, DRAWING_REVISIONS } from '../../config/docTypes'
-import { useActivityFill } from '../../hooks/useActivityFill'
 import { employeeService } from '../../services/employeeService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
@@ -313,7 +312,7 @@ function exportSdRegisterPDF(items, project) {
 const BLANK = {
   if04_number: '',
   date: today(), activity_id: '', activity_name: '', wbs_code: '',
-  mrf_number: '', discipline: '', drawing_number: '', drawing_title: '',
+  discipline: '', drawing_number: '', drawing_title: '',
   revision: 'Rev 00', ifc_drawing: '', consultant: '', client: '',
   submitted_date: today(), response_date: '', response_code: '',
   remarks: '', consultant_remarks: '', drive_link: '', status: 'Draft',
@@ -327,7 +326,7 @@ const BLANK = {
 }
 
 const SEED = [
-  { id: 1, if04_number: 'IF04-ANT-2025-00001', date: '2025-01-15', project_code: 'ANT', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', wbs_code: '1.1.2', mrf_number: 'MRF-ANT-2025-00001', discipline: 'Civil / Structural', drawing_number: 'SD-STR-001', drawing_title: 'Foundation Layout — SD', revision: 'Rev 03', ifc_drawing: 'IFC-STR-001', consultant: 'Consultant TBC', client: 'Client TBC', submitted_date: '2025-01-15', response_date: '2025-01-22', response_code: 'A — Approved', remarks: '', consultant_remarks: 'Approved as noted', drive_link: '', status: 'Approved', prepared_by: 'Ahmed Al-Rashid', copies: 3 },
+  { id: 1, if04_number: 'IF04-ANT-2025-00001', date: '2025-01-15', project_code: 'ANT', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', wbs_code: '1.1.2', discipline: 'Civil / Structural', drawing_number: 'SD-STR-001', drawing_title: 'Foundation Layout — SD', revision: 'Rev 03', ifc_drawing: 'IFC-STR-001', consultant: 'Consultant TBC', client: 'Client TBC', submitted_date: '2025-01-15', response_date: '2025-01-22', response_code: 'A — Approved', remarks: '', consultant_remarks: 'Approved as noted', drive_link: '', status: 'Approved', prepared_by: 'Ahmed Al-Rashid', copies: 3 },
 ]
 
 export default function IF04List() {
@@ -345,35 +344,6 @@ export default function IF04List() {
   const [formTab, setFormTab] = useState('details')
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
-
-  // Auto-fill hook
-  const { activityData, mrfData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
-
-  // Apply auto-fills when activity or MRF data loads
-  useEffect(() => {
-    if (activityData && !editItem) {
-      setForm(f => ({
-        ...f,
-        activity_name: activityData.activity_name || f.activity_name,
-        wbs_code: activityData.wbs_code || f.wbs_code,
-      }))
-    }
-  }, [activityData])
-
-  useEffect(() => {
-    if (mrfData && !editItem) {
-      setForm(f => ({
-        ...f,
-        discipline: mrfData.mat_spec ? f.discipline : (mrfData.discipline || f.discipline),
-        drawing_number: mrfData.shop_drawing || f.drawing_number,
-        ifc_drawing: mrfData.ifc_drawing || f.ifc_drawing,
-        revision: mrfData.drawing_rev || f.revision,
-        activity_id: f.activity_id || mrfData.activity_id || '',
-        activity_name: f.activity_name || mrfData.activity_name || '',
-        wbs_code: f.wbs_code || mrfData.wbs_code || '',
-      }))
-    }
-  }, [mrfData])
 
   useEffect(() => { loadData(); employeeService.dropdown().then(setEmployees) }, [activeProject])
 
@@ -476,7 +446,7 @@ export default function IF04List() {
     if (search) {
       const q = search.toLowerCase()
       const extraDwgValues = (Array.isArray(d.additional_drawings) ? d.additional_drawings : []).flatMap(x => [x.drawing_number, x.drawing_title])
-      return [d.if04_number, d.drawing_number, d.drawing_title, d.activity_id, d.mrf_number, ...extraDwgValues].some(v => (v || '').toLowerCase().includes(q))
+      return [d.if04_number, d.drawing_number, d.drawing_title, d.activity_id, ...extraDwgValues].some(v => (v || '').toLowerCase().includes(q))
     }
     return true
   })

@@ -14,13 +14,13 @@ const DOC_CATEGORIES = ['Method Statement', 'ITP', 'Risk Assessment', 'Technical
 const BLANK = {
   title: '', category: 'Technical Submittal', discipline: '',
   date: today(), prepared_by: '', activity_id: '', activity_name: '',
-  mrf_number: '', status: 'Draft', remarks: '', drive_link: ''
+  status: 'Draft', remarks: '', drive_link: ''
 }
 
 const SEED = [
-  { id: 1, doc_number: 'DOC-ANT-2025-00001', title: 'Method Statement — Foundation Works', category: 'Method Statement', discipline: 'Civil / Structural', date: '2025-01-12', prepared_by: 'Ahmed Al-Rashid', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', mrf_number: 'MRF-ANT-2025-00001', status: 'Approved', remarks: '', drive_link: '', project_code: 'ANT' },
-  { id: 2, doc_number: 'DOC-ANT-2025-00002', title: 'ITP — Concrete Works', category: 'ITP', discipline: 'Civil / Structural', date: '2025-01-15', prepared_by: 'Sara Qureshi', activity_id: 'A1210', activity_name: 'GF Column Reinforcement', mrf_number: '', status: 'Submitted', remarks: 'Awaiting consultant approval', drive_link: '', project_code: 'ANT' },
-  { id: 3, doc_number: 'DOC-MRS-2025-00001', title: 'Risk Assessment — Waterproofing', category: 'Risk Assessment', discipline: 'Architectural', date: '2025-01-20', prepared_by: 'Khalid Mansoor', activity_id: 'B2030', activity_name: 'Basement Waterproofing L3', mrf_number: 'MRF-MRS-2025-00001', status: 'Draft', remarks: '', drive_link: '', project_code: 'MRS' },
+  { id: 1, doc_number: 'DOC-ANT-2025-00001', title: 'Method Statement — Foundation Works', category: 'Method Statement', discipline: 'Civil / Structural', date: '2025-01-12', prepared_by: 'Ahmed Al-Rashid', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', status: 'Approved', remarks: '', drive_link: '', project_code: 'ANT' },
+  { id: 2, doc_number: 'DOC-ANT-2025-00002', title: 'ITP — Concrete Works', category: 'ITP', discipline: 'Civil / Structural', date: '2025-01-15', prepared_by: 'Sara Qureshi', activity_id: 'A1210', activity_name: 'GF Column Reinforcement', status: 'Submitted', remarks: 'Awaiting consultant approval', drive_link: '', project_code: 'ANT' },
+  { id: 3, doc_number: 'DOC-MRS-2025-00001', title: 'Risk Assessment — Waterproofing', category: 'Risk Assessment', discipline: 'Architectural', date: '2025-01-20', prepared_by: 'Khalid Mansoor', activity_id: 'B2030', activity_name: 'Basement Waterproofing L3', status: 'Draft', remarks: '', drive_link: '', project_code: 'MRS' },
 ]
 
 export default function DocumentRegister() {
@@ -86,7 +86,7 @@ export default function DocumentRegister() {
     if (filterStatus && d.status !== filterStatus) return false
     if (search) {
       const q = search.toLowerCase()
-      return [d.doc_number, d.title, d.activity_id, d.mrf_number, d.prepared_by].some(v => (v || '').toLowerCase().includes(q))
+      return [d.doc_number, d.title, d.activity_id, d.prepared_by].some(v => (v || '').toLowerCase().includes(q))
     }
     return true
   })
@@ -102,7 +102,7 @@ export default function DocumentRegister() {
       </div>
 
       <div className="filter-bar" style={{ marginBottom: 12 }}>
-        <input placeholder="Search number, title, activity, MRF…" value={search} onChange={e => setSearch(e.target.value)} />
+        <input placeholder="Search number, title, activity…" value={search} onChange={e => setSearch(e.target.value)} />
         <select value={filterCat} onChange={e => setFilterCat(e.target.value)}>
           <option value="">All Categories</option>
           {DOC_CATEGORIES.map(c => <option key={c}>{c}</option>)}
@@ -126,7 +126,6 @@ export default function DocumentRegister() {
                 <th>Discipline</th>
                 <th>Date</th>
                 <th>Activity</th>
-                <th>MRF Link</th>
                 <th>Status</th>
                 <th>Drive</th>
                 <th></th>
@@ -144,7 +143,6 @@ export default function DocumentRegister() {
                     {d.activity_id && <span className="doc-number" style={{ marginRight: 4 }}>{d.activity_id}</span>}
                     <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{d.activity_name}</span>
                   </td>
-                  <td>{d.mrf_number ? <span className="doc-number">{d.mrf_number}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                   <td><Badge status={d.status} /></td>
                   <td>
                     {d.drive_link
@@ -204,10 +202,6 @@ export default function DocumentRegister() {
           <div className="form-group">
             <label className="form-label">Activity Name</label>
             <input className="form-input" value={form.activity_name} onChange={e => set('activity_name', e.target.value)} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Linked MRF (optional)</label>
-            <input className="form-input" value={form.mrf_number} onChange={e => set('mrf_number', e.target.value)} placeholder="MRF-ANT-2025-00001" />
           </div>
           <div className="form-group">
             <label className="form-label">Status</label>

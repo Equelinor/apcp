@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { genDocNumber, getDisciplines } from '../../config/docTypes'
-import { useActivityFill, useMRFList } from '../../hooks/useActivityFill'
 import { employeeService } from '../../services/employeeService'
 import Badge from '../../components/Badge'
 import Modal from '../../components/Modal'
@@ -19,7 +18,7 @@ const REV_STATUS_CODES = ['', 'A', 'B', 'C', 'D', 'UR']
 const BLANK = {
   date: today(), inspection_type: 'Pre-pour', subject: '',
   activity_id: '', activity_name: '', wbs_code: '',
-  mrf_number: '', discipline: '', location: '', zone: '',
+  discipline: '', location: '', zone: '',
   description: '', ifc_drawing: '', shop_drawing: '',
   prepared_by: '', addressed_to: '',
   requested_inspection_date: '', inspection_date: '', inspector: '',
@@ -28,13 +27,12 @@ const BLANK = {
 }
 
 const SEED = [
-  { id: 1, if09_number: 'IF09-ANT-2025-00001', date: '2025-01-21', project_code: 'ANT', inspection_type: 'Pre-pour', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', wbs_code: '1.1.2', mrf_number: 'MRF-ANT-2025-00001', discipline: 'Civil / Structural', location: 'Block A', zone: 'Basement', description: 'Pre-pour inspection of pile cap and foundation slab reinforcement', ifc_drawing: 'IFC-STR-001', shop_drawing: 'SD-STR-001', prepared_by: 'Ahmed Al-Rashid', addressed_to: 'Consultant', requested_inspection_date: '2025-01-22', inspection_date: '2025-01-22', inspector: 'Consultant Engineer', result: 'Passed', result_remarks: 'All rebar as per drawing. Approved to pour.', status: 'Passed', remarks: '', drive_link: '' },
+  { id: 1, if09_number: 'IF09-ANT-2025-00001', date: '2025-01-21', project_code: 'ANT', inspection_type: 'Pre-pour', activity_id: 'A1010', activity_name: 'Basement Foundation Pour', wbs_code: '1.1.2', discipline: 'Civil / Structural', location: 'Block A', zone: 'Basement', description: 'Pre-pour inspection of pile cap and foundation slab reinforcement', ifc_drawing: 'IFC-STR-001', shop_drawing: 'SD-STR-001', prepared_by: 'Ahmed Al-Rashid', addressed_to: 'Consultant', requested_inspection_date: '2025-01-22', inspection_date: '2025-01-22', inspector: 'Consultant Engineer', result: 'Passed', result_remarks: 'All rebar as per drawing. Approved to pour.', status: 'Passed', remarks: '', drive_link: '' },
 ]
 
 export default function IF09List() {
   const { activeProject } = useProject()
   const { toasts, toast } = useToast()
-  const mrfList = useMRFList(activeProject.project_code)
   const disciplines = getDisciplines(activeProject.project_code)
 
   const [items, setItems] = useState([])
@@ -46,16 +44,6 @@ export default function IF09List() {
   const [formTab, setFormTab] = useState('details')
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
-
-  const { activityData, mrfData } = useActivityFill(activeProject.project_code, form.activity_id, form.mrf_number)
-
-  useEffect(() => {
-    if (activityData && !editItem) setForm(f => ({ ...f, activity_name: activityData.activity_name || f.activity_name, wbs_code: activityData.wbs_code || f.wbs_code }))
-  }, [activityData])
-
-  useEffect(() => {
-    if (mrfData && !editItem) setForm(f => ({ ...f, activity_id: f.activity_id || mrfData.activity_id || '', activity_name: f.activity_name || mrfData.activity_name || '', wbs_code: f.wbs_code || mrfData.wbs_code || '', ifc_drawing: f.ifc_drawing || mrfData.ifc_drawing || '', shop_drawing: f.shop_drawing || mrfData.shop_drawing || '', location: f.location || mrfData.location || '', zone: f.zone || mrfData.zone || '' }))
-  }, [mrfData])
 
   useEffect(() => { loadData(); employeeService.dropdown().then(setEmployees) }, [activeProject])
 
@@ -152,7 +140,7 @@ export default function IF09List() {
             <thead>
               <tr>
                 <th>IF09 No.</th><th>Type</th><th>Activity</th><th>Location</th>
-                <th>MRF</th><th>Req. Date</th><th>Insp. Date</th>
+                <th>Req. Date</th><th>Insp. Date</th>
                 <th>Inspector</th><th>Result</th><th>Status</th><th></th>
               </tr>
             </thead>
@@ -163,7 +151,6 @@ export default function IF09List() {
                   <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.inspection_type}</td>
                   <td style={{ fontSize: 11 }}>{d.activity_id ? <span className="doc-number" style={{ marginRight: 4 }}>{d.activity_id}</span> : ''}<span style={{ color: 'var(--text-muted)' }}>{d.activity_name}</span></td>
                   <td style={{ fontSize: 12 }}>{d.location}{d.zone ? ` / ${d.zone}` : ''}</td>
-                  <td>{d.mrf_number ? <span className="doc-number">{d.mrf_number}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.requested_inspection_date || '—'}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.inspection_date || '—'}</td>
                   <td style={{ fontSize: 12 }}>{d.inspector || '—'}</td>
@@ -202,22 +189,6 @@ export default function IF09List() {
             <label className="form-label required">IR Subject</label>
             <input className="form-input" value={form.subject} onChange={e => set('subject', e.target.value)} placeholder="Brief subject, e.g. Plot Boundary Setting Out" />
           </div>
-          <div style={{ background: 'var(--bg-base)', borderRadius: 'var(--radius)', padding: '12px 14px', marginBottom: 16 }}>
-            <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Links</div>
-            <div className="form-grid form-grid-2" style={{ gap: 10 }}>
-              <div className="form-group">
-                <label className="form-label">Activity ID</label>
-                <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010 — auto-fills below" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Linked MRF (optional)</label>
-                <select className="form-select" value={form.mrf_number} onChange={e => set('mrf_number', e.target.value)}>
-                  <option value="">— None —</option>
-                  {mrfList.map(m => <option key={m.mrf_number} value={m.mrf_number}>{m.mrf_number} — {m.material_desc?.slice(0, 35)}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
           <div className="form-grid form-grid-3" style={{ gap: 14, marginBottom: 14 }}>
             <div className="form-group">
               <label className="form-label">Date</label>
@@ -235,6 +206,10 @@ export default function IF09List() {
                 <option value="">— Select —</option>
                 {disciplines.map(d => <option key={d}>{d}</option>)}
               </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Activity ID</label>
+              <input className="form-input" value={form.activity_id} onChange={e => set('activity_id', e.target.value)} placeholder="A1010" />
             </div>
             <div className="form-group">
               <label className="form-label">Activity Name</label>

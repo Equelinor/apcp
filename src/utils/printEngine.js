@@ -130,7 +130,7 @@ export const buildIF04 = (f) => {
       <td style="border:0.5pt solid #999;padding:3pt 5pt;font-size:7.5pt;text-align:center">${d.rev || ''}</td>
     </tr>`
   ).join('')
-  const blankRowCount = Math.max(0, 5 - (f.drawings || []).length)
+  const blankRowCount = Math.max(0, 4 - (f.drawings || []).length)
   const dwgRows = dwgDataRows + blankRow.repeat(blankRowCount)
 
   return wrapper(`
@@ -159,25 +159,25 @@ export const buildIF04 = (f) => {
     <table style="width:100%;border-collapse:collapse;margin-bottom:14pt">
       <tr>
         <td style="width:50%;padding:4pt 0;font-size:8pt;vertical-align:top"><u><b>Project Engineer:</b></u> ${f.prepared_by || ''}</td>
-        <td style="width:50%;padding:4pt 20pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f)}</td>
+        <td style="width:50%;padding:4pt 12pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f, 140)}</td>
       </tr>
     </table>
-    <div style="margin-bottom:14pt">
-      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:10pt">Consultant's Comments</div>
+    <div style="margin-bottom:12pt">
+      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:8pt">Consultant's Comments</div>
       <table style="width:100%;border-collapse:collapse;font-size:8pt">
         <tr>
-          <td style="width:50%;padding:4pt 0;vertical-align:top">
-            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
+          <td style="width:50%;padding:3pt 0;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
             <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and Re-submit, work may proceed subject to incorporation of comments indicated</span></div>
           </td>
-          <td style="width:50%;padding:4pt 0 4pt 20pt;vertical-align:top">
-            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
+          <td style="width:50%;padding:3pt 0 3pt 20pt;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
             <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and resubmit, work not to proceed</span></div>
           </td>
         </tr>
       </table>
     </div>
-    <div style="margin-bottom:24pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
+    <div style="margin-bottom:20pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
     <div style="margin-bottom:10pt">
       <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:6pt">Client's Comments:</div>
       <div style="border-bottom:1pt solid #000;height:18pt;margin-bottom:4pt"></div>
@@ -242,7 +242,7 @@ export const buildIF05 = (f) => {
         <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">10</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Warranty</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${it.i10 || ''}</td></tr>
         <tr style="background:#f0f0f0">
           <td colspan="2" style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt"><b>Contractor Engineer</b> &nbsp;&nbsp; ${f.prepared_by || ''}</td>
-          <td style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt">Signature: ${signatureLine(f)}</td>
+          <td style="border:0.5pt solid #999;padding:5pt 8pt;font-size:8pt">Signature: ${signatureLine(f, 120)}</td>
         </tr>
       </tbody>
     </table>
@@ -345,25 +345,25 @@ export const buildIF07 = (f) => {
     <table style="width:100%;border-collapse:collapse;margin-bottom:14pt">
       <tr>
         <td style="width:50%;padding:4pt 0;font-size:8pt;vertical-align:top"><u><b>Prepared By:</b></u> ${f.prepared_by || ''}</td>
-        <td style="width:50%;padding:4pt 20pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f)}</td>
+        <td style="width:50%;padding:4pt 12pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f, 140)}</td>
       </tr>
     </table>
-    <div style="margin-bottom:14pt">
-      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:10pt">Consultant's Comments</div>
+    <div style="margin-bottom:12pt">
+      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:8pt">Consultant's Comments</div>
       <table style="width:100%;border-collapse:collapse;font-size:8pt">
         <tr>
-          <td style="width:50%;padding:4pt 0;vertical-align:top">
-            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
+          <td style="width:50%;padding:3pt 0;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
             <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and Re-submit, work may proceed subject to incorporation of comments indicated</span></div>
           </td>
-          <td style="width:50%;padding:4pt 0 4pt 20pt;vertical-align:top">
-            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
+          <td style="width:50%;padding:3pt 0 3pt 20pt;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
             <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and resubmit, work not to proceed</span></div>
           </td>
         </tr>
       </table>
     </div>
-    <div style="margin-bottom:24pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
+    <div style="margin-bottom:20pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
     <div style="margin-bottom:10pt">
       <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:6pt">Client's Comments:</div>
       <div style="border-bottom:1pt solid #000;height:18pt;margin-bottom:4pt"></div>
@@ -421,25 +421,25 @@ export const buildDSF = (f) => {
     <table style="width:100%;border-collapse:collapse;margin-bottom:14pt">
       <tr>
         <td style="width:50%;padding:4pt 0;font-size:8pt;vertical-align:top"><u><b>Prepared By:</b></u> ${f.prepared_by || ''}</td>
-        <td style="width:50%;padding:4pt 20pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f)}</td>
+        <td style="width:50%;padding:4pt 12pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f, 140)}</td>
       </tr>
     </table>
-    <div style="margin-bottom:14pt">
-      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:10pt">Consultant's Comments</div>
+    <div style="margin-bottom:12pt">
+      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:8pt">Consultant's Comments</div>
       <table style="width:100%;border-collapse:collapse;font-size:8pt">
         <tr>
-          <td style="width:50%;padding:4pt 0;vertical-align:top">
-            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
+          <td style="width:50%;padding:3pt 0;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
             <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and Re-submit, work may proceed subject to incorporation of comments indicated</span></div>
           </td>
-          <td style="width:50%;padding:4pt 0 4pt 20pt;vertical-align:top">
-            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
+          <td style="width:50%;padding:3pt 0 3pt 20pt;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
             <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and resubmit, work not to proceed</span></div>
           </td>
         </tr>
       </table>
     </div>
-    <div style="margin-bottom:24pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
+    <div style="margin-bottom:20pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
     <div style="margin-bottom:10pt">
       <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:6pt">Client's Comments:</div>
       <div style="border-bottom:1pt solid #000;height:18pt;margin-bottom:4pt"></div>

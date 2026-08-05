@@ -103,7 +103,7 @@ export default function Dashboard() {
     // Registers read straight from their source IF-tables — same tables the
     // Register pages themselves read from. No duplicate data stored here.
     const [mac, rfi, sd, ir, dar] = await Promise.all([
-      supabase.from('if05').select('response_code,status').eq('project_code', projectCode),
+      supabase.from('if05').select('response_code,status,submitted_date,submission_history').eq('project_code', projectCode),
       supabase.from('if08').select('status,response_date,required_response_date').eq('project_code', projectCode),
       supabase.from('if04').select('response_code,status,submitted_date').eq('project_code', projectCode),
       supabase.from('if09').select('result,status,requested_inspection_date').eq('project_code', projectCode),

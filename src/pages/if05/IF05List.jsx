@@ -474,7 +474,7 @@ export default function IF05List() {
           { label: 'Draft',                       value: kpi.draft, bg: '#F1F5F9', color: '#64748B' },
         ].map(k => (
           <div key={k.label} style={{ background: k.bg, border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
-            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: k.color, opacity: .75, marginBottom: 4 }}>{k.label}</div>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: k.color, opacity: .75, lineHeight: 1.35, minHeight: 24, marginBottom: 4 }}>{k.label}</div>
             <div style={{ fontSize: 22, fontWeight: 800, color: k.color }}>{k.value}</div>
           </div>
         ))}

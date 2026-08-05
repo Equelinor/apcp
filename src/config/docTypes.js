@@ -148,3 +148,23 @@ export function formatRevisedSdNumber(sdNumber, revNo) {
   if (!sdNumber || !revNo) return sdNumber || ''
   return `${sdNumber}-${revNo}`
 }
+
+// ─── DOCUMENT SUBMITTAL FORM (Document Register) NUMBER — same shape as
+// genMacNumber/genSdNumber, "DSF" instead of "MAC"/"SD": AI-<project
+// number>-DSF-XXX (e.g. AI-0632-DSF-001). Replaces the generic
+// genDocNumber('DOC', ...) format for new records going forward — existing
+// documents already numbered under the old DOC-PROJCODE-YEAR-SEQ format
+// keep their historical numbers unchanged. Document Register was rebuilt
+// to full MAC parity (response-code approval workflow, revision rounds,
+// computed status, register PDF export, certificate print) on 2026-08-05.
+export function genDsfNumber(projectNumber, sequence) {
+  const parts = String(projectNumber || '').split('-')
+  const projNum = parts[parts.length - 1] || ''
+  return `AI-${projNum}-DSF-${String(sequence).padStart(3, '0')}`
+}
+
+// ─── REVISED DSF NUMBER — same idea as formatRevisedMacNumber/formatRevisedSdNumber.
+export function formatRevisedDsfNumber(dsfNumber, revNo) {
+  if (!dsfNumber || !revNo) return dsfNumber || ''
+  return `${dsfNumber}-${revNo}`
+}

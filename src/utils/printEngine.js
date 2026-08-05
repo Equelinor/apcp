@@ -301,48 +301,76 @@ export const buildIF06 = (f) => {
 }
 
 // ─────────────────────────────────────────────────────────
-// IF07 — Document Submittal Form
+// IF07 — Document Submittal Form (DSF) — rebuilt to MAC parity 2026-08-05.
+// Single-item certificate (one document per submittal), matching buildIF05's
+// shape rather than the drawing-table layout SD uses — a document submittal
+// isn't inherently tabular the way a set of shop drawings is.
 // ─────────────────────────────────────────────────────────
 export const buildIF07 = (f) => {
-  const dwgRows = (f.drawings || []).map(d =>
-    `<tr>
-      <td style="border:0.5pt solid #999;padding:3pt 5pt;font-size:7.5pt">${d.no || ''}</td>
-      <td style="border:0.5pt solid #999;padding:3pt 5pt;font-size:7.5pt;font-weight:700;text-align:center">${d.title || ''}</td>
-      <td style="border:0.5pt solid #999;padding:3pt 5pt;font-size:7.5pt;text-align:center">${d.rev || ''}</td>
-    </tr>`
-  ).join('')
+  const td = 'border:0.5pt solid #999;padding:4pt 6pt;font-size:8pt;'
+  const tdl = td + 'font-weight:700;background:#f9f9f9;width:22%;'
   return wrapper(`
     ${buildHeader(f, 'AA-IF-07', 'DOCUMENT SUBMITTAL FORM')}
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:14pt;font-size:8pt">
-      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;width:22%;font-weight:700;background:#f9f9f9">Project</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.projName || ''}</td></tr>
-      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Contractor</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr>
-      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Client</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.client || ''}</td></tr>
-      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Shop Document No.</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${f.subNo || ''}${f.subTo ? ' to ' + f.subTo : ''}</td></tr>
-      <tr><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700;background:#f9f9f9">Date</td><td style="border:0.5pt solid #999;padding:5pt 8pt;font-weight:700">${fmtDate(f.date)}</td></tr>
-    </table>
-    <p style="font-size:8pt;margin-bottom:10pt;padding-left:4pt">We request approval of the following shop drawings for implementation in the above works.</p>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:16pt;font-size:8pt">
-      <thead><tr style="background:#f0f0f0">
-        <th style="border:0.5pt solid #999;padding:5pt 8pt;text-align:center;font-weight:700;width:30%">Drawing Nos.</th>
-        <th style="border:0.5pt solid #999;padding:5pt 8pt;text-align:center;font-weight:700;width:55%">Document Title</th>
-        <th style="border:0.5pt solid #999;padding:5pt 8pt;text-align:center;font-weight:700;width:15%">Rev.</th>
-      </tr></thead>
-      <tbody>${dwgRows}</tbody>
-    </table>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:20pt">
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:8pt;font-size:8pt">
       <tr>
-        <td style="width:50%;padding:4pt 0;font-size:8pt"><u><b>Project Engineer:</b></u>&nbsp; ${f.prepared_by || ''}<br><div style="border-bottom:1pt solid #000;margin-top:22pt;width:80%"></div></td>
-        <td style="width:50%;padding:4pt 0;font-size:8pt;text-align:right"><u><b>Signature:</b></u><br><div style="border-bottom:1pt solid #000;margin-top:22pt;margin-left:40%">${f.signatureImg ? `<img src="${f.signatureImg}" style="max-height:24pt;max-width:100%;object-fit:contain">` : ''}</div></td>
+        <td style="border-right:1pt solid #000;padding:5pt 8pt;width:60%"><b>DSF No.:</b> &nbsp; ${f.if07_number || ''}</td>
+        <td style="padding:5pt 8pt"><b>Date:</b> &nbsp; ${fmtDate(f.date)}</td>
       </tr>
     </table>
-    <div style="margin-bottom:12pt"><div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:8pt">Consultant's Comments</div>
-      <table style="width:100%;border-collapse:collapse;border:1pt solid #000;font-size:8pt">
-        <tr><td colspan="2" style="border-bottom:0.5pt solid #999;padding:5pt 8pt"><b>&#9744;</b> Work may proceed; Approval follows &nbsp;&nbsp;&nbsp; <b>&#9744;</b> Approved with comments &nbsp;&nbsp;&nbsp; <b>&#9744;</b> Revise and Re-submit &nbsp;&nbsp;&nbsp; <b>&#9744;</b> Revise and resubmit, work not to proceed</td></tr>
-        <tr><td style="border-right:1pt solid #999;border-bottom:0.5pt solid #999;padding:5pt 8pt;width:50%">Comments:</td><td style="border-bottom:0.5pt solid #999;padding:5pt 8pt">Date:</td></tr>
-        <tr><td style="border-right:1pt solid #999;padding:5pt 8pt">&nbsp;</td><td style="padding:5pt 8pt">Signed for and on behalf of Consultant</td></tr>
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
+      <tr><td style="${tdl}">Project:</td><td style="${td}font-weight:700">${f.projName || ''}</td></tr>
+      <tr><td style="${tdl}">Client:</td><td style="${td}font-weight:700">${f.client || ''}</td></tr>
+      <tr><td style="${tdl}">Contractor:</td><td style="${td}font-weight:700">${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr>
+      <tr><td style="${tdl}">Consultant:</td><td style="${td}font-weight:700">${f.consultant || ''}</td></tr>
+    </table>
+    <p style="font-size:8pt;margin-bottom:10pt;padding-left:4pt">We submit the following document for your review and approval.</p>
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
+      <thead><tr style="background:#f0f0f0">
+        <th style="border:0.5pt solid #999;padding:5pt 6pt;text-align:center;width:6%">Item No.</th>
+        <th style="border:0.5pt solid #999;padding:5pt 6pt;text-align:left;width:32%">Item Description</th>
+        <th style="border:0.5pt solid #999;padding:5pt 6pt;text-align:left">Details</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">1</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Document Title</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${f.title || ''}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">2</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Document Type</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${f.doc_type || ''}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">3</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Reference Number</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${f.ref_number || ''}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">4</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Activity</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${[f.activity_id, f.activity_name].filter(Boolean).join(' — ')}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">5</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Addressed To</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${f.addressed_to || ''}</td></tr>
+        <tr><td style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;background:#fafafa">6</td><td style="border:0.5pt solid #999;padding:4pt 6pt;background:#fafafa">Copies</td><td style="border:0.5pt solid #999;padding:4pt 6pt">${f.copies || ''}</td></tr>
+      </tbody>
+    </table>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:14pt">
+      <tr>
+        <td style="width:50%;padding:4pt 0;font-size:8pt;vertical-align:top"><u><b>Prepared By:</b></u> ${f.prepared_by || ''}</td>
+        <td style="width:50%;padding:4pt 20pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f)}</td>
+      </tr>
+    </table>
+    <div style="margin-bottom:14pt">
+      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:10pt">Consultant's Comments</div>
+      <table style="width:100%;border-collapse:collapse;font-size:8pt">
+        <tr>
+          <td style="width:50%;padding:4pt 0;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
+            <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and Re-submit, work may proceed subject to incorporation of comments indicated</span></div>
+          </td>
+          <td style="width:50%;padding:4pt 0 4pt 20pt;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:10pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
+            <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and resubmit, work not to proceed</span></div>
+          </td>
+        </tr>
       </table>
     </div>
-    ${generated(f, f.docNumber)}
+    <div style="margin-bottom:24pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
+    <div style="margin-bottom:10pt">
+      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:6pt">Client's Comments:</div>
+      <div style="border-bottom:1pt solid #000;height:18pt;margin-bottom:4pt"></div>
+      <div style="border-bottom:0.5pt solid #ccc;height:16pt"></div>
+    </div>
+    <div><div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:4pt">Client's Signature:</div><div style="border-bottom:0.5pt solid #ccc;height:16pt"></div></div>
+    ${f.priorDate
+      ? `<div style="margin-top:10pt;font-size:6pt;color:#888;text-align:center">Generated electronically by APCP</div>
+         <div style="font-size:6pt;color:#888;text-align:center">Prior revision date: ${fmtDate(f.priorDate)}</div>`
+      : generated(f, f.if07_number)}
   `)
 }
 

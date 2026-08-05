@@ -112,6 +112,14 @@ function exportMacRegisterPDF(items, project) {
     const hist = Array.isArray(m.submission_history) ? m.submission_history : []
     const s = MAC_APPROVAL_STATUS[m._status] || MAC_APPROVAL_STATUS['Draft']
     const bg = i % 2 === 0 ? '#fff' : '#f9fafb'
+    // Once a resubmission round exists, its own number/dates/rev-no represent
+    // this MAC's current state — same idea as computeMacApprovalStatus above,
+    // and the same fallback-to-base pattern handlePrint already uses.
+    const latest = getLatestMacRevision(m)
+    const macNo = displayMacNumber(m)
+    const subDate = latest?.submitted_date || m.submitted_date
+    const respDate = latest?.return_date || m.response_date
+    const revNo = latest?.rev_no || m.revision_no
 
     const revCells = [1,2,3,4,5].map(n => {
       const r = hist.find(h => String(h.rev_no) === `R${n}`) || {}
@@ -129,12 +137,12 @@ function exportMacRegisterPDF(items, project) {
 
     return `<tr style="background:${bg}">
       <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9.5pt;text-align:center">${i+1}</td>
-      <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt;font-family:monospace;font-weight:700;white-space:nowrap">${m.if05_number || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt;font-family:monospace;font-weight:700;white-space:nowrap">${macNo}</td>
       <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt">${m.material_desc || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:5pt 7pt;font-size:9.5pt">${m.supplier_name || ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center;white-space:nowrap">${m.submitted_date ? regFmtDate(m.submitted_date) : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center;white-space:nowrap">${m.response_date ? regFmtDate(m.response_date) : ''}</td>
-      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9.5pt;font-weight:700;text-align:center">${m.revision_no || ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center;white-space:nowrap">${subDate ? regFmtDate(subDate) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9pt;text-align:center;white-space:nowrap">${respDate ? regFmtDate(respDate) : ''}</td>
+      <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:9.5pt;font-weight:700;text-align:center">${revNo || ''}</td>
       <td style="border:0.4pt solid #ccc;padding:5pt 6pt;font-size:10pt;font-weight:700;text-align:center;background:${s.bg};color:${s.text}">${s.code}</td>
       ${revCells}
     </tr>`

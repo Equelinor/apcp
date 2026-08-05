@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useProject } from '../../context/ProjectContext'
 import { useAuth } from '../../context/AuthContext'
-import { genDsfNumber, formatRevisedDsfNumber, getDisciplines, RESPONSE_CODES, DRAWING_REVISIONS } from '../../config/docTypes'
+import { genDsfNumber, formatRevisedDsfNumber, getDisciplines, RESPONSE_CODES } from '../../config/docTypes'
 import { employeeService } from '../../services/employeeService'
 import Modal from '../../components/Modal'
 import { useToast, ToastContainer } from '../../utils/toast'
@@ -283,9 +283,9 @@ const BLANK = {
   submitted_date: '', response_date: '', response_code: '',
   status: 'Draft', remarks: '', consultant_remarks: '', drive_link: '', copies: 1,
   revision_no: 'R0', submission_history: [],
-  // Optional drawings referenced by/attached to this submittal — same
-  // repeatable-list pattern as Shop Drawing's additional_drawings.
-  additional_drawings: [],
+  // Optional extra reference numbers — combined with ref_number into one
+  // comma-separated "Reference Number" line on the printed certificate.
+  additional_ref_numbers: [],
 }
 
 const SEED = [
@@ -344,7 +344,7 @@ export default function DocumentRegister() {
     setForm({
       ...item,
       submission_history: Array.isArray(item.submission_history) ? item.submission_history : [],
-      additional_drawings: Array.isArray(item.additional_drawings) ? item.additional_drawings : [],
+      additional_ref_numbers: Array.isArray(item.additional_ref_numbers) ? item.additional_ref_numbers : [],
     })
     setFormTab('details')
     setShowForm(true)
@@ -370,19 +370,20 @@ export default function DocumentRegister() {
     setForm(p => ({ ...p, submission_history: (p.submission_history || []).filter((_, idx) => idx !== i) }))
   }
 
-  // ── Additional drawings helpers — same pattern as Shop Drawing's addDrawing/setDrawing/removeDrawing ──
-  function addDrawing() {
-    setForm(p => ({ ...p, additional_drawings: [...(p.additional_drawings || []), { drawing_number: '', drawing_title: '', revision: 'Rev 00' }] }))
+  // ── Additional reference number helpers — a plain repeatable list of strings,
+  // combined with ref_number into one comma-separated line on the certificate.
+  function addRefNumber() {
+    setForm(p => ({ ...p, additional_ref_numbers: [...(p.additional_ref_numbers || []), ''] }))
   }
-  function setDrawing(i, field, val) {
+  function setRefNumber(i, val) {
     setForm(p => {
-      const list = [...(p.additional_drawings || [])]
-      list[i] = { ...list[i], [field]: val }
-      return { ...p, additional_drawings: list }
+      const list = [...(p.additional_ref_numbers || [])]
+      list[i] = val
+      return { ...p, additional_ref_numbers: list }
     })
   }
-  function removeDrawing(i) {
-    setForm(p => ({ ...p, additional_drawings: (p.additional_drawings || []).filter((_, idx) => idx !== i) }))
+  function removeRefNumber(i) {
+    setForm(p => ({ ...p, additional_ref_numbers: (p.additional_ref_numbers || []).filter((_, idx) => idx !== i) }))
   }
 
   // Once a DSF has left Draft, its content is locked for everyone except Admin — same rule as MAC.
@@ -412,8 +413,8 @@ export default function DocumentRegister() {
     if (filterStatus && computeDsfApprovalStatus(d) !== filterStatus) return false
     if (search) {
       const q = search.toLowerCase()
-      const extraDwgValues = (Array.isArray(d.additional_drawings) ? d.additional_drawings : []).flatMap(x => [x.drawing_number, x.drawing_title])
-      return [d.doc_number, d.title, d.ref_number, d.activity_id, d.prepared_by, ...extraDwgValues].some(v => (v || '').toLowerCase().includes(q))
+      const extraRefs = Array.isArray(d.additional_ref_numbers) ? d.additional_ref_numbers : []
+      return [d.doc_number, d.title, d.ref_number, d.activity_id, d.prepared_by, ...extraRefs].some(v => (v || '').toLowerCase().includes(q))
     }
     return true
   })
@@ -436,9 +437,8 @@ export default function DocumentRegister() {
     const latestRev = getLatestDsfRevision(d)
     const printDate = latestRev?.submitted_date || d.date
     const priorDate = latestRev ? d.date : ''
-    const drawings = (Array.isArray(d.additional_drawings) ? d.additional_drawings : [])
-      .map(x => ({ no: x.drawing_number, title: x.drawing_title, rev: x.revision }))
-    printForm(buildDSF({ ...mergeProjectLogos(d, activeProject), signatureImg, doc_number: printNumber, date: printDate, priorDate, drawings }), `Export for Transmittal — ${printNumber}`)
+    const refNumber = [d.ref_number, ...(Array.isArray(d.additional_ref_numbers) ? d.additional_ref_numbers : [])].filter(Boolean).join(', ')
+    printForm(buildDSF({ ...mergeProjectLogos(d, activeProject), signatureImg, doc_number: printNumber, date: printDate, priorDate, ref_number: refNumber }), `Export for Transmittal — ${printNumber}`)
   }
 
   return (
@@ -510,8 +510,8 @@ export default function DocumentRegister() {
                   <td><span className="doc-number" style={{ fontSize: 11 }}>{displayDsfNumber(d)}</span></td>
                   <td style={{ fontSize: 12, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {d.title}
-                    {Array.isArray(d.additional_drawings) && d.additional_drawings.length > 0 && (
-                      <span style={{ marginLeft: 5, fontSize: 10, color: 'var(--text-muted)' }}>+{d.additional_drawings.length} drawing{d.additional_drawings.length > 1 ? 's' : ''}</span>
+                    {Array.isArray(d.additional_ref_numbers) && d.additional_ref_numbers.length > 0 && (
+                      <span style={{ marginLeft: 5, fontSize: 10, color: 'var(--text-muted)' }}>+{d.additional_ref_numbers.length} ref{d.additional_ref_numbers.length > 1 ? 's' : ''}</span>
                     )}
                   </td>
                   <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{d.category}</td>
@@ -656,40 +656,19 @@ export default function DocumentRegister() {
         <div style={{ marginTop: 18 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <label className="form-label" style={{ marginBottom: 0 }}>
-              Additional Drawings <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(optional — drawings referenced by or attached to this submittal)</span>
+              Additional Reference Numbers <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(optional — combined with Reference Number above on the printed certificate)</span>
             </label>
-            <button className="btn btn-secondary" style={{ fontSize: 12 }} onClick={addDrawing} disabled={isLocked}><Plus size={12} /> Add Drawing</button>
+            <button className="btn btn-secondary" style={{ fontSize: 12 }} onClick={addRefNumber} disabled={isLocked}><Plus size={12} /> Add Reference Number</button>
           </div>
-          {(form.additional_drawings || []).length > 0 && (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-              <thead>
-                <tr>
-                  {['Drawing Number', 'Drawing Title', 'Revision', ''].map(h => (
-                    <th key={h} style={{ textAlign: 'left', padding: '6px 10px', background: 'var(--bg-base)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {form.additional_drawings.map((dr, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '6px 10px' }}>
-                      <input className="form-input" value={dr.drawing_number} disabled={isLocked} onChange={e => setDrawing(i, 'drawing_number', e.target.value)} placeholder="SD-STR-002" />
-                    </td>
-                    <td style={{ padding: '6px 10px' }}>
-                      <input className="form-input" value={dr.drawing_title} disabled={isLocked} onChange={e => setDrawing(i, 'drawing_title', e.target.value)} />
-                    </td>
-                    <td style={{ padding: '6px 10px' }}>
-                      <select className="form-select" value={dr.revision} disabled={isLocked} onChange={e => setDrawing(i, 'revision', e.target.value)} style={{ width: 100 }}>
-                        {DRAWING_REVISIONS.map(r => <option key={r}>{r}</option>)}
-                      </select>
-                    </td>
-                    <td style={{ padding: '6px 10px' }}>
-                      <button className="btn btn-ghost" style={{ padding: '3px 6px', color: 'var(--status-rejected-text)' }} disabled={isLocked} onClick={() => removeDrawing(i)}><Trash2 size={12} /></button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {(form.additional_ref_numbers || []).length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {form.additional_ref_numbers.map((val, i) => (
+                <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input className="form-input" value={val} disabled={isLocked} onChange={e => setRefNumber(i, e.target.value)} placeholder="AICC-0632-CIV-001" style={{ flex: 1 }} />
+                  <button className="btn btn-ghost" style={{ padding: '3px 6px', color: 'var(--status-rejected-text)' }} disabled={isLocked} onClick={() => removeRefNumber(i)}><Trash2 size={12} /></button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
         </div>

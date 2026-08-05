@@ -387,6 +387,28 @@ export const buildIF07 = (f) => {
 export const buildDSF = (f) => {
   const td = 'border:0.5pt solid #999;padding:4pt 6pt;font-size:8pt;'
   const tdl = td + 'font-weight:700;background:#f9f9f9;width:22%;'
+  // Related Drawings table — only rendered when drawings are actually attached,
+  // so the common plain-document case stays compact (same idea as SD's blank-row
+  // padding, but here we skip the table entirely rather than pad it). When it IS
+  // present it adds real height, so the Client's Comments/Signature boxes below
+  // compact down a little in that case rather than shrinking them always.
+  const hasDrawings = (f.drawings || []).length > 0
+  const drawingsBlock = hasDrawings
+    ? `<table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:6pt;font-size:8pt">
+        <thead><tr style="background:#f0f0f0">
+          <th style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;font-weight:700;width:30%">Drawing Nos.</th>
+          <th style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;font-weight:700;width:55%">Drawing Title</th>
+          <th style="border:0.5pt solid #999;padding:4pt 6pt;text-align:center;font-weight:700;width:15%">Rev.</th>
+        </tr></thead>
+        <tbody>${f.drawings.map(d =>
+          `<tr>
+            <td style="border:0.5pt solid #999;padding:2.5pt 6pt;font-size:7.5pt">${d.no || ''}</td>
+            <td style="border:0.5pt solid #999;padding:2.5pt 6pt;font-size:7.5pt;font-weight:700;text-align:center">${d.title || ''}</td>
+            <td style="border:0.5pt solid #999;padding:2.5pt 6pt;font-size:7.5pt;text-align:center">${d.rev || ''}</td>
+          </tr>`
+        ).join('')}</tbody>
+      </table>`
+    : ''
   return wrapper(`
     ${buildHeader(f, 'AA-DR-01', 'DOCUMENT SUBMITTAL FORM')}
     <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:8pt;font-size:8pt">
@@ -395,14 +417,14 @@ export const buildDSF = (f) => {
         <td style="padding:5pt 8pt"><b>Date:</b> &nbsp; ${fmtDate(f.date)}</td>
       </tr>
     </table>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:${hasDrawings ? 6 : 10}pt;font-size:8pt">
       <tr><td style="${tdl}">Project:</td><td style="${td}font-weight:700">${f.projName || ''}</td></tr>
       <tr><td style="${tdl}">Client:</td><td style="${td}font-weight:700">${f.client || ''}</td></tr>
       <tr><td style="${tdl}">Contractor:</td><td style="${td}font-weight:700">${f.contractor || 'Axion Imagineering Construction Co. W.L.L.'}</td></tr>
       <tr><td style="${tdl}">Consultant:</td><td style="${td}font-weight:700">${f.consultant || ''}</td></tr>
     </table>
-    <p style="font-size:8pt;margin-bottom:10pt;padding-left:4pt">We submit the following document for your review and approval.</p>
-    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:10pt;font-size:8pt">
+    <p style="font-size:8pt;margin-bottom:${hasDrawings ? 6 : 10}pt;padding-left:4pt">We submit the following document for your review and approval.</p>
+    <table style="width:100%;border-collapse:collapse;border:1pt solid #000;margin-bottom:${hasDrawings ? 6 : 10}pt;font-size:8pt">
       <thead><tr style="background:#f0f0f0">
         <th style="border:0.5pt solid #999;padding:5pt 6pt;text-align:center;width:6%">Item No.</th>
         <th style="border:0.5pt solid #999;padding:5pt 6pt;text-align:left;width:32%">Item Description</th>
@@ -418,34 +440,35 @@ export const buildDSF = (f) => {
         <tr><td style="border:0.5pt solid #999;padding:2.5pt 6pt;text-align:center;background:#fafafa">7</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt;background:#fafafa">Copies</td><td style="border:0.5pt solid #999;padding:2.5pt 6pt">${f.copies || ''}</td></tr>
       </tbody>
     </table>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:14pt">
+    ${drawingsBlock}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:${hasDrawings ? 8 : 14}pt">
       <tr>
         <td style="width:50%;padding:4pt 0;font-size:8pt;vertical-align:top"><u><b>Prepared By:</b></u> ${f.prepared_by || ''}</td>
         <td style="width:50%;padding:4pt 12pt 4pt 0;font-size:8pt;text-align:right;vertical-align:top"><u><b>Signature:</b></u><br>${signatureLine(f, 140)}</td>
       </tr>
     </table>
-    <div style="margin-bottom:12pt">
-      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:8pt">Consultant's Comments</div>
+    <div style="margin-bottom:${hasDrawings ? 8 : 12}pt">
+      <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:${hasDrawings ? 5 : 8}pt">Consultant's Comments</div>
       <table style="width:100%;border-collapse:collapse;font-size:8pt">
         <tr>
-          <td style="width:50%;padding:3pt 0;vertical-align:top">
-            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
+          <td style="width:50%;padding:${hasDrawings ? 2 : 3}pt 0;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:${hasDrawings ? 5 : 8}pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Work may proceed; Approval follows</span></div>
             <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and Re-submit, work may proceed subject to incorporation of comments indicated</span></div>
           </td>
-          <td style="width:50%;padding:3pt 0 3pt 20pt;vertical-align:top">
-            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
+          <td style="width:50%;padding:${hasDrawings ? 2 : 3}pt 0 ${hasDrawings ? 2 : 3}pt 20pt;vertical-align:top">
+            <div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:${hasDrawings ? 5 : 8}pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Approved with comments</span></div>
             <div style="display:flex;align-items:flex-start;gap:8pt"><span style="border:1pt solid #000;display:inline-block;width:10pt;height:10pt;flex-shrink:0;margin-top:1pt"></span><span>Revise and resubmit, work not to proceed</span></div>
           </td>
         </tr>
       </table>
     </div>
-    <div style="margin-bottom:20pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
-    <div style="margin-bottom:10pt">
+    <div style="margin-bottom:${hasDrawings ? 12 : 20}pt"><div style="border-top:1pt solid #000;width:55%;padding-top:4pt;font-size:8pt">Signed for and on behalf of Consultant</div></div>
+    <div style="margin-bottom:${hasDrawings ? 6 : 10}pt">
       <div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:6pt">Client's Comments:</div>
-      <div style="border-bottom:1pt solid #000;height:18pt;margin-bottom:4pt"></div>
-      <div style="border-bottom:0.5pt solid #ccc;height:16pt"></div>
+      <div style="border-bottom:1pt solid #000;height:${hasDrawings ? 12 : 18}pt;margin-bottom:4pt"></div>
+      <div style="border-bottom:0.5pt solid #ccc;height:${hasDrawings ? 10 : 16}pt"></div>
     </div>
-    <div><div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:4pt">Client's Signature:</div><div style="border-bottom:0.5pt solid #ccc;height:16pt"></div></div>
+    <div><div style="font-size:8.5pt;font-weight:700;text-decoration:underline;margin-bottom:4pt">Client's Signature:</div><div style="border-bottom:0.5pt solid #ccc;height:${hasDrawings ? 10 : 16}pt"></div></div>
     ${f.priorDate
       ? `<div style="margin-top:10pt;font-size:6pt;color:#888;text-align:center">Generated electronically by APCP</div>
          <div style="font-size:6pt;color:#888;text-align:center">Prior revision date: ${fmtDate(f.priorDate)}</div>`

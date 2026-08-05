@@ -349,7 +349,7 @@ export default function IF04List() {
 
   async function loadData() {
     setLoading(true)
-    const { data, error } = await supabase.from('if04').select('*').eq('project_code', activeProject.project_code).order('if04_number', { ascending: false })
+    const { data, error } = await supabase.from('if04').select('*').eq('project_code', activeProject.project_code).order('if04_number', { ascending: true })
     if (error || !data?.length) setItems(SEED.filter(d => d.project_code === activeProject.project_code))
     else setItems(data)
     setLoading(false)

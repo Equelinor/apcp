@@ -32,6 +32,19 @@ export const MAC_APPROVAL_STATUS = {
 }
 
 export function computeMacApprovalStatus(d) {
+  // Once a resubmission round exists, its own status (set in Revision History)
+  // drives the overall status — the base record's response_code is frozen at
+  // whatever it was on the original round, so continuing to read it after a
+  // revision means the list/summary/register never reflect the revised outcome.
+  const latest = getLatestMacRevision(d)
+  if (latest) {
+    const revCode = (latest.status || '').toUpperCase()
+    if (revCode === 'A') return 'Approved'
+    if (revCode === 'B') return 'Approved with Comments'
+    if (revCode === 'C') return 'Revised and Resubmit'
+    if (revCode === 'D') return 'Rejected'
+    return 'Under Review'
+  }
   const code = (d.response_code || '').charAt(0)
   if (code === 'A') return 'Approved'
   if (code === 'B') return 'Approved with Comments'
